@@ -324,7 +324,7 @@ def show_inicio_ficha(update, context):
 		[InlineKeyboardButton("Fecha nacimiento: "+fecha_nacimiento, callback_data='inicio_ficha_nacimiento')],
 		[InlineKeyboardButton("Género: "+genero, callback_data='inicio_ficha_genero')],
 		[InlineKeyboardButton("Correo electrónico: "+email, callback_data='inicio_ficha_email')],
-		[InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')]
+		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
 	]
 
 	bot.send_message(
@@ -437,9 +437,22 @@ def check_altura(update, context):
 					text="Has cambiado tu altura con éxito ✔"
 				)
 
+				# Peso más reciente
+				cur.execute("SELECT peso,id_peso FROM Peso WHERE id_usuario='"+username+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username+"' AND peso IS NOT NULL)")
+				resultado = cur.fetchall()
+				peso = float(resultado[0][0])
+				id_peso = resultado[0][1]
+				altura = numero
+				altura_m2 = pow(altura/100,2)
+				imc = peso/altura_m2
+				imc = round(imc,2)
+
+				cur.execute("UPDATE Peso SET imc="+str(imc)+" WHERE id_peso="+str(id_peso)+";")
+				db.commit()
+
 				if current_state == "INICIO_PESO_ANOTAR_PESO_ALTURA":
 					update.message.reply_text(
-						text="¡Genial! Puedes comprobar tu IMC desde <b>👣 Inicio > Peso</b>",
+						text="¡Genial! Puedes comprobar tu IMC desde <b>👣 Inicio > Mi objetivo de peso</b>",
 						parse_mode='HTML'
 					)
 
@@ -450,7 +463,7 @@ def check_altura(update, context):
 
 				elif current_state == "INICIO_FICHA_PESO_ALTURA":
 					update.message.reply_text(
-						text="¡Genial! Puedes comprobar tu IMC desde <b>👣 Inicio > Peso</b>",
+						text="¡Genial! Puedes comprobar tu IMC desde <b>👣 Inicio > Mi objetivo de peso</b>",
 						parse_mode='HTML'
 					)
 
@@ -799,7 +812,7 @@ def show_inicio_peso(update, context):
 
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="⏳ Cargando Inicio > Peso... "
+		text="⏳ Cargando Inicio > Mi objetivo de peso... "
 	)
 	time.sleep(.8)
 
@@ -913,9 +926,9 @@ def show_inicio_peso(update, context):
 
 		if resultado:
 			keyboard.append([InlineKeyboardButton("Valoración del IMC 🗨", callback_data='inicio_peso_valoracion')])
-			keyboard.append([InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')])
+			keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 		else:
-			keyboard.append([InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')])
+			keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 
 		cur.close()
 		db.close()
@@ -924,7 +937,7 @@ def show_inicio_peso(update, context):
 		reply_markup = InlineKeyboardMarkup(keyboard)
 		bot.send_message(
 			chat_id = query.message.chat_id,
-			text="👣 Inicio > Peso",
+			text="👣 Inicio > Mi objetivo de peso",
 			reply_markup = reply_markup
 		)
 
@@ -941,7 +954,7 @@ def show_inicio_peso_anotar(update, context):
 	bot = context.bot
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="⏳ Cargando Inicio > Peso > Anotar datos... "
+		text="⏳ Cargando Inicio > Mi objetivo de peso > Anotar datos... "
 	)
 
 	username_user = query.from_user.username
@@ -961,7 +974,7 @@ def show_inicio_peso_anotar(update, context):
 			[InlineKeyboardButton("Anotar peso ✏", callback_data='inicio_peso_anotar_peso')],
 			[InlineKeyboardButton("Anotar grasa ✏", callback_data='inicio_peso_anotar_grasa')],
 			[InlineKeyboardButton("Anotar músculo ✏", callback_data='inicio_peso_anotar_musculo')],
-			[InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')]
+			[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
 		]
 	else:
 		# Comprobar si ya hay datos registrados de hoy
@@ -980,7 +993,7 @@ def show_inicio_peso_anotar(update, context):
 				[InlineKeyboardButton("Anotar grasa ✏", callback_data='inicio_peso_anotar_grasa')],
 				[InlineKeyboardButton("Anotar músculo ✏", callback_data='inicio_peso_anotar_musculo')],
 				[InlineKeyboardButton("Volver a Peso 🔙", callback_data='back_inicio_peso')],
-				[InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')]
+				[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
 			]
 		# Si ya hay algo registrado hoy
 		else:
@@ -1010,7 +1023,7 @@ def show_inicio_peso_anotar(update, context):
 				keyboard.append([InlineKeyboardButton("Anotar músculo ✏", callback_data='inicio_peso_anotar_musculo')])
 
 			keyboard.append([InlineKeyboardButton("Volver a Peso 🔙", callback_data='back_inicio_peso')])
-			keyboard.append([InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')])
+			keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 
 			bot.send_message(
 				chat_id = query.message.chat_id,
@@ -1027,7 +1040,7 @@ def show_inicio_peso_anotar(update, context):
 	time.sleep(.8)
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="👣 Inicio > Peso > Anotar datos",
+		text="👣 Inicio > Mi objetivo de peso > Anotar datos",
 		reply_markup = reply_markup
 	)
 
@@ -1432,87 +1445,6 @@ def check_anotar_peso(update, context):
 			text="Escríbeme solo un número. Si usas decimales, sepáralos por un punto. Por ejemplo, 75.5",
 			reply_markup=reply_markup
 		)
-
-def check_altura_anotar_peso(update, context):
-	global current_state 
-
-	n_params = context.args
-
-	if len(n_params) != 1:
-		update.message.reply_text(
-			text="Has introducido mal el comando.\nEjemplo: /altura 170"
-		)
-	else:
-		user_msg = context.args[0]
-		username = update.message.from_user.username
-
-		if is_int(user_msg):
-
-			numero = int(user_msg)
-			if numero < 0:
-				time.sleep(.8)
-				update.message.reply_text(
-					text="No puedes usar números negativos para registrar tu altura."
-				)
-				time.sleep(.8)
-				update.message.reply_text(
-					text="Si no quieres registrar tu altura, escríbeme tu peso de hoy (en kg)."
-				)
-				time.sleep(.8)
-				update.message.reply_text(
-					text="Escríbeme solo un número. Si usas decimales, sepáralos por un punto. Por ejemplo, 75.5"
-				)
-			else:
-				if numero > 220:
-					time.sleep(.8)
-					update.message.reply_text(
-						text="Introduce un número menor que 220 para registrar tu altura."
-					)
-					time.sleep(.8)
-					update.message.reply_text(
-						text="Si no quieres registrar tu altura, escríbeme tu peso de hoy (en kg)."
-					)
-					time.sleep(.8)
-					update.message.reply_text(
-						text="Escríbeme solo un número. Si usas decimales, sepáralos por un punto. Por ejemplo, 75.5"
-					)
-				else:
-					db = pymysql.connect("localhost", "root", "password", "Imagym")
-					db.begin()
-
-					cur = db.cursor()
-					cur.execute("UPDATE Usuarios SET altura="+str(numero)+" WHERE id_usuario='"+username+"'")
-					db.commit()
-
-					time.sleep(.8)
-					update.message.reply_text(
-						text="He cambiado tu altura con éxito ✔"
-					)
-					time.sleep(.8)
-					update.message.reply_text(
-						text="Escríbeme tu peso de hoy (en kg)."
-					)
-					time.sleep(.8)
-					update.message.reply_text(
-						chat_id = query.message.chat_id,
-						text="Escríbeme solo un número. Si usas decimales, sepáralos por un punto. Por ejemplo, 75.5"
-					)
-					cur.close()
-					db.close()
-
-		else:
-			time.sleep(.8)
-			update.message.reply_text(
-				text="No te entiendo. Usa /altura <tu_altura>.\nEjemplo: /altura 170"
-			)
-			time.sleep(.8)
-			update.message.reply_text(
-				text="Si no quieres registrar tu altura, escríbeme tu peso de hoy (en kg)."
-			)
-			time.sleep(.8)
-			update.message.reply_text(
-				text="Escríbeme solo un número. Si usas decimales, sepáralos por un punto. Por ejemplo, 75.5"
-			)
 
 def anotar_grasa(update, context):
 	global current_state 
@@ -2028,7 +1960,7 @@ def show_inicio_peso_establecer(update, context):
 	bot = context.bot
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="⏳ Cargando Inicio > Peso > Establecer objetivo..."
+		text="⏳ Cargando Inicio > Mi objetivo de peso > Establecer objetivo..."
 	)
 
 	username_user = query.from_user.username
@@ -2065,7 +1997,7 @@ def show_inicio_peso_establecer(update, context):
 		keyboard.append([InlineKeyboardButton("Establecer objetivo de músculo", callback_data='inicio_peso_establecer_musculo')])
 
 	keyboard.append([InlineKeyboardButton("Volver a Peso 🔙", callback_data='back_inicio_peso')])
-	keyboard.append([InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')])
+	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 
 	bot.send_message(
 		chat_id = query.message.chat_id,
@@ -2076,7 +2008,7 @@ def show_inicio_peso_establecer(update, context):
 	reply_markup = InlineKeyboardMarkup(keyboard)
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="👣 Inicio > Peso > Establecer objetivo",
+		text="👣 Inicio > Mi objetivo de peso > Establecer objetivo",
 		reply_markup = reply_markup
 	)
 
@@ -2789,7 +2721,7 @@ def show_inicio_peso_evolucion(update, context):
 	bot = context.bot
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="⏳ Cargando Inicio > Peso > Evolución... "
+		text="⏳ Cargando Inicio > Mi objetivo de peso > Evolución... "
 	)
 
 	username_user = query.from_user.username
@@ -2824,7 +2756,7 @@ def show_inicio_peso_evolucion(update, context):
 	reply_markup = InlineKeyboardMarkup(keyboard)
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="👣 Inicio > Peso > Evolución",
+		text="👣 Inicio > Mi objetivo de peso > Evolución",
 		reply_markup = reply_markup
 	)
 
@@ -2912,7 +2844,7 @@ def evolucion_peso(update, context):
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		message_id = query.message.message_id,
-		text="👣 Inicio > Peso > Evolución > Evolución de peso",
+		text="👣 Inicio > Mi objetivo de peso > Evolución > Evolución de peso",
 		reply_markup=reply_markup
 	)
 
@@ -2999,7 +2931,7 @@ def evolucion_peso_rango(update, context):
 				)
 				time.sleep(.8)
 				update.message.reply_text(
-					text="👣 Inicio > Peso > Evolución > Evolución de peso",
+					text="👣 Inicio > Mi objetivo de peso > Evolución > Evolución de peso",
 					reply_markup=reply_markup
 				)
 		else:
@@ -3082,7 +3014,7 @@ def evolucion_peso_rango(update, context):
 					)
 					time.sleep(.8)
 					update.message.reply_text(
-						text="👣 Inicio > Peso > Evolución > Evolución de peso",
+						text="👣 Inicio > Mi objetivo de peso > Evolución > Evolución de peso",
 						reply_markup=reply_markup
 					)
 		else:
@@ -3168,7 +3100,7 @@ def evolucion_grasa(update, context):
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		message_id = query.message.message_id,
-		text="👣 Inicio > Peso > Evolución > Evolución de grasa",
+		text="👣 Inicio > Mi objetivo de peso > Evolución > Evolución de grasa",
 		reply_markup=reply_markup
 	)
 
@@ -3255,7 +3187,7 @@ def evolucion_grasa_rango(update, context):
 				)
 				time.sleep(.8)
 				update.message.reply_text(
-					text="👣 Inicio > Peso > Evolución > Evolución de grasa",
+					text="👣 Inicio > Mi objetivo de peso > Evolución > Evolución de grasa",
 					reply_markup=reply_markup
 				)
 		else:
@@ -3338,7 +3270,7 @@ def evolucion_grasa_rango(update, context):
 					)
 					time.sleep(.8)
 					update.message.reply_text(
-						text="👣 Inicio > Peso > Evolución > Evolución de grasa",
+						text="👣 Inicio > Mi objetivo de peso > Evolución > Evolución de grasa",
 						reply_markup=reply_markup
 					)
 		else:
@@ -3424,7 +3356,7 @@ def evolucion_musculo(update, context):
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		message_id = query.message.message_id,
-		text="👣 Inicio > Peso > Evolución > Evolución de músculo",
+		text="👣 Inicio > Mi objetivo de peso > Evolución > Evolución de músculo",
 		reply_markup=reply_markup
 	)
 
@@ -3511,7 +3443,7 @@ def evolucion_musculo_rango(update, context):
 				)
 				time.sleep(.8)
 				update.message.reply_text(
-					text="👣 Inicio > Peso > Evolución > Evolución de músculo",
+					text="👣 Inicio > Mi objetivo de peso > Evolución > Evolución de músculo",
 					reply_markup=reply_markup
 				)
 		else:
@@ -3594,7 +3526,7 @@ def evolucion_musculo_rango(update, context):
 					)
 					time.sleep(.8)
 					update.message.reply_text(
-						text="👣 Inicio > Peso > Evolución > Evolución de músculo",
+						text="👣 Inicio > Mi objetivo de peso > Evolución > Evolución de músculo",
 						reply_markup=reply_markup
 					)
 		else:
@@ -3680,7 +3612,7 @@ def evolucion_imc(update, context):
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		message_id = query.message.message_id,
-		text="👣 Inicio > Peso > Evolución > Evolución de IMC",
+		text="👣 Inicio > Mi objetivo de peso > Evolución > Evolución de IMC",
 		reply_markup=reply_markup
 	)
 
@@ -3767,7 +3699,7 @@ def evolucion_imc_rango(update, context):
 				)
 				time.sleep(.8)
 				update.message.reply_text(
-					text="👣 Inicio > Peso > Evolución > Evolución de IMC",
+					text="👣 Inicio > Mi objetivo de peso > Evolución > Evolución de IMC",
 					reply_markup=reply_markup
 				)
 		else:
@@ -3850,7 +3782,7 @@ def evolucion_imc_rango(update, context):
 					)
 					time.sleep(.8)
 					update.message.reply_text(
-						text="👣 Inicio > Peso > Evolución > Evolución de músculo",
+						text="👣 Inicio > Mi objetivo de peso > Evolución > Evolución de músculo",
 						reply_markup=reply_markup
 					)
 		else:
@@ -3881,7 +3813,8 @@ def show_inicio_peso_valoracion(update, context):
 	image_path = "/home/jumacasni/Documentos/ImagymBot/imagenes/IMC.jpg"
 
 	keyboard = [
-		[InlineKeyboardButton("Volver a Peso 🔙", callback_data='back_inicio_peso')]
+		[InlineKeyboardButton("Volver a Peso 🔙", callback_data='back_inicio_peso')],
+		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
 	]
 	reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -4061,7 +3994,7 @@ def show_inicio_cardio(update, context):
 	cur.close()
 	db.close()
 
-	keyboard.append([InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')])
+	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 
 	time.sleep(.8)
 	reply_markup = InlineKeyboardMarkup(keyboard)
@@ -4121,7 +4054,7 @@ def show_inicio_cardio_registrar(update, context):
 				conv_handler.states[INICIO_CARDIO_REGISTRAR].append(callback_query)
 
 	keyboard.append([InlineKeyboardButton("Volver a Actividad cardio 🔙", callback_data='back_inicio_cardio')])
-	keyboard.append([InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')])
+	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 
 	cur.close()
 	db.close()
@@ -4431,7 +4364,7 @@ def show_inicio_cardio_ver(update,context):
 		text=text+"\n"
 
 	keyboard = [[InlineKeyboardButton("Volver a Actividad cardio 🔙", callback_data='back_inicio_cardio')],
-	[InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')]]
+	[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]]
 
 	reply_markup = InlineKeyboardMarkup(keyboard)
 	bot.send_message(
@@ -4634,7 +4567,7 @@ def show_inicio_cardio_establecer(update, context):
 				conv_handler.states[INICIO_CARDIO_ESTABLECER].append(callback_query)
 
 	keyboard.append([InlineKeyboardButton("Volver a Actividad cardio 🔙", callback_data='back_inicio_cardio')])
-	keyboard.append([InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')])
+	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 
 	cur.close()
 	db.close()
@@ -5250,7 +5183,7 @@ def show_inicio_retos(update, context):
 			text="📌 Actualmente no estás apuntado a ningún reto"
 		)
 
-	keyboard.append([InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')])
+	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 	reply_markup = InlineKeyboardMarkup(keyboard)
 
 	bot.send_message(
@@ -5315,7 +5248,7 @@ def show_inicio_retos_ver(update, context):
 			createTable(id_reto[0], name_button)
 
 	list_keyboards.append([InlineKeyboardButton("Volver a Retos 🔙", callback_data='back_inicio_retos')])
-	list_keyboards.append([InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')])
+	list_keyboards.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 	reply_markup = InlineKeyboardMarkup(list_keyboards)
 	bot.send_message(
 		chat_id = query.message.chat_id,
@@ -5383,7 +5316,7 @@ def ver_reto(update, context):
 			[InlineKeyboardButton("Apuntarse al reto ✔", callback_data="inicio_retos_ver_apuntarse_"+id_reto)],
 			[InlineKeyboardButton("Volver a Retos disponibles 🔙", callback_data="back_inicio_retos_ver")],
 			[InlineKeyboardButton("Volver a Retos 🔙", callback_data="back_inicio_retos")],
-			[InlineKeyboardButton("Volver a Inicio 🔙", callback_data="back_inicio")]
+			[InlineKeyboardButton("Volver a Inicio 👣", callback_data="back_inicio")]
 		]
 		reply_markup = InlineKeyboardMarkup(keyboard)
 		
@@ -5408,7 +5341,7 @@ def ver_reto(update, context):
 		keyboard = [
 			[InlineKeyboardButton("Volver a Retos disponibles 🔙", callback_data="back_inicio_retos_ver")],
 			[InlineKeyboardButton("Volver a Retos 🔙", callback_data="back_inicio_retos")],
-			[InlineKeyboardButton("Volver a Inicio 🔙", callback_data="back_inicio")]
+			[InlineKeyboardButton("Volver a Inicio 👣", callback_data="back_inicio")]
 		]
 		reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -5460,7 +5393,7 @@ def ver_reto_apuntarse(update, context):
 	keyboard = [
 		[InlineKeyboardButton("Volver a Retos disponibles 🔙", callback_data="back_inicio_retos_ver")],
 		[InlineKeyboardButton("Volver a Retos 🔙", callback_data="back_inicio_retos")],
-		[InlineKeyboardButton("Volver a Inicio 🔙", callback_data="back_inicio")]
+		[InlineKeyboardButton("Volver a Inicio 👣", callback_data="back_inicio")]
 	]
 	reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -5731,7 +5664,7 @@ def show_inicio_retos_eliminar(update, context):
 		list_keyboards.append(keyboard)
 
 	list_keyboards.append([InlineKeyboardButton("Volver a Retos 🔙", callback_data='back_inicio_retos')])
-	list_keyboards.append([InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')])
+	list_keyboards.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 
 	reply_markup = InlineKeyboardMarkup(list_keyboards)
 	bot.send_message(
@@ -6004,7 +5937,7 @@ def inicio_retos_anotar_si(update, context):
 		alarma_descalificar = "descalificar_"+username_user+"_"+str(id_reto)
 		for job in context.job_queue.get_jobs_by_name(alarma_descalificar):
 			job.schedule_removal()
-			
+
 		bot.send_message(
 			chat_id = query.message.chat_id,
 			text=text
@@ -6092,7 +6025,7 @@ def show_inicio_retos_calendario(update, context):
 
 	keyboard = [
 		[InlineKeyboardButton("Volver a Retos 🔙", callback_data="back_inicio_retos")],
-		[InlineKeyboardButton("Volver a Inicio 🔙", callback_data="back_inicio")]
+		[InlineKeyboardButton("Volver a Inicio 👣", callback_data="back_inicio")]
 	]
 	reply_markup = InlineKeyboardMarkup(keyboard)
 	
@@ -6256,7 +6189,7 @@ def show_inicio_retos_historial(update, context):
 		list_keyboards.append(keyboard)
 
 	list_keyboards.append([InlineKeyboardButton("Volver a Retos 🔙", callback_data='back_inicio_retos')])
-	list_keyboards.append([InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')])
+	list_keyboards.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 
 	reply_markup = InlineKeyboardMarkup(list_keyboards)
 	bot.send_message(
@@ -6374,7 +6307,7 @@ def historial_reto(update, context):
 	keyboard = [
 		[InlineKeyboardButton("Volver a Historial de retos 🔙", callback_data='back_inicio_retos_historial')],
 		[InlineKeyboardButton("Volver a Retos 🔙", callback_data='back_inicio_retos')],
-		[InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')],
+		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')],
 	]
 	reply_markup = InlineKeyboardMarkup(keyboard)
 	time.sleep(1)
@@ -6698,7 +6631,7 @@ def inicio_ficha(update, context):
 		[InlineKeyboardButton("Fecha nacimiento: "+fecha_nacimiento, callback_data='inicio_ficha_nacimiento')],
 		[InlineKeyboardButton("Género: "+genero, callback_data='inicio_ficha_genero')],
 		[InlineKeyboardButton("Correo electrónico: "+email, callback_data='inicio_ficha_email')],
-		[InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')]
+		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
 	]
 
 	update.message.reply_text(
@@ -6718,7 +6651,7 @@ def inicio_peso(update, context):
 	db.begin()
 
 	update.message.reply_text(
-		text="⏳ Cargando Inicio > Peso... "
+		text="⏳ Cargando Inicio > Mi objetivo de peso... "
 	)
 
 	# Peso más reciente
@@ -6828,9 +6761,9 @@ def inicio_peso(update, context):
 
 	if resultado:
 		keyboard.append([InlineKeyboardButton("Valoración del IMC 🗨", callback_data='inicio_peso_valoracion')])
-		keyboard.append([InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')])
+		keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 	else:
-		keyboard.append([InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')])
+		keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 
 	cur.close()
 	db.close()
@@ -6838,7 +6771,7 @@ def inicio_peso(update, context):
 	time.sleep(.8)
 	reply_markup = InlineKeyboardMarkup(keyboard)
 	update.message.reply_text(		
-		text="👣 Inicio > Peso",
+		text="👣 Inicio > Mi objetivo de peso",
 		reply_markup = reply_markup
 	)
 
@@ -6852,7 +6785,7 @@ def inicio_peso_anotar(update, context):
 	db.begin()
 
 	update.message.reply_text(
-		text="⏳ Cargando Inicio > Peso > Anotar datos... "
+		text="⏳ Cargando Inicio > Mi objetivo de peso > Anotar datos... "
 	)
 
 	username_user = update.message.from_user.username
@@ -6871,7 +6804,7 @@ def inicio_peso_anotar(update, context):
 			[InlineKeyboardButton("Anotar peso ✏", callback_data='inicio_peso_anotar_peso')],
 			[InlineKeyboardButton("Anotar grasa ✏", callback_data='inicio_peso_anotar_grasa')],
 			[InlineKeyboardButton("Anotar músculo ✏", callback_data='inicio_peso_anotar_musculo')],
-			[InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')]
+			[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
 		]
 	else:
 		# Comprobar si ya hay datos registrados de hoy
@@ -6889,7 +6822,7 @@ def inicio_peso_anotar(update, context):
 				[InlineKeyboardButton("Anotar grasa ✏", callback_data='inicio_peso_anotar_grasa')],
 				[InlineKeyboardButton("Anotar músculo ✏", callback_data='inicio_peso_anotar_musculo')],
 				[InlineKeyboardButton("Volver a Peso 🔙", callback_data='back_inicio_peso')],
-				[InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')]
+				[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
 			]
 		# Si ya hay algo registrado hoy
 		else:
@@ -6919,7 +6852,7 @@ def inicio_peso_anotar(update, context):
 				keyboard.append([InlineKeyboardButton("Anotar músculo ✏", callback_data='inicio_peso_anotar_musculo')])
 
 			keyboard.append([InlineKeyboardButton("Volver a Peso 🔙", callback_data='back_inicio_peso')])
-			keyboard.append([InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')])
+			keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 
 			update.message.reply_text(
 				text=text
@@ -6933,7 +6866,7 @@ def inicio_peso_anotar(update, context):
 	reply_markup = InlineKeyboardMarkup(keyboard)
 	time.sleep(.8)
 	update.message.reply_text(
-		text="👣 Inicio > Peso > Anotar datos",
+		text="👣 Inicio > Mi objetivo de peso > Anotar datos",
 		reply_markup = reply_markup
 	)
 
@@ -7222,6 +7155,7 @@ def main():
 			INICIO_PESO_VALORACION: [CommandHandler('start', start),
 								CommandHandler('mensaje', mandar_mensaje),
 								CallbackQueryHandler(show_inicio_peso, pattern='back_inicio_peso'),
+								CallbackQueryHandler(show_inicio, pattern='back_inicio'),
 								MessageHandler(Filters.all, any_message)
 								],
 
