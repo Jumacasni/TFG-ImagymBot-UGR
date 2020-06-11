@@ -29,6 +29,11 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, MessageHandler, CommandHandler, CallbackQueryHandler, ConversationHandler, Filters
 from dateutil import tz
 
+print(time.tzname)
+os.environ["TZ"] = "Europe/Madrid"
+time.tzset()
+print(time.tzname)
+
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -5478,7 +5483,7 @@ def ver_reto_apuntarse(update, context):
 		ESP = tz.gettz('Europe/Madrid')
 		dt = datetime(start_day_object.year,start_day_object.month,start_day_object.day,8,0,0, tzinfo=ESP)
 
-		name_alarm=username_user+"_"+id_reto
+		name_alarm=username_user+"_"+str(id_reto)
 		context.job_queue.run_once(primer_dia_reto, dt, context=(query.message.chat_id, update, id_reto), name=name_alarm)
 
 		bot.send_message(
@@ -5531,6 +5536,17 @@ def primer_dia_reto(context):
 	cur.execute("UPDATE Realiza_reto SET estado='R' WHERE id_reto="+str(id_reto)+" AND id_usuario='"+username_user+"'")
 	db.commit()
 
+	# Ponemos la alarma para que a las 00:00 del día siguiente compruebe si hay que descalificar al usuario del reto o no
+	cur.execute("SELECT DATE_ADD(CURDATE(), INTERVAL 1 DAY);");
+	resultado = cur.fetchall()
+	datetime_alarm = resultado[0][0]
+
+	ESP = tz.gettz('Europe/Madrid')
+	dt = datetime(datetime_alarm.year,datetime_alarm.month,datetime_alarm.day,0,0,0, tzinfo=ESP)
+
+	name_alarm="descalificar_"+username_user+"_"+str(id_reto)
+	context.job_queue.run_once(descalificar_reto, dt, context=(query.message.chat_id, job.context[1], id_reto), name=name_alarm)
+
 	bot.send_message(
 		job.context[0],
 		text="🌄 ¡BUENOS DÍAS! 🌄\n\nHoy comienza tu <b>reto de "+nombre.lower()+"</b>",
@@ -5560,7 +5576,113 @@ def primer_dia_reto(context):
 	cur.close()
 	db.close()
 
-def
+def recordar_reto(context):
+	global current_state, conv_handler
+	job = context.job
+	bot = context.bot
+	query = job.context[1].callback_query
+	username_user = query.from_user.username
+	id_reto = job.context[2]
+
+	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db.begin()
+	cur = db.cursor()
+
+	# Ejercicio
+	cur.execute("SELECT id_ejercicio FROM Retos WHERE id_reto="+str(id_reto)+";")
+	resultado = cur.fetchall()
+	id_ejercicio = resultado[0][0]
+
+	cur.execute("SELECT nombre FROM Ejercicios WHERE id_ejercicio="+str(id_ejercicio)+";")
+	resultado = cur.fetchall()
+	nombre = resultado[0][0]
+
+	# Actualizar estado del reto
+	cur.execute("UPDATE Realiza_reto SET estado='R' WHERE id_reto="+str(id_reto)+" AND id_usuario='"+username_user+"'")
+	db.commit()
+
+	# Ponemos la alarma para que a las 00:00 del día siguiente compruebe si hay que descalificar al usuario del reto o no
+	cur.execute("SELECT DATE_ADD(CURDATE(), INTERVAL 1 DAY);");
+	resultado = cur.fetchall()
+	datetime_alarm = resultado[0][0]
+
+	ESP = tz.gettz('Europe/Madrid')
+	dt = datetime(datetime_alarm.year,datetime_alarm.month,datetime_alarm.day,0,0,0, tzinfo=ESP)
+
+	name_alarm="descalificar_"+username_user+"_"+str(id_reto)
+	context.job_queue.run_once(descalificar_reto, dt, context=(query.message.chat_id, job.context[1], id_reto), name=name_alarm)
+
+	bot.send_message(
+		job.context[0],
+		text="🌄 ¡BUENOS DÍAS! 🌄\n\nTe recuerdo sigues participando en el <b>reto de "+nombre.lower()+"</b>",
+		parse_mode='HTML'
+	)
+
+	keyboard = [
+		[InlineKeyboardButton("Ir a Inicio > Retos 👣", callback_data='back_inicio_retos')],
+		[InlineKeyboardButton("Ir a Inicio 👣", callback_data='back_inicio')]
+	]
+	reply_markup = InlineKeyboardMarkup(keyboard)
+	bot.send_message(
+		job.context[0],
+		text="Puedes anotar tu progreso en 👣 <b>Inicio > Retos</b> en cualquier momento del día",
+		reply_markup=reply_markup,
+		parse_mode='HTML'
+	)
+
+	cur.close()
+	db.close()
+
+def descalificar_reto(context):
+	global current_state, conv_handler
+	job = context.job
+	bot = context.bot
+	query = job.context[1].callback_query
+	username_user = query.from_user.username
+	id_reto = job.context[2]
+
+	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db.begin()
+	cur = db.cursor()
+
+	# Ejercicio
+	cur.execute("SELECT id_ejercicio FROM Retos WHERE id_reto="+str(id_reto)+";")
+	resultado = cur.fetchall()
+	id_ejercicio = resultado[0][0]
+
+	cur.execute("SELECT nombre FROM Ejercicios WHERE id_ejercicio="+str(id_ejercicio)+";")
+	resultado = cur.fetchall()
+	nombre = resultado[0][0]
+
+	# Actualizar estado del reto
+	cur.execute("UPDATE Realiza_reto SET estado='D' WHERE id_reto="+str(id_reto)+" AND id_usuario='"+username_user+"'")
+	db.commit()
+
+	bot.send_message(
+		job.context[0],
+		text="❌ Lo siento ❌\n\nHas sido descalificado del <b>reto de "+nombre.lower()+"</b>",
+		parse_mode='HTML'
+	)
+	bot.send_message(
+		job.context[0],
+		text="¡Suerte en el próximo reto!",
+		parse_mode='HTML'
+	)
+	keyboard = [
+		[InlineKeyboardButton("Ir a Inicio > Retos 👣", callback_data='back_inicio_retos')],
+		[InlineKeyboardButton("Ir a Inicio 👣", callback_data='back_inicio')]
+	]
+	reply_markup = InlineKeyboardMarkup(keyboard)
+	bot.send_message(
+		job.context[0],
+		text="Puedes ver tu historial de retos en 👣 <b>Inicio > Retos</b>",
+		reply_markup=reply_markup,
+		parse_mode='HTML'
+	)
+
+	cur.close()
+	db.close()
+
 def show_inicio_retos_eliminar(update, context):
 	global current_state, conv_handler
 	query = update.callback_query
@@ -5832,13 +5954,19 @@ def inicio_retos_anotar_si(update, context):
 	cur.execute("UPDATE Realiza_reto SET dia="+str(dia_reto)+" WHERE id_reto="+str(id_reto)+" and id_usuario='"+username_user+"';")
 	db.commit()
 
+
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		text="¡He anotado tu progreso con éxito ✔! ¡Ánimo!"
 	)
 	time.sleep(1)
 
-	if fecha_fin == date.today():
+	# Seleccionar el próximo día del reto
+	cur.execute("SELECT dia,repeticiones FROM Calendario WHERE id_reto="+str(id_reto)+" AND dia=(SELECT MIN(dia) FROM Calendario WHERE id_reto="+str(id_reto)+" AND dia>"+str(dia_reto)+" AND repeticiones != NULL);")
+	resultado = cur.fetchall()
+
+	# Si no hay próximo día de reto o la fecha fin es hoy
+	if not resultado or fecha_fin == date.today():
 		cur.execute("UPDATE Realiza_reto SET estado='C' WHERE id_reto="+str(id_reto)+" and id_usuario='"+username_user+"';")
 		db.commit()
 
@@ -5850,6 +5978,36 @@ def inicio_retos_anotar_si(update, context):
 		bot.send_message(
 			chat_id = query.message.chat_id,
 			text="Has conseguido una insignia que se mostrará en tu perfil de la página web, ¡sigue así!\n\nNos vemos en más retos 🤗"
+		)
+	else:
+		dia_siguiente = resultado[0][0]
+		diferencia_dias = int(dia_siguiente)-dia_reto
+
+		if diferencia_dias == 1:
+			text = "Tu reto continua mañana. ¡Te lo recordaré! ⏰⏰⏰"
+			cur.execute("SELECT DATE_ADD(CURDATE(), INTERVAL 1 DAY);");
+			resultado = cur.fetchall()
+			fecha_recordatorio = fecha_recordatorio[0][0]
+		else:
+			cur.execute("SELECT DATE_ADD(CURDATE(), INTERVAL "+str(diferencia_dias)+" DAY);");
+			resultado = cur.fetchall()
+			fecha_recordatorio = resultado[0][0]
+			fecha = fecha_recordatorio.strftime('%d-%B-%Y')
+			text = "Tu reto continua el día "+fecha+". No te preocupes, yo te lo recordaré ⏰⏰⏰"
+
+		ESP = tz.gettz('Europe/Madrid')
+		dt = datetime(fecha_recordatorio.year,fecha_recordatorio.month,fecha_recordatorio.day,8,0,0, tzinfo=ESP)
+
+		name_alarm=username_user+"_"+str(id_reto)
+		context.job_queue.run_once(recordar_reto, dt, context=(query.message.chat_id, update, id_reto), name=name_alarm)
+
+		alarma_descalificar = "descalificar_"+username_user+"_"+str(id_reto)
+		for job in context.job_queue.get_jobs_by_name(alarma_descalificar):
+			job.schedule_removal()
+			
+		bot.send_message(
+			chat_id = query.message.chat_id,
+			text=text
 		)
 
 	time.sleep(1.5)
@@ -5918,7 +6076,7 @@ def show_inicio_retos_calendario(update, context):
 	db.close()
 
 	if not path.exists(path_imagen):
-		createTableColors(id_reto,text,dia_reto,username_user)
+		createTableColors(id_reto,text,dia_reto,username_user,"")
 
 	pic = open(path_imagen, 'rb')
 	
@@ -6086,9 +6244,9 @@ def show_inicio_retos_historial(update, context):
 		ejercicio_name = ejercicio_name[0][0]
 
 		name_button = "Reto de "+ejercicio_name.lower()+" | Nivel "+str(nivel_ejercicio)+" | "+start_day.strftime('%B-%Y').upper()+" | "+insignia
-		button = InlineKeyboardButton(name_button, callback_data="inicio_retos_eliminar_"+str(id_reto[0]))
+		button = InlineKeyboardButton(name_button, callback_data="inicio_retos_historial_"+str(id_reto[0]))
 
-		callback_query_retos_historial = CallbackQueryHandler(inicio_retos_historial, pattern="inicio_retos_historial_"+str(id_reto[0]))
+		callback_query_retos_historial = CallbackQueryHandler(historial_reto, pattern="inicio_retos_historial_"+str(id_reto[0]))
 		
 		if not callback_query_retos_historial in conv_handler.states[INICIO_RETOS_HISTORIAL]:
 			conv_handler.states[INICIO_RETOS_HISTORIAL].append(callback_query_retos_historial)
@@ -6118,8 +6276,116 @@ def show_inicio_retos_historial(update, context):
 	current_state = "INICIO_RETOS_HISTORIAL"
 	return INICIO_RETOS_HISTORIAL
 
-def inicio_retos_historial(update, context):
-	pass
+def historial_reto(update, context):
+	global current_state
+
+	query = update.callback_query
+	bot = context.bot
+	username_user = query.from_user.username
+
+	id_reto_callback = query.data
+	id_reto = id_reto_callback.split('_',4)
+	id_reto = id_reto[3]
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="⏳ Generando información de reto... "
+	)
+	time.sleep(.8)
+
+	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db.begin()
+	cur = db.cursor()
+	cur.execute("SELECT dia,estado FROM Realiza_reto where id_usuario='"+username_user+"' AND id_reto="+str(id_reto)+";")
+	resultado = cur.fetchall();
+	dia = resultado[0][0]
+	estado = resultado[0][1]
+
+	cur.execute("SELECT id_ejercicio,nivel,fecha_inicio,fecha_fin FROM Retos WHERE id_reto="+str(id_reto)+";")
+	resultado = cur.fetchall()
+	id_ejercicio = resultado[0][0]
+	nivel = resultado[0][1]
+	fecha_inicio = resultado[0][2]
+	fecha_fin = resultado[0][3]
+
+	cur.execute("SELECT nombre FROM Ejercicios WHERE id_ejercicio="+str(id_ejercicio)+";")
+	ejercicio = cur.fetchall();
+	ejercicio = ejercicio[0][0]
+
+	text="Reto de "+ejercicio.lower()+", nivel "+str(nivel)+", "+fecha_inicio.strftime("%B")
+
+	nombre_imagen = str(id_reto)+"_"+username_user+"_historial"
+	path_imagen = "/home/jumacasni/Documentos/ImagymBot/retos/"+nombre_imagen+".png"
+
+	if not path.exists(path_imagen):
+		createTableColors(id_reto,text,dia,username_user,nombre_imagen)
+
+	pic = open(path_imagen, 'rb')
+	bot.send_photo(
+		chat_id = query.message.chat_id,
+		photo = pic
+	)
+	time.sleep(1)
+
+	cur.execute("SELECT COUNT(*) FROM Realiza_reto WHERE id_reto="+str(id_reto)+" AND estado='C';")
+	resultado = cur.fetchall()
+	n_personas_c = resultado[0][0]
+
+	cur.execute("SELECT COUNT(*) FROM Realiza_reto WHERE id_reto="+str(id_reto)+" AND estado='R';")
+	resultado = cur.fetchall()
+	n_personas_r = resultado[0][0]
+
+	cur.close()
+	db.close()
+
+	if estado == 'C':
+		if n_personas_c == 1:
+			bot.send_message(
+				chat_id = query.message.chat_id,
+				text = "¡Solo tú conseguiste completar este reto! ¡ENHORABUENA! 💪💪💪"
+			)
+		else:
+			bot.send_message(
+				chat_id = query.message.chat_id,
+				text = "¡"+str(n_personas_c)+" usuarios conseguísteis completar este reto! ¡ENHORABUENA! 💪💪💪"
+			)
+	else:
+		if n_personas_c == 0:
+			if fecha_fin >= date.today() and n_personas_r != 0:
+				bot.send_message(
+					chat_id = query.message.chat_id,
+					text = "Este reto aún no ha acabado. Aún participan "+str(n_personas_r)+" usuarios."
+				)
+			else:
+				bot.send_message(
+					chat_id = query.message.chat_id,
+					text = "Nadie consiguió completar este reto... 😥"
+				)
+				bot.send_message(
+					chat_id = query.message.chat_id,
+					text = "Las casillas en verde son los días que superaste 💪"
+				)
+		else:
+			bot.send_message(
+				chat_id = query.message.chat_id,
+				text = +str(n_personas_c)+" usuarios consiguieron completar este reto 🎉"
+			)
+
+	keyboard = [
+		[InlineKeyboardButton("Volver a Historial de retos 🔙", callback_data='back_inicio_retos_historial')],
+		[InlineKeyboardButton("Volver a Retos 🔙", callback_data='back_inicio_retos')],
+		[InlineKeyboardButton("Volver a Inicio 🔙", callback_data='back_inicio')],
+	]
+	reply_markup = InlineKeyboardMarkup(keyboard)
+	time.sleep(1)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="👣 Inicio > Retos > Historial de retos > Reto seleccionado",
+		reply_markup=reply_markup
+	)
+
+	current_state = "INICIO_RETOS_HISTORIAL_CLASIFICACION"
+	return INICIO_RETOS_HISTORIAL_CLASIFICACION
 
 def createTable(id_reto, name):
 	db = pymysql.connect("localhost", "root", "password", "Imagym")
@@ -6217,7 +6483,7 @@ def createTable(id_reto, name):
 	table_path = "/home/jumacasni/Documentos/ImagymBot/retos/"+str(id_reto)+".png"
 	plt.savefig(table_path)
 
-def createTableColors(id_reto, name, day_limit, id_usuario):
+def createTableColors(id_reto, name, day_limit, id_usuario, name_graph):
 	db = pymysql.connect("localhost", "root", "password", "Imagym")
 	db.begin()
 	cur = db.cursor()
@@ -6356,7 +6622,9 @@ def createTableColors(id_reto, name, day_limit, id_usuario):
 	plt.subplots_adjust(bottom=0.05)
 	the_table.scale(2, 2)
 
-	name_graph = str(id_reto)+"_"+id_usuario+"_"+str(day_limit)
+	if name_graph == "":
+		name_graph = str(id_reto)+"_"+id_usuario+"_"+str(day_limit)
+
 	table_path = "/home/jumacasni/Documentos/ImagymBot/retos/"+name_graph+".png"
 	plt.savefig(table_path)
 
@@ -7104,7 +7372,7 @@ def main():
 			INICIO_RETOS_HISTORIAL_CLASIFICACION: [CommandHandler('start', start),
 						CommandHandler('mensaje', mandar_mensaje),
 						MessageHandler(Filters.all, any_message),
-						CallbackQueryHandler(show_inicio_retos_historial, pattern='back_inicio_retos_clasificacion'),
+						CallbackQueryHandler(show_inicio_retos_historial, pattern='back_inicio_retos_historial'),
 						CallbackQueryHandler(show_inicio_retos, pattern='back_inicio_retos'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
