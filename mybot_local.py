@@ -56,7 +56,8 @@ INICIO_RETOS_ELIMINAR, INICIO_RETOS_ELIMINAR_CONFIRMAR, INICIO_RETOS_ANOTAR_CONF
 INICIO_RETOS_DESCALIFICAR, INICIO_RETOS_DESCALIFICAR_CONFIRMAR, INICIO_RETOS_HISTORIAL, INICIO_RETOS_HISTORIAL_CLASIFICACION,\
 INICIO_RUTINAS, INICIO_EJERCICIO, INICIO_SOPORTE, INICIO_EJERCICIO_REGISTRAR, INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD,\
 INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR, INICIO_EJERCICIO_RANKING, INICIO_EJERCICIO_DESCALIFICAR_CONFIRMAR,\
-INICIO_EJERCICIO_ELIMINAR_CONFIRMAR, INICIO_EJERCICIO_HISTORIAL, INICIO_EJERCICIO_HISTORIAL_CLASIFICACION = range(62)
+INICIO_EJERCICIO_ELIMINAR_CONFIRMAR, INICIO_EJERCICIO_HISTORIAL, INICIO_EJERCICIO_HISTORIAL_CLASIFICACION,\
+INICIO_RUTINAS_VER, INICIO_RUTINAS_VER_RUTINA = range(64)
 
 db = pymysql.connect("localhost", "root", "password", "Imagym")
 
@@ -5444,6 +5445,7 @@ def show_inicio_retos_ver(update, context):
 	return INICIO_RETOS_VER
 
 def ver_reto(update, context):
+	global current_state
 	db = pymysql.connect("localhost", "root", "password", "Imagym")
 	db.begin()
 
@@ -7527,29 +7529,219 @@ def show_inicio_rutinas(update, context):
 	bot = context.bot
 	username_user = query.from_user.username
 
-	keyboard =[[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]]
+	keyboard =[
+		[InlineKeyboardButton("Ver rutinas de entrenamiento 🏋", callback_data='inicio_rutinas_ver')],
+		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')],
+	]
 
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="⏳ Cargando Inicio > Rutinas y ejercicios..."
+		text="⏳ Cargando Inicio > Rutinas y entrenamiento..."
 	)
 	time.sleep(1.5)
 	reply_markup = InlineKeyboardMarkup(keyboard)
+
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="Esta sección aún está en desarrollo. ¡Vuelve más adelante!",
+		text="👣 Inicio > Rutinas y entrenamiento",
 		reply_markup=reply_markup
 	)
-
-	# bot.send_message(
-	# 	chat_id = query.message.chat_id,
-	# 	text="👣 Inicio > Ejercicio del mes",
-	# 	reply_markup=reply_markup
-	# )
 
 	current_state = "INICIO_RUTINAS"
 	return INICIO_RUTINAS
 
+def show_inicio_rutinas_ver(update, context):
+	global current_state, conv_handler
+	query = update.callback_query
+	bot = context.bot
+	username_user = query.from_user.username
+	
+	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db.begin()
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="⏳ Cargando Inicio > Rutinas y entrenamiento > Ver rutinas de entrenamiento..."
+	)
+	time.sleep(1.5)
+
+	cur = db.cursor()
+	cur.execute("SELECT id_rutina FROM Rutinas;")
+	resultado = cur.fetchall();
+
+	cur.close()
+	db.close()
+
+	list_keyboards = []
+	callback_query_list = []
+
+	for id_rutina in resultado:
+		db = pymysql.connect("localhost", "root", "password", "Imagym")
+		db.begin()
+		cur = db.cursor()
+
+		cur.execute("SELECT id_trainer FROM Rutinas where id_rutina="+str(id_rutina[0])+";")
+		resultado = cur.fetchall()
+		id_trainer = resultado[0][0]
+
+		cur.execute("SELECT nombre FROM Trainers where id_trainer="+str(id_trainer)+";")
+		nombre = cur.fetchall()
+		nombre = nombre[0][0]
+
+		cur.execute("SELECT id_rutina FROM Usuarios where id_rutina="+str(id_rutina[0])+" AND id_usuario='"+username_user+"';")
+		esta_apuntado = cur.fetchall()
+
+		cur.close()
+		db.close()
+
+		name_button = "Rutina de "+nombre
+		if esta_apuntado:
+			name_button=name_button+" ✔"
+		button = InlineKeyboardButton(name_button, callback_data="inicio_rutinas_ver_"+str(id_rutina[0]))
+		keyboard = []
+		keyboard.append(button)
+		list_keyboards.append(keyboard)
+		callback_query_rutinas_ver = CallbackQueryHandler(ver_rutina, pattern="inicio_rutinas_ver_"+str(id_rutina[0]))
+		callback_query_rutinas_ver_apuntarse = CallbackQueryHandler(ver_rutina_apuntarse, pattern="inicio_rutinas_ver_apuntarse_"+str(id_rutina[0]))
+
+		if not callback_query_rutinas_ver in conv_handler.states[INICIO_RUTINAS_VER]:
+			conv_handler.states[INICIO_RUTINAS_VER].append(callback_query_rutinas_ver)
+
+		if not callback_query_rutinas_ver_apuntarse in conv_handler.states[INICIO_RUTINAS_VER_RUTINA]:
+			conv_handler.states[INICIO_RUTINAS_VER_RUTINA].append(callback_query_rutinas_ver_apuntarse)
+
+	list_keyboards.append([InlineKeyboardButton("Volver a Rutinas 🔙", callback_data='back_inicio_rutinas')])
+	list_keyboards.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
+	reply_markup = InlineKeyboardMarkup(list_keyboards)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="👣 Inicio > Rutinas y entrenamiento > Ver rutinas de entrenamiento",
+		reply_markup=reply_markup
+	)
+
+	current_state = "INICIO_RUTINAS_VER"
+	return INICIO_RUTINAS_VER
+
+def ver_rutina(update, context):
+	global current_state
+	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db.begin()
+
+	query = update.callback_query
+	bot = context.bot
+	username_user = query.from_user.username
+
+	id_rutina_callback = query.data
+	id_rutina = id_rutina_callback.split('_',4)
+	id_rutina = id_rutina[3]
+
+	cur = db.cursor()
+	cur.execute("SELECT id_trainer FROM Rutinas where id_rutina="+str(id_rutina)+";")
+	resultado = cur.fetchall()
+	id_trainer = resultado[0][0]
+
+	cur.execute("SELECT nombre FROM Trainers where id_trainer="+str(id_trainer)+";")
+	nombre = cur.fetchall()
+	nombre = nombre[0][0]
+
+	text = "🏋️‍♂️ <b>RUTINA "+nombre.upper()+"</b> 🏋️‍♂️"
+
+	cur.execute("SELECT DISTINCT dia FROM Rutinas_ejercicios where id_rutina="+str(id_rutina)+";")
+	resultado = cur.fetchall()
+
+	cur.close()
+	db.close()
+
+	if resultado:
+		for i in range(len(resultado)):
+			text=text+"\n\n"
+			if resultado[i][0] == '1':
+				text=text+"<b>LUNES</b>"
+			elif resultado[i][0] == '2':
+				text=text+"<b>MARTES</b>"
+			elif resultado[i][0] == '3':
+				text=text+"<b>MIÉRCOLES</b>"
+			elif resultado[i][0] == '4':
+				text=text+"<b>JUEVES</b>"
+			elif resultado[i][0] == '5':
+				text=text+"<b>VIERNES</b>"
+			elif resultado[i][0] == '6':
+				text=text+"<b>SÁBADO</b>"
+			else:
+				text=text+"<b>DOMINGO</b>"
+
+			db = pymysql.connect("localhost", "root", "password", "Imagym")
+			db.begin()
+			cur = db.cursor()
+			cur.execute("SELECT id_ejercicio,repeticiones FROM Rutinas_ejercicios where id_rutina="+str(id_rutina)+" AND dia='"+resultado[i][0]+"';")
+			ejercicios_dia = cur.fetchall()
+			cur.close()
+			db.close()
+			for i in range(len(ejercicios_dia)):
+				id_ejercicio = ejercicios_dia[i][0]
+				repeticiones = ejercicios_dia[i][1]
+				db = pymysql.connect("localhost", "root", "password", "Imagym")
+				db.begin()
+				cur = db.cursor()
+				cur.execute("SELECT nombre FROM Ejercicios where id_ejercicio="+str(id_ejercicio)+";")
+				nombre_ejercicio = cur.fetchall()
+				nombre_ejercicio = nombre_ejercicio[0][0]
+				cur.close()
+				db.close()
+
+				text=text+"\n"+nombre_ejercicio+" - "+repeticiones
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text = text,
+		parse_mode='HTML'
+	)
+
+	keyboard = []
+	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db.begin()
+
+	cur = db.cursor()
+	cur.execute("SELECT id_rutina FROM Usuarios WHERE id_usuario='"+username_user+"';")
+	resultado = cur.fetchall()
+	id_rutina_usuario = resultado[0][0]
+	if id_rutina_usuario is None:
+		keyboard.append([InlineKeyboardButton("Seguir esta rutina ✔", callback_data="inicio_rutinas_ver_apuntarse")])
+	else:
+		if id_rutina_usuario == id_rutina:
+			bot.send_message(
+				chat_id = query.message.chat_id,
+				text = "Ya sigues esta rutina ✔",
+				parse_mode='HTML'
+			)
+		else:
+			bot.send_message(
+				chat_id = query.message.chat_id,
+				text = "¿Quieres cambiar tu rutina actual por esta?",
+				parse_mode='HTML'
+			)
+			keyboard.append([InlineKeyboardButton("Seguir esta rutina ⭕", callback_data="inicio_rutinas_cambiar")])
+
+	id_trainer = resultado[0][0]
+
+	keyboard.append([InlineKeyboardButton("Volver a Ver rutinas de entrenamiento 🔙", callback_data="back_inicio_rutinas_ver")])
+	keyboard.append([InlineKeyboardButton("Volver a Rutinas y entrenamiento 🔙", callback_data="back_inicio_rutinas")])
+	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data="back_inicio")])
+
+	reply_markup = InlineKeyboardMarkup(keyboard)
+
+	time.sleep(.8)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="👣 Inicio > Rutinas y entrenamiento > Ver rutinas de entrenamiento > Información de una rutina",
+		reply_markup = reply_markup
+	)
+
+	current_state = "INICIO_RUTINAS_VER_RUTINA"
+	return INICIO_RUTINAS_VER_RUTINA
+
+def ver_rutina_apuntarse(update, context):
+	pass
 
 ############# SOPORTE #############
 def show_inicio_soporte(update, context):
@@ -8405,6 +8597,23 @@ def main():
 			INICIO_RUTINAS: [CommandHandler('start', start),
 						CommandHandler('mensaje', mandar_mensaje),
 						MessageHandler(Filters.all, any_message),
+						CallbackQueryHandler(show_inicio_rutinas_ver, pattern='inicio_rutinas'),
+						CallbackQueryHandler(show_inicio, pattern='back_inicio')
+						],
+
+			INICIO_RUTINAS_VER: [CommandHandler('start', start),
+						CommandHandler('mensaje', mandar_mensaje),
+						MessageHandler(Filters.all, any_message),
+						CallbackQueryHandler(show_inicio_rutinas, pattern='back_inicio_rutinas'),
+						CallbackQueryHandler(show_inicio, pattern='back_inicio')
+						],
+
+
+			INICIO_RUTINAS_VER_RUTINA: [CommandHandler('start', start),
+						CommandHandler('mensaje', mandar_mensaje),
+						MessageHandler(Filters.all, any_message),
+						CallbackQueryHandler(show_inicio_rutinas_ver, pattern='back_inicio_rutinas_ver'),
+						CallbackQueryHandler(show_inicio_rutinas, pattern='back_inicio_rutinas'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
