@@ -28,6 +28,8 @@ from datetime import date, timedelta, datetime, timezone
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, MessageHandler, CommandHandler, CallbackQueryHandler, ConversationHandler, Filters
 from dateutil import tz
+import locale
+locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
 
 print(time.tzname)
 os.environ["TZ"] = "Europe/Madrid"
@@ -5210,10 +5212,17 @@ def show_inicio_retos_ver(update, context):
 	global current_state, conv_handler
 	query = update.callback_query
 	bot = context.bot
+	username_user = query.from_user.username
 
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		text="⏳ Cargando Inicio > Retos > Retos disponibles... "
+	)
+	time.sleep(.8)
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="Los retos que muestran un check ✔ indican que ya te has inscrito en ellos."
 	)
 	time.sleep(.8)
 
@@ -5235,7 +5244,12 @@ def show_inicio_retos_ver(update, context):
 		ejercicio_name = cur.fetchall()
 		ejercicio_name = ejercicio_name[0][0]
 
+		cur.execute("SELECT * FROM Realiza_reto where id_reto="+str(id_reto[0])+" AND id_usuario='"+username_user+"';")
+		esta_apuntado = cur.fetchall()
+
 		name_button = "Reto de "+ejercicio_name.lower()+" | Nivel "+str(nivel_ejercicio)+" | "+start_day.strftime('%B').upper()
+		if esta_apuntado:
+			name_button=name_button+" ✔"
 		button = InlineKeyboardButton(name_button, callback_data="inicio_retos_ver_"+str(id_reto[0]))
 		keyboard = []
 		keyboard.append(button)
@@ -5299,10 +5313,12 @@ def ver_reto(update, context):
 	esta_apuntado = cur.fetchall()
 
 	# Fecha de inicio del reto
-	cur.execute("SELECT fecha_inicio FROM Retos where id_reto="+id_reto+";")
+	cur.execute("SELECT fecha_inicio,fecha_fin FROM Retos where id_reto="+id_reto+";")
 	resultado = cur.fetchall();
 	fecha_inicio = resultado[0][0]
 	fecha_inicio = fecha_inicio.strftime('%d-%B-%Y')
+	fecha_fin = resultado[0][1]
+	fecha_fin = fecha_fin.strftime('%d-%B-%Y')
 
 	# Si el usuario no está apuntado a este reto
 	if not esta_apuntado:
@@ -5328,12 +5344,16 @@ def ver_reto(update, context):
 		
 		bot.send_message(
 			chat_id = query.message.chat_id,
-			text = "Aquí tienes el calendario de este reto.\n\nFecha de inicio: "+fecha_inicio
+			text = "Aquí tienes el calendario de este reto.\n\nFecha de inicio: "+fecha_inicio+"\nFecha fin: "+fecha_fin
 		)
 		time.sleep(.8)
 		bot.send_message(
 			chat_id = query.message.chat_id,
 			text=text
+		)
+		bot.send_message(
+			chat_id = query.message.chat_id,
+			text="Completa este reto y gana una insignia que podrás lucir en la página web 🎖"
 		)
 		time.sleep(.8)
 		bot.send_message(
@@ -5343,7 +5363,7 @@ def ver_reto(update, context):
 		)
 
 	else:
-		text="¡Ya tienes inscripción en este reto!\n\nFecha de inicio: "+fecha_inicio
+		text="¡Ya tienes inscripción en este reto!\n\nFecha de inicio: "+fecha_inicio+"\nFecha fin: "+fecha_fin
 		keyboard = [
 			[InlineKeyboardButton("Volver a Retos disponibles 🔙", callback_data="back_inicio_retos_ver")],
 			[InlineKeyboardButton("Volver a Retos 🔙", callback_data="back_inicio_retos")],
@@ -5631,6 +5651,11 @@ def show_inicio_retos_eliminar(update, context):
 		text="⏳ Cargando Inicio > Retos > Eliminar inscripción de retos... "
 	)
 	time.sleep(.8)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="Aquí se muestran todos los retos a los que te has inscrito."
+	)
+	time.sleep(.8)
 
 	db = pymysql.connect("localhost", "root", "password", "Imagym")
 	db.begin()
@@ -5750,6 +5775,13 @@ def eliminar_reto_confirmar_si(update, context):
 	# Retos que aún no han empezado pero el usuario está apuntado
 	cur.execute("SELECT Retos.id_reto FROM Retos INNER JOIN Realiza_reto WHERE Realiza_reto.id_reto=Retos.id_reto AND Realiza_reto.id_usuario='"+username_user+"' and Realiza_reto.estado='A';")
 	reto_usuario_futuro = cur.fetchall();
+
+	alarma_primer_dia = username_user+"_"+str(id_reto)
+	alarma_descalificar = "descalificar_"+username_user+"_"+str(id_reto)
+	for job in context.job_queue.get_jobs_by_name(alarma_primer_dia):
+		job.schedule_removal()
+	for job in context.job_queue.get_jobs_by_name(alarma_descalificar):
+		job.schedule_removal()
 
 	cur.close()
 	db.close()
@@ -6112,6 +6144,13 @@ def inicio_retos_descalificar_si(update, context):
 
 	cur.execute("UPDATE Realiza_reto SET estado='D' WHERE id_reto="+str(id_reto)+" AND id_usuario='"+username_user+"';")
 	db.commit()
+
+	alarma_primer_dia = username_user+"_"+str(id_reto)
+	alarma_descalificar = "descalificar_"+username_user+"_"+str(id_reto)
+	for job in context.job_queue.get_jobs_by_name(alarma_primer_dia):
+		job.schedule_removal()
+	for job in context.job_queue.get_jobs_by_name(alarma_descalificar):
+		job.schedule_removal()
 
 	bot.send_message(
 		chat_id = query.message.chat_id,
@@ -6568,6 +6607,101 @@ def createTableColors(id_reto, name, day_limit, id_usuario, name_graph):
 	cur.close()
 	db.close()
 
+############# EJERCICIO DEL MES #############
+def show_inicio_ejercicio(update, context):
+	global current_state
+
+	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
+	reply_markup = InlineKeyboardMarkup(keyboard)
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="⏳ Cargando Inicio > Ejercicio del mes..."
+	)
+	time.sleep(1.5)
+	reply_markup = InlineKeyboardMarkup(keyboard)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="Esta sección aún está en desarrollo. ¡Vuelve más adelante!",
+		reply_markup=reply_markup
+	)
+
+	# bot.send_message(
+	# 	chat_id = query.message.chat_id,
+	# 	text="👣 Inicio > Ejercicio del mes",
+	# 	reply_markup=reply_markup
+	# )
+
+	cur.close()
+	db.close()
+
+	current_state = "INICIO_EJERCICIO"
+	return INICIO_EJERCICIO
+
+
+############# RUTINAS #############
+def show_inicio_rutinas(update, context):
+	global current_state
+
+	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
+	reply_markup = InlineKeyboardMarkup(keyboard)
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="⏳ Cargando Inicio > Rutinas y ejercicios..."
+	)
+	time.sleep(1.5)
+	reply_markup = InlineKeyboardMarkup(keyboard)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="Esta sección aún está en desarrollo. ¡Vuelve más adelante!",
+		reply_markup=reply_markup
+	)
+
+	# bot.send_message(
+	# 	chat_id = query.message.chat_id,
+	# 	text="👣 Inicio > Ejercicio del mes",
+	# 	reply_markup=reply_markup
+	# )
+
+	cur.close()
+	db.close()
+
+	current_state = "INICIO_EJERCICIO"
+	return INICIO_EJERCICIO
+
+
+############# SOPORTE #############
+def show_inicio_soporte(update, context):
+	global current_state
+
+	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
+	reply_markup = InlineKeyboardMarkup(keyboard)
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="⏳ Cargando Inicio > Soporte..."
+	)
+	time.sleep(1.5)
+	reply_markup = InlineKeyboardMarkup(keyboard)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="Esta sección aún está en desarrollo. ¡Vuelve más adelante!",
+		reply_markup=reply_markup
+	)
+
+	# bot.send_message(
+	# 	chat_id = query.message.chat_id,
+	# 	text="👣 Inicio > Ejercicio del mes",
+	# 	reply_markup=reply_markup
+	# )
+
+	cur.close()
+	db.close()
+
+	current_state = "INICIO_EJERCICIO"
+	return INICIO_EJERCICIO
+
 
 
 def inicio_ficha(update, context):
@@ -6940,11 +7074,11 @@ def main():
 					CallbackQueryHandler(show_inicio_peso, pattern='inicio_peso'),
 					CallbackQueryHandler(show_inicio_cardio, pattern='inicio_cardio'),
 					CallbackQueryHandler(show_inicio_retos, pattern='inicio_retos'),
-					# CallbackQueryHandler(show_inicio_ejercicio, pattern='inicio_ejercicio'),
-					# CallbackQueryHandler(show_inicio_rutinas, pattern='inicio_rutinas'),
+					CallbackQueryHandler(show_inicio_ejercicio, pattern='inicio_ejercicio'),
+					CallbackQueryHandler(show_inicio_rutinas, pattern='inicio_rutinas'),
 					CallbackQueryHandler(show_inicio_ficha, pattern='inicio_ficha'),
 					CallbackQueryHandler(show_inicio, pattern='show_inicio'),
-					# CallbackQueryHandler(show_inicio_soporte, pattern='inicio_soporte'),
+					CallbackQueryHandler(show_inicio_soporte, pattern='inicio_soporte'),
 					],
 
 			INICIO_FICHA: [CommandHandler('start', start),
