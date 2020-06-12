@@ -54,7 +54,8 @@ INICIO_CARDIO_ESTABLECER_ACTIVIDAD_CONFIRMAR, INICIO_CARDIO_ELIMINAR, INICIO_FIC
 INICIO_PESO_ANOTAR_PESO_ALTURA, INICIO_FICHA_PESO_ALTURA, INICIO_RETOS_VER, INICIO_RETOS_VER_RETO,\
 INICIO_RETOS_ELIMINAR, INICIO_RETOS_ELIMINAR_CONFIRMAR, INICIO_RETOS_ANOTAR_CONFIRMAR, INICIO_RETOS_CALENDARIO,\
 INICIO_RETOS_DESCALIFICAR, INICIO_RETOS_DESCALIFICAR_CONFIRMAR, INICIO_RETOS_HISTORIAL, INICIO_RETOS_HISTORIAL_CLASIFICACION,\
-INICIO_RUTINAS, INICIO_EJERCICIO, INICIO_SOPORTE = range(54)
+INICIO_RUTINAS, INICIO_EJERCICIO, INICIO_SOPORTE, INICIO_EJERCICIO_REGISTRAR, INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD,\
+INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR = range(57)
 
 db = pymysql.connect("localhost", "root", "password", "Imagym")
 
@@ -4017,10 +4018,16 @@ def show_inicio_cardio_registrar(update, context):
 
 	query = update.callback_query
 	bot = context.bot
-	bot.send_message(
-		chat_id = query.message.chat_id,
-		text="⏳ Cargando Inicio > Actividades cardio > Registrar cardio... "
-	)
+	if current_state == "INICIO_EJERCICIO" or current_state == "INICIO_EJERCICIO_REGISTRAR":
+		bot.send_message(
+			chat_id = query.message.chat_id,
+			text="⏳ Cargando Inicio > Ejercicio del mes > Registrar cardio... "
+		)
+	elif current_state == "INICIO_CARDIO" or current_state == "INICIO_CARDIO_REGISTRAR":
+		bot.send_message(
+			chat_id = query.message.chat_id,
+			text="⏳ Cargando Inicio > Actividades cardio > Registrar cardio... "
+		)
 
 	username_user = query.from_user.username
 
@@ -4055,7 +4062,17 @@ def show_inicio_cardio_registrar(update, context):
 			else:
 				conv_handler.states[INICIO_CARDIO_REGISTRAR].append(callback_query)
 
-	keyboard.append([InlineKeyboardButton("Volver a Actividad cardio 🔙", callback_data='back_inicio_cardio')])
+			if callback_query in conv_handler.states[INICIO_EJERCICIO_REGISTRAR]:
+				pass
+			else:
+				conv_handler.states[INICIO_EJERCICIO_REGISTRAR].append(callback_query)
+
+	if current_state == "INICIO_EJERCICIO" or current_state == "INICIO_EJERCICIO_REGISTRAR":
+		keyboard.append([InlineKeyboardButton("Volver a Ejercicio del mes 🔙", callback_data='back_inicio_ejercicio')])
+		
+	elif current_state == "INICIO_CARDIO" or current_state == "INICIO_CARDIO_REGISTRAR":
+		keyboard.append([InlineKeyboardButton("Volver a Actividad cardio 🔙", callback_data='back_inicio_cardio')])
+
 	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 
 	cur.close()
@@ -4067,16 +4084,29 @@ def show_inicio_cardio_registrar(update, context):
 		text="¿Qué actividad quieres registrar?"
 	)
 
-	reply_markup = InlineKeyboardMarkup(keyboard)
-	time.sleep(.8)
-	bot.send_message(
-		chat_id = query.message.chat_id,
-		text="👣 Inicio > Actividades cardio > Registrar cardio",
-		reply_markup = reply_markup
-	)
+	if current_state == "INICIO_EJERCICIO" or current_state == "INICIO_EJERCICIO_REGISTRAR":
+		reply_markup = InlineKeyboardMarkup(keyboard)
+		time.sleep(.8)
+		bot.send_message(
+			chat_id = query.message.chat_id,
+			text="👣 Inicio > Ejercicio del mes > Registrar cardio",
+			reply_markup = reply_markup
+		)
 
-	current_state = "INICIO_CARDIO_REGISTRAR"
-	return INICIO_CARDIO_REGISTRAR
+		current_state = "INICIO_EJERCICIO_REGISTRAR"
+		return INICIO_EJERCICIO_REGISTRAR
+
+	elif current_state == "INICIO_CARDIO" or current_state == "INICIO_CARDIO_REGISTRAR":
+		reply_markup = InlineKeyboardMarkup(keyboard)
+		time.sleep(.8)
+		bot.send_message(
+			chat_id = query.message.chat_id,
+			text="👣 Inicio > Actividades cardio > Registrar cardio",
+			reply_markup = reply_markup
+		)
+
+		current_state = "INICIO_CARDIO_REGISTRAR"
+		return INICIO_CARDIO_REGISTRAR
 
 def show_inicio_cardio_registrar_actividad(update, context):
 	global current_state
@@ -4132,8 +4162,13 @@ def show_inicio_cardio_registrar_actividad(update, context):
 		reply_markup = reply_markup
 	)
 
-	curret_state = "INICIO_CARDIO_REGISTRAR_ACTIVIDAD"
-	return INICIO_CARDIO_REGISTRAR_ACTIVIDAD
+	if current_state == "INICIO_CARDIO_REGISTRAR":
+		current_state = "INICIO_CARDIO_REGISTRAR_ACTIVIDAD"
+		return INICIO_CARDIO_REGISTRAR_ACTIVIDAD
+
+	elif current_state == "INICIO_EJERCICIO_REGISTRAR":
+		current_state = "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD"
+		return INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD
 
 def registrar_cardio(update, context):
 	global current_state
@@ -4250,10 +4285,9 @@ def registrar_cardio(update, context):
 					text=text
 				)
 
-				# Si tiene un objetivo
+				# Si tiene un objetivo personal
 				cur.execute("SELECT id_actividad_cardio,objetivo,fecha_fin FROM Objetivo_personal_cardio WHERE id_usuario='"+username+"' AND fecha_fin>=CURDATE() AND estado='P';")
 				resultado = cur.fetchall()
-
 				if resultado:
 					id_actividad_cardio_objetivo = resultado[0][0]
 					if id_actividad_cardio_objetivo == id_actividad_cardio:
@@ -4265,7 +4299,7 @@ def registrar_cardio(update, context):
 						if objetivo_tipo == "distancia":
 							if kilometros != 0:
 								text=text+str(kilometros).rstrip('0').rstrip('. ')+" kilómetros</b>"
-								text=text+" a tu objetivo en <b>"+nombre+"</b>"
+								text=text+" a tu objetivo en <b>"+nombre.lower()+"</b>"
 								time.sleep(.8)
 								update.message.reply_text(
 									text=text,
@@ -4274,7 +4308,7 @@ def registrar_cardio(update, context):
 						elif objetivo_tipo == "calorias":
 							if calorias != 0:
 								text=text+str(calorias)+" calorías</b>"
-								text=text+" a tu objetivo en <b>"+nombre+"</b>"
+								text=text+" a tu objetivo en <b>"+nombre.lower()+"</b>"
 								time.sleep(.8)
 								update.message.reply_text(
 									text=text,
@@ -4283,13 +4317,54 @@ def registrar_cardio(update, context):
 						else:
 							if minutos != 0:
 								text=text+str(minutos)+" minutos</b>"
-								text=text+" a tu objetivo en <b>"+nombre+"</b>"
+								text=text+" a tu objetivo en <b>"+nombre.lower()+"</b>"
 								time.sleep(.8)
 								update.message.reply_text(
 									text=text,
 									parse_mode='HTML'
 								)
 
+				# Si tiene un objetivo mensual
+				cur.execute("SELECT id_objetivo_mensual FROM Se_apunta WHERE id_usuario='"+username+"' AND estado='R';")
+				resultado = cur.fetchall()
+				if resultado:
+					id_objetivo_mensual = resultado[0][0]
+					cur.execute("SELECT id_actividad_cardio,objetivo FROM Ejercicio_del_mes WHERE id_objetivo_mensual="+str(id_objetivo_mensual)+";")
+					resultado = cur.fetchall()
+					id_actividad_cardio_objetivo_mensual = resultado[0][0]
+					objetivo = resultado[0][1]
+					if id_actividad_cardio_objetivo_mensual == id_actividad_cardio:
+						objetivo_numero = objetivo.split(' ',2)[0]
+						objetivo_tipo = objetivo.split(' ',2)[1]
+
+						text="\n\nAñadirás <b>"
+						if objetivo_tipo == "distancia":
+							if kilometros != 0:
+								text=text+str(kilometros).rstrip('0').rstrip('. ')+" kilómetros</b>"
+								text=text+" al <b>ejercicio del mes</b>"
+								time.sleep(.8)
+								update.message.reply_text(
+									text=text,
+									parse_mode='HTML'
+								)
+						elif objetivo_tipo == "calorias":
+							if calorias != 0:
+								text=text+str(calorias)+" calorías</b>"
+								text=text+" al <b>ejercicio del mes</b>"
+								time.sleep(.8)
+								update.message.reply_text(
+									text=text,
+									parse_mode='HTML'
+								)
+						else:
+							if minutos != 0:
+								text=text+str(minutos)+" minutos</b>"
+								text=text+" al <b>ejercicio del mes</b>"
+								time.sleep(.8)
+								update.message.reply_text(
+									text=text,
+									parse_mode='HTML'
+								)
 
 				reply_markup = InlineKeyboardMarkup(keyboard)
 				update.message.reply_text(
@@ -4297,8 +4372,13 @@ def registrar_cardio(update, context):
 					reply_markup = reply_markup
 				)
 
-				current_state = "INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR"
-				return INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR
+				if current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD":
+					current_state = "INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR"
+					return INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR
+
+				elif current_state == "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD":
+					current_state = "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR"
+					return INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR
 
 		elif not is_int(minutos):
 			update.message.reply_text(
@@ -4397,10 +4477,18 @@ def registrar_cardio_si(update, context):
 	)
 
 	time.sleep(.8)
-	show_inicio_cardio_registrar(update, context)
 
-	current_state = "INICIO_CARDIO_REGISTRAR"
-	return INICIO_CARDIO_REGISTRAR
+	if current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR":
+		current_state = "INICIO_CARDIO_REGISTRAR"
+		show_inicio_cardio_registrar(update, context)
+
+		return INICIO_CARDIO_REGISTRAR
+
+	elif current_state == "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR":
+		current_state = "INICIO_EJERCICIO"
+		show_inicio_ejercicio(update, context)
+
+		return INICIO_EJERCICIO
 
 def registrar_cardio_no(update, context):
 	global current_state
@@ -4429,10 +4517,18 @@ def registrar_cardio_no(update, context):
 	)
 
 	time.sleep(.8)
-	show_inicio_cardio_registrar(update, context)
 
-	current_state = "INICIO_CARDIO_REGISTRAR"
-	return INICIO_CARDIO_REGISTRAR
+	if current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR":
+		current_state = "INICIO_CARDIO_REGISTRAR"
+		show_inicio_cardio_registrar(update, context)
+
+		return INICIO_CARDIO_REGISTRAR
+
+	elif current_state == "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR":
+		current_state = "INICIO_EJERCICIO"
+		show_inicio_ejercicio(update, context)
+
+		return INICIO_EJERCICIO
 
 def ver_cardio_rango(update, context):
 	global current_state
@@ -4653,7 +4749,7 @@ def show_inicio_cardio_establecer_actividad(update, context):
 		reply_markup = reply_markup
 	)
 
-	curret_state = "INICIO_CARDIO_ESTABLECER_ACTIVIDAD"
+	current_state = "INICIO_CARDIO_ESTABLECER_ACTIVIDAD"
 	return INICIO_CARDIO_ESTABLECER_ACTIVIDAD
 
 def establecer_cardio_minutos(update, context):
@@ -5556,7 +5652,6 @@ def primer_dia_reto(context):
 		show_inicio = CallbackQueryHandler(show_inicio, pattern='back_inicio')
 		if not show_inicio in conv_handler.states[i]:
 			conv_handler.states[i].append(show_inicio)
-			print("HOLAAAA")
 		if not show_inicio_retos in conv_handler.states[i] and not start_retos in conv_handler.states[i]:
 			conv_handler.states[i].append(show_inicio_retos)
 
@@ -6644,34 +6739,273 @@ def createTableColors(id_reto, name, day_limit, id_usuario, name_graph):
 
 ############# EJERCICIO DEL MES #############
 def show_inicio_ejercicio(update, context):
+	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db.begin()
 	global current_state
 
 	query = update.callback_query
 	bot = context.bot
 	username_user = query.from_user.username
 
-	keyboard =[[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]]
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="⏳ Cargando Inicio > Ejercicio del mes... "
+	)
+	time.sleep(.8)
+
+	keyboard = []
+
+	cur = db.cursor()
+
+	cur.execute("SELECT id_objetivo_mensual FROM Se_apunta WHERE estado='R' AND id_usuario='"+username_user+"';")
+	resultado = cur.fetchall();
+	# Hay algún ejercicio del mes actualmente
+	if resultado:
+		keyboard.append([InlineKeyboardButton("Registrar cardio 🏃", callback_data='inicio_cardio_registrar')])
+		keyboard.append([InlineKeyboardButton("Me rindo en el ejercicio de este mes ❌", callback_data='inicio_ejercicio_descalificar')])
+		
+		id_objetivo_mensual = resultado[0][0]
+
+		cur.execute("SELECT id_actividad_cardio,objetivo,fecha_inicio,fecha_fin FROM Ejercicio_del_mes WHERE id_objetivo_mensual="+str(id_objetivo_mensual)+";")
+		resultado = cur.fetchall();
+		id_actividad_cardio = resultado[0][0]
+		objetivo = resultado[0][1]
+		fecha_inicio = resultado[0][2]
+		fecha_fin = resultado[0][3]
+
+		cur.execute("SELECT nombre FROM Actividad_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+";")
+		resultado = cur.fetchall();
+		nombre = resultado[0][0]
+
+		text="<b>⭐ RESUMEN DE LO QUE LLEVAS EN EL EJERCICIO DE ESTE MES ⭐</b>"
+		text=text+"\n\nActividad cardio: "+nombre.lower()
+		tipo_objetivo = objetivo.split(' ', 1)[1]
+		if tipo_objetivo == "distancia":
+			tipo_objetivo = "kilómetros"
+			medida="distancia"
+		elif tipo_objetivo == "calorias":
+			tipo_objetivo = "calorías"
+			medida="calorias"
+		else:
+			tipo_objetivo = "minutos"
+			medida="tiempo"
+
+		text=text+"\nObjetivo: "+objetivo.split(' ', 1)[0]+" "+tipo_objetivo
+
+		cur.execute("SELECT SUM("+medida+") FROM Registra_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+" AND id_usuario='"+username_user+"' AND DATE(fecha)>='"+str(fecha_inicio)+"' AND DATE(fecha)<='"+str(fecha_fin)+"';")
+		resultado = cur.fetchall()
+		contador = resultado[0][0]
+		if contador is None:
+			contador = 0
+
+		text=text+"\nLlevas: "+str(contador)+" "+tipo_objetivo
+		text=text+"\nPuntuación: "+str(contador)+" puntos"
+
+		bot.send_message(
+			chat_id = query.message.chat_id,
+			text=text,
+			parse_mode='HTML'
+		)
+		time.sleep(2)
+
+	# Ejercicios futuros
+	cur.execute("SELECT id_objetivo_mensual,fecha_inicio,id_actividad_cardio,objetivo,fecha_fin FROM Ejercicio_del_mes WHERE fecha_inicio=(SELECT MIN(fecha_inicio) FROM Ejercicio_del_mes WHERE fecha_inicio > CURDATE());;")
+	ejercicio_futuro = cur.fetchall();
+	if ejercicio_futuro:
+		id_ejercicio_futuro = ejercicio_futuro[0][0]
+		fecha_inicio = ejercicio_futuro[0][1]
+		id_actividad_cardio = ejercicio_futuro[0][2]
+		objetivo = ejercicio_futuro[0][3]
+		fecha_fin = ejercicio_futuro[0][4]
+
+		mes = fecha_inicio.strftime("%B")
+
+		cur.execute("SELECT nombre FROM Actividad_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+";")
+		resultado = cur.fetchall();
+		nombre = resultado[0][0]
+
+		text="<b>PRÓXIMO EJERCICIO DEL MES DE "+str(mes).upper()+"</b>"
+		text=text+"\n\nActividad cardio: "+nombre.lower()
+		tipo_objetivo = objetivo.split(' ', 1)[1]
+		if tipo_objetivo == "distancia":
+			tipo_objetivo = "kilómetros"
+		elif tipo_objetivo == "calorias":
+			tipo_objetivo = "calorías"
+		else:
+			tipo_objetivo = "minutos"
+
+		text=text+"\nObjetivo: "+objetivo.split(' ', 1)[0]+" "+tipo_objetivo
+
+
+		cur.execute("SELECT COUNT(*) FROM Se_apunta WHERE id_objetivo_mensual="+str(id_ejercicio_futuro)+";")
+		resultado = cur.fetchall();
+		n_personas = resultado[0][0]
+
+		cur.execute("SELECT estado FROM Se_apunta WHERE id_objetivo_mensual="+str(id_ejercicio_futuro)+" AND id_usuario='"+username_user+"';")
+		resultado = cur.fetchall();
+
+		if not resultado:
+			keyboard.append([InlineKeyboardButton("Apuntarse al ejercicio del mes de "+str(mes).lower()+" ✔", callback_data='inicio_ejercicio_apuntarse')])
+			text=text+"\n\n¡Aún no te has apuntado al <b>ejercicio del mes de "+str(mes).upper()+"</b>!"
+
+			if n_personas > 0:
+				text=text+"\nYa hay "+str(n_personas)+" personas dispuestas a entrar en el ranking de este ejercicio. ¡Anímate!"
+			else:
+				text=text+"\n¡Eres la primera persona en llegar! ¡Apúntate al ejercicio del mes y entra en el ranking!"
+
+			bot.send_message(
+				chat_id = query.message.chat_id,
+				text="📌 "+text,
+				parse_mode='HTML'
+			)	
+			time.sleep(1)
+		else:
+			estado = resultado[0][0]
+			if estado == 'A':
+				keyboard.append([InlineKeyboardButton("Quitarse del ejercicio del mes de "+str(mes).lower()+" ❌", callback_data='inicio_ejercicio_desapuntarse')])
+				text=text+"\n\nYa te has apuntado al ejercicio del mes de "+str(mes).lower()+" ⬆\n"
+				if n_personas > 1:
+					text=text+"Ya hay <b>"+str(n_personas)+" personas apuntadas</b>"
+				else:
+					text=text+"¡Has sido la primera persona en apuntarse!"
+
+				bot.send_message(
+					chat_id = query.message.chat_id,
+					text="📌 "+text,
+					parse_mode='HTML'
+				)	
+				time.sleep(1)	
+
+	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
+	reply_markup = InlineKeyboardMarkup(keyboard)
 
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="⏳ Cargando Inicio > Ejercicio del mes..."
-	)
-	time.sleep(1.5)
-	reply_markup = InlineKeyboardMarkup(keyboard)
-	bot.send_message(
-		chat_id = query.message.chat_id,
-		text="Esta sección aún está en desarrollo. ¡Vuelve más adelante!",
+		text="👣 Inicio > Ejercicio del mes",
 		reply_markup=reply_markup
 	)
-
-	# bot.send_message(
-	# 	chat_id = query.message.chat_id,
-	# 	text="👣 Inicio > Ejercicio del mes",
-	# 	reply_markup=reply_markup
-	# )
+	cur.close()
+	db.close()
 
 	current_state = "INICIO_EJERCICIO"
 	return INICIO_EJERCICIO
+
+def show_inicio_ejercicio_apuntarse(update, context):
+	global current_state
+
+	query = update.callback_query
+	bot = context.bot
+	username_user = query.from_user.username
+
+	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db.begin()
+	cur = db.cursor()
+
+	# Coger el proximo ejercicio del mes
+	cur.execute("SELECT id_objetivo_mensual,fecha_inicio FROM Ejercicio_del_mes WHERE fecha_inicio=(SELECT MIN(fecha_inicio) FROM Ejercicio_del_mes WHERE fecha_inicio > CURDATE());;")
+	resultado = cur.fetchall();
+	id_ejercicio_futuro = resultado[0][0]
+	fecha_inicio = resultado[0][1]
+
+	cur.execute("INSERT INTO Se_apunta(id_objetivo_mensual, id_usuario, estado) VALUES (%s, %s, 'A')",(id_ejercicio_futuro,username_user))
+	db.commit()
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text = "¡Te has apuntado al ejercicio del mes con éxito ✔"
+	)
+	time.sleep(.8)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text = "¡No te preocupes! El día que comience te lo recordaré 🛎🛎🛎"
+	)
+	time.sleep(.8)
+
+	ESP = tz.gettz('Europe/Madrid')
+	dt = datetime(fecha_inicio.year,fecha_inicio.month,fecha_inicio.day,8,30,0, tzinfo=ESP)
+	name_alarm="ejercicio_"+username_user+"_"+str(id_ejercicio_futuro)
+	context.job_queue.run_once(primer_dia_ejercicio, dt, context=(query.message.chat_id, update, id_ejercicio_futuro), name=name_alarm)
+
+	cur.close()
+	db.close()
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text = "Te voy a reedirigir al menú anterior."
+	)
+	time.sleep(2)
+
+	show_inicio_ejercicio(update, context)
+
+	current_state = "INICIO_EJERCICIO"
+	return INICIO_EJERCICIO
+
+def primer_dia_ejercicio(context):
+	global current_state, conv_handler
+	job = context.job
+	bot = context.bot
+	query = job.context[1].callback_query
+	username_user = query.from_user.username
+	id_objetivo_mensual = job.context[2]
+
+	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db.begin()
+	cur = db.cursor()
+
+	# Actividad cardio
+	cur.execute("SELECT id_actividad_cardio,objetivo FROM Ejercicio_del_mes WHERE id_objetivo_mensual="+str(id_objetivo_mensual)+";")
+	resultado = cur.fetchall()
+	id_actividad_cardio = resultado[0][0]
+	objetivo = resultado[0][1]
+
+	cur.execute("SELECT nombre FROM Actividad_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+";")
+	resultado = cur.fetchall()
+	nombre = resultado[0][0]
+
+	# Actualizar estado del ejercicio
+	cur.execute("UPDATE Se_apunta SET estado='R' WHERE id_objetivo_mensual="+str(id_objetivo_mensual)+" AND id_usuario='"+username_user+"'")
+	db.commit()
+
+	bot.send_message(
+		job.context[0],
+		text="🌄 ¡BUENOS DÍAS! 🌄\n\nHoy comienza el <b>ejercicio del mes de "+date.today().strftime('%B')+"</b>",
+		parse_mode='HTML'
+	)
+
+	tipo_objetivo = objetivo.split(' ', 1)[1]
+	if tipo_objetivo == "distancia":
+		tipo_objetivo = "kilómetros"
+	elif tipo_objetivo == "calorias":
+		tipo_objetivo = "calorías"
+	else:
+		tipo_objetivo = "minutos"
+
+	text="\n\nTe recuerdo que el ojetivo es hacer <b>"+objetivo.split(' ', 1)[0]+" "+tipo_objetivo+" en "+nombre.lower()+"</b> a lo largo de todo el mes."
+	bot.send_message(
+		job.context[0],
+		text=text,
+		parse_mode='HTML'
+	)
+
+	text="Recibirás 1 punto por cada "+tipo_objetivo[:-1]+" que registres en esta actividad de cardio."
+	keyboard = [
+		[InlineKeyboardButton("Ir a Inicio 👣", callback_data='back_inicio')]
+	]
+	reply_markup = InlineKeyboardMarkup(keyboard)
+	bot.send_message(
+		job.context[0],
+		text=text,
+		reply_markup=reply_markup,
+		parse_mode='HTML'
+	)
+
+	for i in conv_handler.states:
+		show_inicio = CallbackQueryHandler(show_inicio, pattern='back_inicio')
+		if not show_inicio in conv_handler.states[i]:
+			conv_handler.states[i].append(show_inicio)
+
+	cur.close()
+	db.close()
 
 
 ############# RUTINAS #############
@@ -7487,8 +7821,32 @@ def main():
 			INICIO_EJERCICIO: [CommandHandler('start', start),
 						CommandHandler('mensaje', mandar_mensaje),
 						MessageHandler(Filters.all, any_message),
+						CallbackQueryHandler(show_inicio_cardio_registrar, pattern='inicio_cardio_registrar'),
+						CallbackQueryHandler(show_inicio_ejercicio_apuntarse, pattern='inicio_ejercicio_apuntarse'),
+						# CallbackQueryHandler(show_inicio_ejercicio_eliminar, pattern='inicio_ejercicio_eliminar'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
+
+			INICIO_EJERCICIO_REGISTRAR: [CommandHandler('start', start),
+						CommandHandler('mensaje', mandar_mensaje),
+						MessageHandler(Filters.all, any_message),
+						CallbackQueryHandler(show_inicio_ejercicio, pattern='back_inicio_ejercicio'),
+						CallbackQueryHandler(show_inicio, pattern='back_inicio')
+						],
+
+			INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD: [CommandHandler('start', start),
+									CommandHandler('mensaje', mandar_mensaje),
+									CommandHandler("cardio", registrar_cardio),
+									CallbackQueryHandler(show_inicio_cardio_registrar, pattern='back_inicio_cardio_registrar'),
+									MessageHandler(Filters.all, any_message),
+									],
+
+			INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR: [CommandHandler('start', start),
+														CommandHandler('mensaje', mandar_mensaje),
+														CallbackQueryHandler(registrar_cardio_si, pattern='registrar_cardio_si'),
+														CallbackQueryHandler(registrar_cardio_no, pattern='registrar_cardio_no'),
+														MessageHandler(Filters.all, any_message),
+														],
 
 			INICIO_RUTINAS: [CommandHandler('start', start),
 						CommandHandler('mensaje', mandar_mensaje),
@@ -7499,6 +7857,7 @@ def main():
 			INICIO_SOPORTE: [CommandHandler('start', start),
 						CommandHandler('mensaje', mandar_mensaje),
 						MessageHandler(Filters.all, any_message),
+						CallbackQueryHandler(show_inicio_cardio_registrar, pattern='inicio_cardio_registrar'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
