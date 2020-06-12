@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost
--- Tiempo de generación: 11-06-2020 a las 17:57:43
+-- Tiempo de generación: 12-06-2020 a las 09:50:29
 -- Versión del servidor: 10.4.11-MariaDB
 -- Versión de PHP: 7.2.28
 
@@ -52,7 +52,7 @@ INSERT INTO `Actividad_cardio` (`id_actividad_cardio`, `nombre`) VALUES
 CREATE TABLE `Calendario` (
   `id_reto` int(11) NOT NULL,
   `dia` int(11) NOT NULL,
-  `repeticiones` varchar(50) NOT NULL
+  `repeticiones` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
@@ -60,14 +60,40 @@ CREATE TABLE `Calendario` (
 --
 
 INSERT INTO `Calendario` (`id_reto`, `dia`, `repeticiones`) VALUES
-(1, 1, '5'),
-(1, 2, '7'),
-(1, 3, '7'),
-(1, 4, '10'),
-(1, 5, ''),
-(1, 6, '10'),
-(1, 7, '12'),
-(1, 8, '14');
+(2, 1, '5'),
+(2, 2, '10'),
+(2, 3, '15'),
+(3, 1, '10'),
+(3, 2, '10'),
+(3, 3, '15'),
+(3, 4, '15'),
+(3, 5, '20'),
+(3, 6, '20'),
+(3, 7, NULL),
+(3, 8, '25'),
+(3, 9, '25'),
+(3, 10, '30'),
+(3, 11, '30'),
+(3, 12, '35'),
+(3, 13, '35'),
+(3, 14, NULL),
+(3, 15, '40'),
+(3, 16, '40'),
+(3, 17, '45'),
+(3, 18, '45'),
+(3, 19, '50'),
+(3, 20, '50'),
+(3, 21, '55'),
+(3, 22, '55'),
+(3, 23, '60'),
+(3, 24, '60'),
+(3, 25, '65'),
+(3, 26, '65'),
+(3, 27, '70'),
+(3, 28, '70'),
+(3, 29, '75'),
+(3, 30, '75'),
+(3, 31, '80');
 
 -- --------------------------------------------------------
 
@@ -326,7 +352,8 @@ CREATE TABLE `Retos` (
 --
 
 INSERT INTO `Retos` (`id_reto`, `nivel`, `fecha_inicio`, `fecha_fin`, `date_add`, `id_trainer`, `id_ejercicio`) VALUES
-(1, 1, '2020-06-12', '2020-06-19', '2020-06-11', 1, 1);
+(2, 1, '2020-06-13', '2020-06-15', '2020-06-12', 1, 1),
+(3, 3, '2020-07-01', '2020-07-31', '2020-06-12', 1, 2);
 
 -- --------------------------------------------------------
 
@@ -642,7 +669,7 @@ ALTER TABLE `Peso`
 -- AUTO_INCREMENT de la tabla `Retos`
 --
 ALTER TABLE `Retos`
-  MODIFY `id_reto` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_reto` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `Rutinas`

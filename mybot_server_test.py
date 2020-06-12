@@ -28,6 +28,8 @@ from datetime import date, timedelta, datetime, timezone
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, MessageHandler, CommandHandler, CallbackQueryHandler, ConversationHandler, Filters
 from dateutil import tz
+import locale
+locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
 
 print(time.tzname)
 os.environ["TZ"] = "Europe/Madrid"
@@ -52,7 +54,7 @@ INICIO_CARDIO_ESTABLECER_ACTIVIDAD_CONFIRMAR, INICIO_CARDIO_ELIMINAR, INICIO_FIC
 INICIO_PESO_ANOTAR_PESO_ALTURA, INICIO_FICHA_PESO_ALTURA, INICIO_RETOS_VER, INICIO_RETOS_VER_RETO,\
 INICIO_RETOS_ELIMINAR, INICIO_RETOS_ELIMINAR_CONFIRMAR, INICIO_RETOS_ANOTAR_CONFIRMAR, INICIO_RETOS_CALENDARIO,\
 INICIO_RETOS_DESCALIFICAR, INICIO_RETOS_DESCALIFICAR_CONFIRMAR, INICIO_RETOS_HISTORIAL, INICIO_RETOS_HISTORIAL_CLASIFICACION,\
- = range(51)
+INICIO_RUTINAS, INICIO_EJERCICIO, INICIO_SOPORTE = range(54)
 
 db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
 
@@ -63,7 +65,7 @@ def start(update, context):
 	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
 	db.begin()
 
-	global current_state 
+	global current_state
 
 	name_user = update.message.from_user.first_name
 	username_user = update.message.from_user.username
@@ -98,7 +100,7 @@ def start(update, context):
 		return WELCOME_PRESS_START
 
 def mandar_mensaje(update, context):
-	global current_state 
+	global current_state
 	bot = context.bot
 
 	n_params = context.args
@@ -138,8 +140,8 @@ def any_message_start(update, context):
 
 def any_message(update, context):
 	global current_state
-	
-	if current_state == "WELCOME":	
+
+	if current_state == "WELCOME":
 		user_msg = update.message.text
 		user_msg_split = user_msg.split()
 		n_params = len(user_msg_split)
@@ -218,7 +220,7 @@ def any_message(update, context):
 		)
 
 def show_inicio(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -248,7 +250,7 @@ def show_inicio(update, context):
 
 ############# MI FICHA PERSONAL #############
 def show_inicio_ficha(update, context):
-	global current_state 
+	global current_state
 
 	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
 	db.begin()
@@ -343,7 +345,7 @@ def show_inicio_ficha(update, context):
 	return INICIO_FICHA
 
 def modify_altura(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -382,7 +384,7 @@ def modify_altura(update, context):
 	return INICIO_FICHA_ALTURA
 
 def check_altura(update, context):
-	global current_state 
+	global current_state
 
 	user_msg = update.message.text
 	username = update.message.from_user.username
@@ -487,7 +489,7 @@ def check_altura(update, context):
 		)
 
 def modify_nacimiento(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -522,7 +524,7 @@ def modify_nacimiento(update, context):
 	return INICIO_FICHA_NACIMIENTO
 
 def check_nacimiento(update, context):
-	global current_state 
+	global current_state
 
 	user_msg = update.message.text
 	username = update.message.from_user.username
@@ -585,7 +587,7 @@ def check_nacimiento(update, context):
 		)
 
 def modify_genero(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -626,7 +628,7 @@ def modify_genero(update, context):
 	return INICIO_FICHA_GENERO
 
 def check_genero_hombre(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -654,7 +656,7 @@ def check_genero_hombre(update, context):
 	return INICIO_FICHA
 
 def check_genero_mujer(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -682,7 +684,7 @@ def check_genero_mujer(update, context):
 	return INICIO_FICHA
 
 def check_genero_otro(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -710,7 +712,7 @@ def check_genero_otro(update, context):
 	return INICIO_FICHA
 
 def check_genero_sin(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -738,7 +740,7 @@ def check_genero_sin(update, context):
 	return INICIO_FICHA
 
 def modify_email(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -774,7 +776,7 @@ def modify_email(update, context):
 	return INICIO_FICHA_EMAIL
 
 def check_email(update, context):
-	global current_state 
+	global current_state
 
 	user_msg = update.message.text
 	username = update.message.from_user.username
@@ -800,7 +802,7 @@ def check_email(update, context):
 
 ############# MI OBJETIVO DE PESO #############
 def show_inicio_peso(update, context):
-	global current_state 
+	global current_state
 
 	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
 	db.begin()
@@ -832,7 +834,7 @@ def show_inicio_peso(update, context):
 		current_state = "INICIO_PESO_ANOTAR"
 		return INICIO_PESO_ANOTAR
 
-	else:	
+	else:
 		peso = resultado[0][0]
 		grasa = resultado[0][1]
 		musculo = resultado[0][2]
@@ -945,7 +947,7 @@ def show_inicio_peso(update, context):
 		return INICIO_PESO
 
 def show_inicio_peso_anotar(update, context):
-	global current_state 
+	global current_state
 
 	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
 	db.begin()
@@ -1048,7 +1050,7 @@ def show_inicio_peso_anotar(update, context):
 	return INICIO_PESO_ANOTAR
 
 def anotar_peso(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -1115,7 +1117,7 @@ def anotar_peso(update, context):
 		return INICIO_FICHA_PESO
 
 def check_anotar_peso(update, context):
-	global current_state 
+	global current_state
 
 	user_msg = update.message.text
 	username = update.message.from_user.username
@@ -1447,7 +1449,7 @@ def check_anotar_peso(update, context):
 		)
 
 def anotar_grasa(update, context):
-	global current_state 
+	global current_state
 
 	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
 	db.begin()
@@ -1488,7 +1490,7 @@ def anotar_grasa(update, context):
 	return INICIO_PESO_ANOTAR_GRASA
 
 def check_anotar_grasa(update, context):
-	global current_state 
+	global current_state
 
 	user_msg = update.message.text
 	username = update.message.from_user.username
@@ -1634,7 +1636,7 @@ def check_anotar_grasa(update, context):
 							cur.execute("DELETE FROM Objetivo_peso WHERE id_objetivo_peso="+str(id_objetivo_peso)+";")
 							resultado = cur.fetchall()
 							db.commit()
-							
+
 							cur.close()
 							db.close()
 
@@ -1699,7 +1701,7 @@ def check_anotar_grasa(update, context):
 		)
 
 def anotar_musculo(update, context):
-	global current_state 
+	global current_state
 
 	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
 	db.begin()
@@ -1740,7 +1742,7 @@ def anotar_musculo(update, context):
 	return INICIO_PESO_ANOTAR_MUSCULO
 
 def check_anotar_musculo(update, context):
-	global current_state 
+	global current_state
 
 	user_msg = update.message.text
 	username = update.message.from_user.username
@@ -1886,7 +1888,7 @@ def check_anotar_musculo(update, context):
 							cur.execute("DELETE FROM Objetivo_peso WHERE id_objetivo_peso="+str(id_objetivo_peso)+";")
 							resultado = cur.fetchall()
 							db.commit()
-							
+
 							cur.close()
 							db.close()
 
@@ -1951,7 +1953,7 @@ def check_anotar_musculo(update, context):
 		)
 
 def show_inicio_peso_establecer(update, context):
-	global current_state 
+	global current_state
 
 	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
 	db.begin()
@@ -2016,7 +2018,7 @@ def show_inicio_peso_establecer(update, context):
 	return INICIO_PESO_ESTABLECER
 
 def objetivo_peso(update, context):
-	global current_state 
+	global current_state
 
 	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
 	db.begin()
@@ -2056,7 +2058,7 @@ def objetivo_peso(update, context):
 	return INICIO_PESO_ESTABLECER_PESO
 
 def check_objetivo_peso(update, context):
-	global current_state 
+	global current_state
 
 	user_msg = update.message.text
 	username_user = update.message.from_user.username
@@ -2143,7 +2145,7 @@ def check_objetivo_peso(update, context):
 		)
 
 def objetivo_peso_tiempo(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -2151,7 +2153,7 @@ def objetivo_peso_tiempo(update, context):
 	username = query.from_user.username
 	plazo = query.data
 	plazo = plazo[-1:]
-	
+
 	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
 	db.begin()
 	cur = db.cursor()
@@ -2211,7 +2213,7 @@ def objetivo_peso_tiempo(update, context):
 	return INICIO_PESO_ESTABLECER_PESO_TIEMPO_CONFIRMAR
 
 def objetivo_grasa(update, context):
-	global current_state 
+	global current_state
 
 	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
 	db.begin()
@@ -2251,7 +2253,7 @@ def objetivo_grasa(update, context):
 	return INICIO_PESO_ESTABLECER_GRASA
 
 def check_objetivo_grasa(update, context):
-	global current_state 
+	global current_state
 
 	user_msg = update.message.text
 	username_user = update.message.from_user.username
@@ -2339,7 +2341,7 @@ def check_objetivo_grasa(update, context):
 		)
 
 def objetivo_grasa_tiempo(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -2347,7 +2349,7 @@ def objetivo_grasa_tiempo(update, context):
 	username = query.from_user.username
 	plazo = query.data
 	plazo = plazo[-1:]
-	
+
 	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
 	db.begin()
 	cur = db.cursor()
@@ -2407,7 +2409,7 @@ def objetivo_grasa_tiempo(update, context):
 	return INICIO_PESO_ESTABLECER_PESO_TIEMPO_CONFIRMAR
 
 def objetivo_musculo(update, context):
-	global current_state 
+	global current_state
 
 	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
 	db.begin()
@@ -2447,7 +2449,7 @@ def objetivo_musculo(update, context):
 	return INICIO_PESO_ESTABLECER_MUSCULO
 
 def check_objetivo_musculo(update, context):
-	global current_state 
+	global current_state
 
 	user_msg = update.message.text
 	username_user = update.message.from_user.username
@@ -2534,7 +2536,7 @@ def check_objetivo_musculo(update, context):
 		)
 
 def objetivo_musculo_tiempo(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -2542,7 +2544,7 @@ def objetivo_musculo_tiempo(update, context):
 	username = query.from_user.username
 	plazo = query.data
 	plazo = plazo[-1:]
-	
+
 	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
 	db.begin()
 	cur = db.cursor()
@@ -2602,7 +2604,7 @@ def objetivo_musculo_tiempo(update, context):
 	return INICIO_PESO_ESTABLECER_PESO_TIEMPO_CONFIRMAR
 
 def objetivo_peso_tiempo_si(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -2619,7 +2621,7 @@ def objetivo_peso_tiempo_si(update, context):
 	return INICIO_PESO
 
 def objetivo_peso_tiempo_no(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -2647,7 +2649,7 @@ def objetivo_peso_tiempo_no(update, context):
 	return INICIO_PESO
 
 def show_inicio_peso_eliminar(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -2667,7 +2669,7 @@ def show_inicio_peso_eliminar(update, context):
 	return INICIO_PESO_ELIMINAR
 
 def objetivo_peso_eliminar_si(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -2695,7 +2697,7 @@ def objetivo_peso_eliminar_si(update, context):
 	return INICIO_PESO
 
 def objetivo_peso_eliminar_no(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -2712,7 +2714,7 @@ def objetivo_peso_eliminar_no(update, context):
 	return INICIO_PESO
 
 def show_inicio_peso_evolucion(update, context):
-	global current_state 
+	global current_state
 
 	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
 	db.begin()
@@ -2894,7 +2896,7 @@ def evolucion_peso_rango(update, context):
 
 				image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
 				image_path_plot = "/home/castinievas/ImagymBot/evolucion/peso/"+image_name_plot
-				
+
 				cur.execute("SELECT fecha,peso FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' ORDER BY DATE(fecha) ASC;")
 				user_date_weight = cur.fetchall()
 				x_axis = []
@@ -2977,7 +2979,7 @@ def evolucion_peso_rango(update, context):
 
 					image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
 					image_path_plot = "/home/castinievas/ImagymBot/evolucion/peso/"+image_name_plot
-					
+
 					cur.execute("SELECT fecha,peso FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' and fecha<='"+fecha2+"' ORDER BY DATE(fecha) ASC;")
 					user_date_weight = cur.fetchall()
 					x_axis = []
@@ -3150,7 +3152,7 @@ def evolucion_grasa_rango(update, context):
 
 				image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
 				image_path_plot = "/home/castinievas/ImagymBot/evolucion/grasa/"+image_name_plot
-				
+
 				cur.execute("SELECT fecha,grasa FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' ORDER BY DATE(fecha) ASC;")
 				user_date_weight = cur.fetchall()
 				x_axis = []
@@ -3233,7 +3235,7 @@ def evolucion_grasa_rango(update, context):
 
 					image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
 					image_path_plot = "/home/castinievas/ImagymBot/evolucion/peso/"+image_name_plot
-					
+
 					cur.execute("SELECT fecha,peso FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' and fecha<='"+fecha2+"' ORDER BY DATE(fecha) ASC;")
 					user_date_weight = cur.fetchall()
 					x_axis = []
@@ -3406,7 +3408,7 @@ def evolucion_musculo_rango(update, context):
 
 				image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
 				image_path_plot = "/home/castinievas/ImagymBot/evolucion/IMC/"+image_name_plot
-				
+
 				cur.execute("SELECT fecha,IMC FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' ORDER BY DATE(fecha) ASC;")
 				user_date_weight = cur.fetchall()
 				x_axis = []
@@ -3489,7 +3491,7 @@ def evolucion_musculo_rango(update, context):
 
 					image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
 					image_path_plot = "/home/castinievas/ImagymBot/evolucion/IMC/"+image_name_plot
-					
+
 					cur.execute("SELECT fecha,IMC FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' and fecha<='"+fecha2+"' ORDER BY DATE(fecha) ASC;")
 					user_date_weight = cur.fetchall()
 					x_axis = []
@@ -3662,7 +3664,7 @@ def evolucion_imc_rango(update, context):
 
 				image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
 				image_path_plot = "/home/castinievas/ImagymBot/evolucion/musculo/"+image_name_plot
-				
+
 				cur.execute("SELECT fecha,musculo FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' ORDER BY DATE(fecha) ASC;")
 				user_date_weight = cur.fetchall()
 				x_axis = []
@@ -3745,7 +3747,7 @@ def evolucion_imc_rango(update, context):
 
 					image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
 					image_path_plot = "/home/castinievas/ImagymBot/evolucion/musculo/"+image_name_plot
-					
+
 					cur.execute("SELECT fecha,musculo FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' and fecha<='"+fecha2+"' ORDER BY DATE(fecha) ASC;")
 					user_date_weight = cur.fetchall()
 					x_axis = []
@@ -3850,7 +3852,7 @@ def show_inicio_peso_valoracion(update, context):
 
 ############# MI OBJETIVO DE ACTIVIDADES CARDIO #############
 def show_inicio_cardio(update, context):
-	global current_state 
+	global current_state
 
 	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
 	db.begin()
@@ -4008,7 +4010,7 @@ def show_inicio_cardio(update, context):
 	return INICIO_CARDIO
 
 def show_inicio_cardio_registrar(update, context):
-	global current_state 
+	global current_state
 
 	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
 	db.begin()
@@ -4038,7 +4040,7 @@ def show_inicio_cardio_registrar(update, context):
 
 	cur.execute("SELECT nombre,id_actividad_cardio FROM Actividad_cardio WHERE id_actividad_cardio IN (SELECT id_actividad_cardio FROM Cardio_en_gimnasio WHERE id_gym="+str(id_gym)+");")
 	resultado = cur.fetchall()
-	
+
 	keyboard = []
 
 	if resultado:
@@ -4077,7 +4079,7 @@ def show_inicio_cardio_registrar(update, context):
 	return INICIO_CARDIO_REGISTRAR
 
 def show_inicio_cardio_registrar_actividad(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -4095,7 +4097,7 @@ def show_inicio_cardio_registrar_actividad(update, context):
 
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="Vas a registrar la actividad cardio: "+nombre.lower() 
+		text="Vas a registrar la actividad cardio: "+nombre.lower()
 	)
 	time.sleep(.5)
 	bot.send_message(
@@ -4134,7 +4136,7 @@ def show_inicio_cardio_registrar_actividad(update, context):
 	return INICIO_CARDIO_REGISTRAR_ACTIVIDAD
 
 def registrar_cardio(update, context):
-	global current_state 
+	global current_state
 
 	n_params = context.args
 
@@ -4323,7 +4325,7 @@ def registrar_cardio(update, context):
 			)
 
 def show_inicio_cardio_ver(update,context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -4384,7 +4386,7 @@ def show_inicio_cardio_ver(update,context):
 	return INICIO_CARDIO_VER
 
 def registrar_cardio_si(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -4401,7 +4403,7 @@ def registrar_cardio_si(update, context):
 	return INICIO_CARDIO_REGISTRAR
 
 def registrar_cardio_no(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -4521,7 +4523,7 @@ def ver_cardio_rango(update, context):
 			)
 
 def show_inicio_cardio_establecer(update, context):
-	global current_state 
+	global current_state
 
 	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
 	db.begin()
@@ -4551,7 +4553,7 @@ def show_inicio_cardio_establecer(update, context):
 
 	cur.execute("SELECT nombre,id_actividad_cardio FROM Actividad_cardio WHERE id_actividad_cardio IN (SELECT id_actividad_cardio FROM Cardio_en_gimnasio WHERE id_gym="+str(id_gym)+");")
 	resultado = cur.fetchall()
-	
+
 	keyboard = []
 
 	if resultado:
@@ -4590,7 +4592,7 @@ def show_inicio_cardio_establecer(update, context):
 	return INICIO_CARDIO_ESTABLECER
 
 def show_inicio_cardio_establecer_actividad(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -4609,7 +4611,7 @@ def show_inicio_cardio_establecer_actividad(update, context):
 
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="Vas a establecer un objetivo personal de cardio en "+nombre.lower() 
+		text="Vas a establecer un objetivo personal de cardio en "+nombre.lower()
 	)
 	time.sleep(.5)
 	bot.send_message(
@@ -4655,7 +4657,7 @@ def show_inicio_cardio_establecer_actividad(update, context):
 	return INICIO_CARDIO_ESTABLECER_ACTIVIDAD
 
 def establecer_cardio_minutos(update, context):
-	global current_state 
+	global current_state
 
 	n_params = context.args
 
@@ -4740,7 +4742,7 @@ def establecer_cardio_minutos(update, context):
 			)
 
 def establecer_cardio_distancia(update, context):
-	global current_state 
+	global current_state
 
 	n_params = context.args
 
@@ -4824,7 +4826,7 @@ def establecer_cardio_distancia(update, context):
 			)
 
 def establecer_cardio_calorias(update, context):
-	global current_state 
+	global current_state
 
 	n_params = context.args
 
@@ -4912,7 +4914,7 @@ def establecer_cardio_calorias(update, context):
 			)
 
 def establecer_cardio_si(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -4929,7 +4931,7 @@ def establecer_cardio_si(update, context):
 	return INICIO_CARDIO
 
 def establecer_cardio_no(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -4962,7 +4964,7 @@ def establecer_cardio_no(update, context):
 	return INICIO_CARDIO
 
 def show_inicio_cardio_eliminar(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -4982,7 +4984,7 @@ def show_inicio_cardio_eliminar(update, context):
 	return INICIO_CARDIO_ELIMINAR
 
 def objetivo_cardio_eliminar_si(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -4994,7 +4996,7 @@ def objetivo_cardio_eliminar_si(update, context):
 
 	cur.execute("SELECT id_objetivo_personal FROM Objetivo_personal_cardio WHERE id_usuario='"+username+"' AND fecha_inicio=(SELECT MAX(c2.fecha_inicio) FROM Objetivo_personal_cardio c2 WHERE id_usuario='"+username+"' AND estado='P')")
 	resultado = cur.fetchall()
-	
+
 	if resultado:
 		id_objetivo_personal = resultado[0][0]
 		cur.execute("DELETE FROM Objetivo_personal_cardio WHERE id_objetivo_personal="+str(id_objetivo_personal)+";")
@@ -5015,7 +5017,7 @@ def objetivo_cardio_eliminar_si(update, context):
 	return INICIO_CARDIO
 
 def objetivo_cardio_eliminar_no(update, context):
-	global current_state 
+	global current_state
 
 	query = update.callback_query
 	bot = context.bot
@@ -5177,10 +5179,16 @@ def show_inicio_retos(update, context):
 				text=text
 		)
 
-	if not reto_usuario and not reto_usuario_futuro:
+	if not reto_usuario and not reto_usuario_futuro and tiene_retos:
 		bot.send_message(
 			chat_id = query.message.chat_id,
 			text="📌 Actualmente no estás apuntado a ningún reto"
+		)
+
+	if retos_futuros:
+		bot.send_message(
+			chat_id = query.message.chat_id,
+			text="📌 Hay retos disponibles. ¡Echa un vistazo!"
 		)
 
 	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
@@ -5204,6 +5212,7 @@ def show_inicio_retos_ver(update, context):
 	global current_state, conv_handler
 	query = update.callback_query
 	bot = context.bot
+	username_user = query.from_user.username
 
 	bot.send_message(
 		chat_id = query.message.chat_id,
@@ -5211,14 +5220,27 @@ def show_inicio_retos_ver(update, context):
 	)
 	time.sleep(.8)
 
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="Los retos que muestran un check ✔ indican que ya te has inscrito en ellos."
+	)
+	time.sleep(.8)
+
 	cur = db.cursor()
 	cur.execute("SELECT id_reto FROM Retos where fecha_inicio > CURDATE();")
 	resultado = cur.fetchall();
+
+	cur.close()
+	db.close()
 
 	list_keyboards = []
 	callback_query_list = []
 
 	for id_reto in resultado:
+		db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+		db.begin()
+		cur = db.cursor()
+
 		cur.execute("SELECT id_ejercicio,nivel,fecha_inicio FROM Retos where id_reto="+str(id_reto[0])+";")
 		resultado = cur.fetchall()
 		id_ejercicio = resultado[0][0]
@@ -5229,14 +5251,22 @@ def show_inicio_retos_ver(update, context):
 		ejercicio_name = cur.fetchall()
 		ejercicio_name = ejercicio_name[0][0]
 
+		cur.execute("SELECT * FROM Realiza_reto where id_reto="+str(id_reto[0])+" AND id_usuario='"+username_user+"';")
+		esta_apuntado = cur.fetchall()
+
+		cur.close()
+		db.close()
+
 		name_button = "Reto de "+ejercicio_name.lower()+" | Nivel "+str(nivel_ejercicio)+" | "+start_day.strftime('%B').upper()
+		if esta_apuntado:
+			name_button=name_button+" ✔"
 		button = InlineKeyboardButton(name_button, callback_data="inicio_retos_ver_"+str(id_reto[0]))
 		keyboard = []
 		keyboard.append(button)
 		list_keyboards.append(keyboard)
 		callback_query_retos_ver = CallbackQueryHandler(ver_reto, pattern="inicio_retos_ver_"+str(id_reto[0]))
 		callback_query_retos_ver_apuntarse = CallbackQueryHandler(ver_reto_apuntarse, pattern="inicio_retos_ver_apuntarse_"+str(id_reto[0]))
-		
+
 		if not callback_query_retos_ver in conv_handler.states[INICIO_RETOS_VER]:
 			conv_handler.states[INICIO_RETOS_VER].append(callback_query_retos_ver)
 
@@ -5252,12 +5282,9 @@ def show_inicio_retos_ver(update, context):
 	reply_markup = InlineKeyboardMarkup(list_keyboards)
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="👣 Inicio > Retos > Ver retos disponibles",
+		text="👣 Inicio > Retos > Retos disponibles",
 		reply_markup=reply_markup
 	)
-
-	cur.close()
-	db.close()
 
 	current_state = "INICIO_RETOS_VER"
 	return INICIO_RETOS_VER
@@ -5276,7 +5303,7 @@ def ver_reto(update, context):
 	table_reto_path = "/home/castinievas/ImagymBot/retos/"+id_reto+".png"
 
 	pic = open(table_reto_path, 'rb')
-	
+
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		text="⏳ Generando información del reto... "
@@ -5293,17 +5320,18 @@ def ver_reto(update, context):
 	esta_apuntado = cur.fetchall()
 
 	# Fecha de inicio del reto
-	cur.execute("SELECT fecha_inicio FROM Retos where id_reto="+id_reto+";")
+	cur.execute("SELECT fecha_inicio,fecha_fin FROM Retos where id_reto="+id_reto+";")
 	resultado = cur.fetchall();
 	fecha_inicio = resultado[0][0]
 	fecha_inicio = fecha_inicio.strftime('%d-%B-%Y')
+	fecha_fin = resultado[0][1]
+	fecha_fin = fecha_fin.strftime('%d-%B-%Y')
 
 	# Si el usuario no está apuntado a este reto
+	cur.execute("SELECT COUNT(*) FROM Realiza_reto where id_reto="+id_reto+";")
+	resultado = cur.fetchall();
+	num_usuarios_apuntados = resultado[0][0]
 	if not esta_apuntado:
-		cur.execute("SELECT COUNT(*) FROM Realiza_reto where id_reto="+id_reto+";")
-		resultado = cur.fetchall();
-		num_usuarios_apuntados = resultado[0][0]
-
 		if num_usuarios_apuntados == 1:
 			text = "Hay "+str(num_usuarios_apuntados)+" usuario apuntado a este reto. ¡Anímate!"
 		else:
@@ -5319,25 +5347,29 @@ def ver_reto(update, context):
 			[InlineKeyboardButton("Volver a Inicio 👣", callback_data="back_inicio")]
 		]
 		reply_markup = InlineKeyboardMarkup(keyboard)
-		
+
 		bot.send_message(
 			chat_id = query.message.chat_id,
-			text = "Aquí tienes el calendario de este reto.\n\nFecha de inicio: "+fecha_inicio
+			text = "Aquí tienes el calendario de este reto.\n\nFecha de inicio: "+fecha_inicio+"\nFecha fin: "+fecha_fin
 		)
 		time.sleep(.8)
 		bot.send_message(
 			chat_id = query.message.chat_id,
 			text=text
 		)
+		bot.send_message(
+			chat_id = query.message.chat_id,
+			text="Completa este reto y gana una insignia que podrás lucir en la página web 🎖"
+		)
 		time.sleep(.8)
 		bot.send_message(
 			chat_id = query.message.chat_id,
-			text="👣 Inicio > Retos > Ver retos > Apuntarse a reto",
+			text="👣 Inicio > Retos > Retos disponibles > Información de un reto",
 			reply_markup = reply_markup
 		)
 
 	else:
-		text="¡Ya tienes inscripción en este reto!\n\nFecha de inicio: "+fecha_inicio
+		text="¡Ya tienes inscripción en este reto!\n\nFecha de inicio: "+fecha_inicio+"\nFecha fin: "+fecha_fin
 		keyboard = [
 			[InlineKeyboardButton("Volver a Retos disponibles 🔙", callback_data="back_inicio_retos_ver")],
 			[InlineKeyboardButton("Volver a Retos 🔙", callback_data="back_inicio_retos")],
@@ -5349,10 +5381,19 @@ def ver_reto(update, context):
 			chat_id = query.message.chat_id,
 			text = text
 		)
+		if num_usuarios_apuntados == 1:
+			text = "¡No hay nadie más en este reto! ¡Corre la voz y anima a otra gente!"
+		else:
+			text = "Hay "+str(num_usuarios_apuntados)+" usuarios apuntados a este reto. ¡Ya mismo empieza la competición!"
 		time.sleep(.8)
 		bot.send_message(
 			chat_id = query.message.chat_id,
-			text="👣 Inicio > Retos > Ver retos > Apuntarse a reto",
+			text = text
+		)
+		time.sleep(.8)
+		bot.send_message(
+			chat_id = query.message.chat_id,
+			text="👣 Inicio > Retos > Retos disponibles > Información de un reto",
 			reply_markup = reply_markup
 		)
 
@@ -5397,8 +5438,13 @@ def ver_reto_apuntarse(update, context):
 	]
 	reply_markup = InlineKeyboardMarkup(keyboard)
 
+	cur.close()
+	db.close()
 	if not resultado_before and not resultado_after:
-		cur.execute("INSERT INTO Realiza_reto(id_reto, id_usuario, estado) VALUES (%s, %s, 'A')",(id_reto,username_user)) 
+		db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+		db.begin()
+		cur = db.cursor()
+		cur.execute("INSERT INTO Realiza_reto(id_reto, id_usuario, estado) VALUES (%s, %s, 'A')",(id_reto,username_user))
 		db.commit()
 		bot.send_message(
 			chat_id = query.message.chat_id,
@@ -5406,7 +5452,7 @@ def ver_reto_apuntarse(update, context):
 		)
 		time.sleep(1.5)
 
-		text="¡Te has apuntado al reto! Te deseo mucha suerte. Te avisaré cuando empiece el reto."
+		text="¡Te has apuntado al reto! Te deseo mucha suerte."
 
 		cur = db.cursor()
 		cur.execute("SELECT fecha_inicio FROM Retos WHERE id_reto="+id_reto)
@@ -5426,9 +5472,18 @@ def ver_reto_apuntarse(update, context):
 		time.sleep(.8)
 		bot.send_message(
 			chat_id = query.message.chat_id,
-			text = '👣 Inicio > Retos > Ver retos disponibles > Apuntarse a reto',
-			reply_markup = reply_markup
+			text = "El día que empice el reto te enviaré un recordatorio para que no se te olvide 🛎🛎🛎"
 		)
+		time.sleep(.8)
+
+		cur.close()
+		db.close()
+
+		show_inicio_retos_ver(update, context)
+
+		current_state = "INICIO_RETOS_VER"
+		return INICIO_RETOS_VER
+
 	else:
 		bot.send_message(
 			chat_id = query.message.chat_id,
@@ -5437,12 +5492,9 @@ def ver_reto_apuntarse(update, context):
 		time.sleep(.8)
 		bot.send_message(
 			chat_id = query.message.chat_id,
-			text = '👣 Inicio > Retos > Ver retos disponibles > Apuntarse a reto',
+			text = '👣 Inicio > Retos > Retos disponibles > Información de un reto',
 			reply_markup = reply_markup
 		)
-
-	cur.close()
-	db.close()
 
 def primer_dia_reto(context):
 	global current_state, conv_handler
@@ -5487,7 +5539,7 @@ def primer_dia_reto(context):
 	)
 
 	keyboard = [
-		[InlineKeyboardButton("Ir a Inicio > Retos 👣", callback_data='back_inicio_retos')],
+		[InlineKeyboardButton("Ir a Inicio > Retos 🔙", callback_data='back_inicio_retos')],
 		[InlineKeyboardButton("Ir a Inicio 👣", callback_data='back_inicio')]
 	]
 	reply_markup = InlineKeyboardMarkup(keyboard)
@@ -5500,10 +5552,12 @@ def primer_dia_reto(context):
 
 	for i in conv_handler.states:
 		show_inicio_retos = CallbackQueryHandler(show_inicio_retos, pattern='back_inicio_retos')
+		start_retos = CallbackQueryHandler(show_inicio_retos, pattern='inicio_retos')
 		show_inicio = CallbackQueryHandler(show_inicio, pattern='back_inicio')
 		if not show_inicio in conv_handler.states[i]:
 			conv_handler.states[i].append(show_inicio)
-		if not show_inicio_retos in conv_handler.states[i]:
+			print("HOLAAAA")
+		if not show_inicio_retos in conv_handler.states[i] and not start_retos in conv_handler.states[i]:
 			conv_handler.states[i].append(show_inicio_retos)
 
 	cur.close()
@@ -5627,6 +5681,11 @@ def show_inicio_retos_eliminar(update, context):
 		text="⏳ Cargando Inicio > Retos > Eliminar inscripción de retos... "
 	)
 	time.sleep(.8)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="Aquí se muestran todos los retos a los que te has inscrito."
+	)
+	time.sleep(.8)
 
 	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
 	db.begin()
@@ -5652,7 +5711,7 @@ def show_inicio_retos_eliminar(update, context):
 
 		callback_query_retos_eliminar = CallbackQueryHandler(eliminar_reto_confirmar, pattern="inicio_retos_eliminar_"+str(id_reto[0]))
 		callback_query_retos_eliminar_confirmar = CallbackQueryHandler(eliminar_reto_confirmar_si, pattern="inicio_retos_eliminar_confirmar_"+str(id_reto[0]))
-		
+
 		if not callback_query_retos_eliminar in conv_handler.states[INICIO_RETOS_ELIMINAR]:
 			conv_handler.states[INICIO_RETOS_ELIMINAR].append(callback_query_retos_eliminar)
 
@@ -5740,16 +5799,23 @@ def eliminar_reto_confirmar_si(update, context):
 	db.begin()
 	cur = db.cursor()
 
-	cur.execute("DELETE FROM Realiza_reto WHERE id_usuario='"+username_user+"' AND id_reto="+str(id_reto)+";") 
+	cur.execute("DELETE FROM Realiza_reto WHERE id_usuario='"+username_user+"' AND id_reto="+str(id_reto)+";")
 	db.commit()
 
 	# Retos que aún no han empezado pero el usuario está apuntado
 	cur.execute("SELECT Retos.id_reto FROM Retos INNER JOIN Realiza_reto WHERE Realiza_reto.id_reto=Retos.id_reto AND Realiza_reto.id_usuario='"+username_user+"' and Realiza_reto.estado='A';")
 	reto_usuario_futuro = cur.fetchall();
 
+	alarma_primer_dia = username_user+"_"+str(id_reto)
+	alarma_descalificar = "descalificar_"+username_user+"_"+str(id_reto)
+	for job in context.job_queue.get_jobs_by_name(alarma_primer_dia):
+		job.schedule_removal()
+	for job in context.job_queue.get_jobs_by_name(alarma_descalificar):
+		job.schedule_removal()
+
 	cur.close()
 	db.close()
-	
+
 	if not reto_usuario_futuro:
 		bot.send_message(
 			chat_id = query.message.chat_id,
@@ -6012,7 +6078,7 @@ def show_inicio_retos_calendario(update, context):
 		createTableColors(id_reto,text,dia_reto,username_user,"")
 
 	pic = open(path_imagen, 'rb')
-	
+
 	bot.send_photo(
 		chat_id = query.message.chat_id,
 		photo = pic
@@ -6028,7 +6094,7 @@ def show_inicio_retos_calendario(update, context):
 		[InlineKeyboardButton("Volver a Inicio 👣", callback_data="back_inicio")]
 	]
 	reply_markup = InlineKeyboardMarkup(keyboard)
-	
+
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		text="👣 Inicio > Retos > Calendario de mi reto",
@@ -6109,6 +6175,13 @@ def inicio_retos_descalificar_si(update, context):
 	cur.execute("UPDATE Realiza_reto SET estado='D' WHERE id_reto="+str(id_reto)+" AND id_usuario='"+username_user+"';")
 	db.commit()
 
+	alarma_primer_dia = username_user+"_"+str(id_reto)
+	alarma_descalificar = "descalificar_"+username_user+"_"+str(id_reto)
+	for job in context.job_queue.get_jobs_by_name(alarma_primer_dia):
+		job.schedule_removal()
+	for job in context.job_queue.get_jobs_by_name(alarma_descalificar):
+		job.schedule_removal()
+
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		text="Has sido descalificado del reto... ¡Espero verte en más retos!\n\nSuerte en la próxima 💪"
@@ -6154,11 +6227,16 @@ def show_inicio_retos_historial(update, context):
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT id_reto FROM Realiza_reto where id_usuario='"+username_user+"' AND estado='D' or estado='C';")
+	cur.close()
+	db.close()
 	resultado = cur.fetchall();
 
 	list_keyboards = []
 
 	for id_reto in resultado:
+		db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+		db.begin()
+		cur = db.cursor()
 		cur.execute("SELECT id_ejercicio,nivel,fecha_inicio FROM Retos where id_reto="+str(id_reto[0])+";")
 		resultado = cur.fetchall()
 		id_ejercicio = resultado[0][0]
@@ -6176,11 +6254,14 @@ def show_inicio_retos_historial(update, context):
 		ejercicio_name = cur.fetchall()
 		ejercicio_name = ejercicio_name[0][0]
 
+		cur.close()
+		db.close()
+
 		name_button = "Reto de "+ejercicio_name.lower()+" | Nivel "+str(nivel_ejercicio)+" | "+start_day.strftime('%B-%Y').upper()+" | "+insignia
 		button = InlineKeyboardButton(name_button, callback_data="inicio_retos_historial_"+str(id_reto[0]))
 
 		callback_query_retos_historial = CallbackQueryHandler(historial_reto, pattern="inicio_retos_historial_"+str(id_reto[0]))
-		
+
 		if not callback_query_retos_historial in conv_handler.states[INICIO_RETOS_HISTORIAL]:
 			conv_handler.states[INICIO_RETOS_HISTORIAL].append(callback_query_retos_historial)
 
@@ -6202,9 +6283,6 @@ def show_inicio_retos_historial(update, context):
 		text="👣 Inicio > Retos > Historial",
 		reply_markup=reply_markup
 	)
-
-	cur.close()
-	db.close()
 
 	current_state = "INICIO_RETOS_HISTORIAL"
 	return INICIO_RETOS_HISTORIAL
@@ -6564,6 +6642,101 @@ def createTableColors(id_reto, name, day_limit, id_usuario, name_graph):
 	cur.close()
 	db.close()
 
+############# EJERCICIO DEL MES #############
+def show_inicio_ejercicio(update, context):
+	global current_state
+
+	query = update.callback_query
+	bot = context.bot
+	username_user = query.from_user.username
+
+	keyboard =[[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]]
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="⏳ Cargando Inicio > Ejercicio del mes..."
+	)
+	time.sleep(1.5)
+	reply_markup = InlineKeyboardMarkup(keyboard)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="Esta sección aún está en desarrollo. ¡Vuelve más adelante!",
+		reply_markup=reply_markup
+	)
+
+	# bot.send_message(
+	# 	chat_id = query.message.chat_id,
+	# 	text="👣 Inicio > Ejercicio del mes",
+	# 	reply_markup=reply_markup
+	# )
+
+	current_state = "INICIO_EJERCICIO"
+	return INICIO_EJERCICIO
+
+
+############# RUTINAS #############
+def show_inicio_rutinas(update, context):
+	global current_state
+
+	query = update.callback_query
+	bot = context.bot
+	username_user = query.from_user.username
+
+	keyboard =[[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]]
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="⏳ Cargando Inicio > Rutinas y ejercicios..."
+	)
+	time.sleep(1.5)
+	reply_markup = InlineKeyboardMarkup(keyboard)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="Esta sección aún está en desarrollo. ¡Vuelve más adelante!",
+		reply_markup=reply_markup
+	)
+
+	# bot.send_message(
+	# 	chat_id = query.message.chat_id,
+	# 	text="👣 Inicio > Ejercicio del mes",
+	# 	reply_markup=reply_markup
+	# )
+
+	current_state = "INICIO_RUTINAS"
+	return INICIO_RUTINAS
+
+
+############# SOPORTE #############
+def show_inicio_soporte(update, context):
+	global current_state
+
+	query = update.callback_query
+	bot = context.bot
+	username_user = query.from_user.username
+
+	keyboard =[[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]]
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="⏳ Cargando Inicio > Soporte..."
+	)
+	time.sleep(1.5)
+	reply_markup = InlineKeyboardMarkup(keyboard)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="Esta sección aún está en desarrollo. ¡Vuelve más adelante!",
+		reply_markup=reply_markup
+	)
+
+	# bot.send_message(
+	# 	chat_id = query.message.chat_id,
+	# 	text="👣 Inicio > Ejercicio del mes",
+	# 	reply_markup=reply_markup
+	# )
+
+	current_state = "INICIO_SOPORTE"
+	return INICIO_SOPORTE
+
 
 
 def inicio_ficha(update, context):
@@ -6645,7 +6818,7 @@ def inicio_ficha(update, context):
 	)
 
 def inicio_peso(update, context):
-	global current_state 
+	global current_state
 
 	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
 	db.begin()
@@ -6666,7 +6839,7 @@ def inicio_peso(update, context):
 		keyboard = [
 			[InlineKeyboardButton("Anotar datos 📝", callback_data='inicio_peso_anotar')]
 		]
-		update.message.reply_text(			
+		update.message.reply_text(
 			text="📌 Aún no tienes registrado ningún peso.\n\nPodrás establecer un objetivo de peso cuando anotes tu peso por primera vez."
 		)
 
@@ -6702,7 +6875,7 @@ def inicio_peso(update, context):
 				text=text+"\nIMC: "+str(imc).rstrip('0').rstrip('. ')
 
 			time.sleep(.8)
-			update.message.reply_text(				
+			update.message.reply_text(
 				text=text
 			)
 
@@ -6717,7 +6890,7 @@ def inicio_peso(update, context):
 				keyboard.append([InlineKeyboardButton("Establecer objetivo 🏁", callback_data='inicio_peso_establecer')])
 				keyboard.append([InlineKeyboardButton("Evolución 📉", callback_data='inicio_peso_evolucion')])
 				time.sleep(.8)
-				update.message.reply_text(					
+				update.message.reply_text(
 					text="📌 Actualmente no tienes ningún objetivo establecido."
 				)
 			else:
@@ -6751,7 +6924,7 @@ def inicio_peso(update, context):
 				keyboard.append([InlineKeyboardButton("Evolución 📉", callback_data='inicio_peso_evolucion')])
 
 				time.sleep(.8)
-				update.message.reply_text(					
+				update.message.reply_text(
 					text=text,
 					parse_mode='HTML'
 				)
@@ -6770,7 +6943,7 @@ def inicio_peso(update, context):
 
 	time.sleep(.8)
 	reply_markup = InlineKeyboardMarkup(keyboard)
-	update.message.reply_text(		
+	update.message.reply_text(
 		text="👣 Inicio > Mi objetivo de peso",
 		reply_markup = reply_markup
 	)
@@ -6779,7 +6952,7 @@ def inicio_peso(update, context):
 	return INICIO_PESO
 
 def inicio_peso_anotar(update, context):
-	global current_state 
+	global current_state
 
 	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
 	db.begin()
@@ -6936,11 +7109,11 @@ def main():
 					CallbackQueryHandler(show_inicio_peso, pattern='inicio_peso'),
 					CallbackQueryHandler(show_inicio_cardio, pattern='inicio_cardio'),
 					CallbackQueryHandler(show_inicio_retos, pattern='inicio_retos'),
-					# CallbackQueryHandler(show_inicio_ejercicio, pattern='inicio_ejercicio'),
-					# CallbackQueryHandler(show_inicio_rutinas, pattern='inicio_rutinas'),
+					CallbackQueryHandler(show_inicio_ejercicio, pattern='inicio_ejercicio'),
+					CallbackQueryHandler(show_inicio_rutinas, pattern='inicio_rutinas'),
 					CallbackQueryHandler(show_inicio_ficha, pattern='inicio_ficha'),
 					CallbackQueryHandler(show_inicio, pattern='show_inicio'),
-					# CallbackQueryHandler(show_inicio_soporte, pattern='inicio_soporte'),
+					CallbackQueryHandler(show_inicio_soporte, pattern='inicio_soporte'),
 					],
 
 			INICIO_FICHA: [CommandHandler('start', start),
@@ -7311,130 +7484,24 @@ def main():
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
+			INICIO_EJERCICIO: [CommandHandler('start', start),
+						CommandHandler('mensaje', mandar_mensaje),
+						MessageHandler(Filters.all, any_message),
+						CallbackQueryHandler(show_inicio, pattern='back_inicio')
+						],
 
-			# MENU: [MessageHandler(Filters.all, any_message_menu),
-			# 		CallbackQueryHandler(show_menu_retos, pattern='show_menu_retos'),
-			# 		MessageHandler(Filters.all, any_message),
-			# 		CallbackQueryHandler(show_menu, pattern='go_back_menu')],
+			INICIO_RUTINAS: [CommandHandler('start', start),
+						CommandHandler('mensaje', mandar_mensaje),
+						MessageHandler(Filters.all, any_message),
+						CallbackQueryHandler(show_inicio, pattern='back_inicio')
+						],
 
-			# RETOS: [MessageHandler(Filters.all, any_message_menu),
-			# 		CallbackQueryHandler(register_progress, pattern='register_progress'),
-			# 		CallbackQueryHandler(user_realiza, pattern='user_realiza'),
-			# 		CallbackQueryHandler(show_retos, pattern='show_retos'),
-			# 		CallbackQueryHandler(show_menu_retos, pattern='show_menu_retos'),
-			# 		CallbackQueryHandler(show_calendar_reto, pattern='show_calendar_reto'),
-			# 		CallbackQueryHandler(show_menu_current_reto, pattern='current_reto'),
-			# 		CallbackQueryHandler(delete_enroll_current_reto, pattern='delete_enroll_current_reto'),
-			# 		CallbackQueryHandler(show_menu, pattern='go_back_menu')],
+			INICIO_SOPORTE: [CommandHandler('start', start),
+						CommandHandler('mensaje', mandar_mensaje),
+						MessageHandler(Filters.all, any_message),
+						CallbackQueryHandler(show_inicio, pattern='back_inicio')
+						],
 
-			# DELETE_CURRENT_RETO: [MessageHandler(Filters.regex('^(Si|No)$'), confirm_delete_current_reto),
-			# 					CallbackQueryHandler(show_menu_current_reto, pattern='current_reto'),
-			# 					CallbackQueryHandler(show_menu_retos, pattern='show_menu_retos'),
-			# 					MessageHandler(Filters.all, any_message)],
-			# WAITING_USERNAME: [CommandHandler("username", enter_username_login),
-			# 					MessageHandler(Filters.all, any_message),
-			# 					CallbackQueryHandler(register_window, pattern='register'),
-			# 					CallbackQueryHandler(goback_start, pattern='go_back')],
-
-			# WAITING_PASSWORD: [CommandHandler("password", enter_password_login),
-			# 					MessageHandler(Filters.all, any_message),
-			# 					CallbackQueryHandler(goback_start, pattern='go_back')],
-
-			# REGISTER_USERNAME: [CommandHandler("reg_user", register_username),
-			# 					MessageHandler(Filters.all, any_message),
-			# 					CallbackQueryHandler(goback_start, pattern='go_back')],
-
-			# REGISTER_PASSWORD: [CommandHandler("reg_password", register_password),
-			# 					MessageHandler(Filters.all, any_message),
-			# 					CallbackQueryHandler(goback_start, pattern='go_back')],
-
-			# REGISTER_AGE: [CommandHandler("cumple", register_age),
-			# 					MessageHandler(Filters.all, any_message),
-			# 					CallbackQueryHandler(goback_start, pattern='go_back')],
-
-			# REGISTER_WEIGHT: [CommandHandler("peso", register_weight),
-			# 					MessageHandler(Filters.all, any_message),
-			# 					CallbackQueryHandler(goback_start, pattern='go_back')],
-
-			# REGISTER_HEIGHT: [CommandHandler("altura", register_height),
-			# 					MessageHandler(Filters.all, any_message),
-			# 					CallbackQueryHandler(goback_start, pattern='go_back')],
-
-			# REGISTER_GENDER: [CallbackQueryHandler(register_gender, pattern='masculino'),
-			# 					CallbackQueryHandler(register_gender, pattern='femenino'),
-			# 					CallbackQueryHandler(goback_start, pattern='go_back'),
-			# 					MessageHandler(Filters.all, any_message)],
-
-			# CHOOSE: [CallbackQueryHandler(show_menu, pattern='go_menu'),
-			# 			CallbackQueryHandler(goback_start, pattern='go_back'),
-			# 			MessageHandler(Filters.all, any_message)],
-
-			# MENU: [CallbackQueryHandler(goback_start, pattern='go_back'),
-			# 		CallbackQueryHandler(add_weight, pattern='add_weight'),
-			# 		CallbackQueryHandler(set_goal, pattern='set_goal'),
-			# 		CallbackQueryHandler(show_IMC, pattern='show_IMC'),
-			# 		CallbackQueryHandler(graph_weight, pattern='graph_weight'),
-			# 		CallbackQueryHandler(show_perfil, pattern='go_perfil'),
-			# 		CallbackQueryHandler(show_menu, pattern='go_menu'),
-			# 		MessageHandler(Filters.all, any_message)],
-
-			# MODIFY_WEIGHT: [CallbackQueryHandler(modify_weight, pattern='modify_weight'),
-			# 				CallbackQueryHandler(show_menu, pattern='go_menu'),
-			# 				MessageHandler(Filters.all, any_message)],
-
-			# CONFIRM_MODIFY_WEIGHT: [CommandHandler("nuevo_peso", confirm_modify_weight),
-			# 						MessageHandler(Filters.all, any_message),
-			# 						CallbackQueryHandler(show_menu, pattern='go_menu')],
-
-			# ADD_NEW_WEIGHT: [CommandHandler("nuevo_peso", add_new_weight),
-			# 						MessageHandler(Filters.all, any_message),
-			# 						CallbackQueryHandler(show_menu, pattern='go_menu')],
-
-			# GRAPH_WEIGHT: [CommandHandler("rango", graph_weight_range),
-			# 				MessageHandler(Filters.all, any_message),
-			# 				CallbackQueryHandler(graph_weight, pattern='graph_weight'),
-			# 				CallbackQueryHandler(show_menu, pattern='go_menu')],
-
-			# PERFIL: [CallbackQueryHandler(delete_profile, pattern='delete_profile'),
-			# 		CallbackQueryHandler(modify_height, pattern='modify_height'),
-			# 		CallbackQueryHandler(show_menu, pattern='go_menu'),
-			# 		MessageHandler(Filters.all, any_message)],
-
-			# CONFIRM_DELETE_PROFILE: [CommandHandler("eliminar_perfil", confirm_delete_profile),
-			# 						CallbackQueryHandler(show_perfil, pattern='go_perfil'),
-			# 						CallbackQueryHandler(goback_start, pattern='go_back'),
-			# 						MessageHandler(Filters.all, any_message)],
-
-			# CONFIRM_MODIFY_HEIGHT: [CommandHandler("nueva_altura", confirm_modify_height),
-			# 						MessageHandler(Filters.all, any_message),
-			# 						CallbackQueryHandler(show_perfil, pattern='go_perfil')],
-
-			# SET_GOAL: [CommandHandler("objetivo", set_goal_deadline),
-			# 			MessageHandler(Filters.all, any_message),
-			# 			CallbackQueryHandler(show_menu, pattern='go_menu')],
-
-			# SET_GOAL_DEADLINE: [CallbackQueryHandler(show_goal, pattern='1 semana'),
-			# 					CallbackQueryHandler(show_goal, pattern='2 semanas'),
-			# 					CallbackQueryHandler(show_goal, pattern='3 semanas'),
-			# 					CallbackQueryHandler(show_goal, pattern='1 mes'),
-			# 					CallbackQueryHandler(show_goal, pattern='2 meses'),
-			# 					CallbackQueryHandler(show_goal, pattern='3 meses'),
-			# 					CallbackQueryHandler(show_goal, pattern='6 meses'),
-			# 					CallbackQueryHandler(show_goal, pattern='1 año'),
-			# 					CallbackQueryHandler(confirm_goal, pattern='confirm_goal'),
-			# 					CallbackQueryHandler(set_goal, pattern='set_goal'),
-			# 					CallbackQueryHandler(show_menu, pattern='go_menu')],
-
-			# MODIFY_GOAL: [CommandHandler("objetivo", set_goal_deadline),
-			# 			CallbackQueryHandler(modify_goal, pattern='modify_goal'),
-			# 			CallbackQueryHandler(ask_delete_goal, pattern='delete_goal'),
-			# 			MessageHandler(Filters.all, any_message),
-			# 			CallbackQueryHandler(show_menu, pattern='go_menu')],
-
-			# CONFIRM_DELETE_GOAL: [CallbackQueryHandler(delete_goal, pattern='delete_goal'),
-			# 						CallbackQueryHandler(set_goal, pattern='keep_goal'),
-			# 						CallbackQueryHandler(show_menu, pattern='go_menu'),
-			# 						MessageHandler(Filters.all, any_message)],
 		},
 		fallbacks=[CommandHandler('start',start)]
 	)
@@ -7456,7 +7523,7 @@ def randomPassword(stringLength=6):
 
 
 def is_int(s):
-	try: 
+	try:
 		int(s)
 		return True
 	except ValueError:
@@ -7464,7 +7531,7 @@ def is_int(s):
 
 
 def is_float(s):
-	try: 
+	try:
 		float(s)
 		return True
 	except ValueError:
@@ -7480,9 +7547,9 @@ def is_valid_date(date):
 
 
 def calculate_age(birthday):
-	today = date.today() 
-	age = today.year - birthday.year - ((today.month, today.day) < (birthday.month, birthday.day)) 
-  
+	today = date.today()
+	age = today.year - birthday.year - ((today.month, today.day) < (birthday.month, birthday.day))
+
 	return age
 
 
