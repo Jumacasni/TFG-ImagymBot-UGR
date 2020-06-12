@@ -5,7 +5,7 @@
 # This program is dedicated to the public domain under the CC0 license.
 
 # para el servidor
-# db = pymysql.connect("localhost", "root", "password", "Imagym")
+# db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 
 # --- Start Configuration dependencies
 import os
@@ -59,13 +59,13 @@ INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR, INICIO_EJERCICIO_RANKING, INICIO
 INICIO_EJERCICIO_ELIMINAR_CONFIRMAR, INICIO_EJERCICIO_HISTORIAL, INICIO_EJERCICIO_HISTORIAL_CLASIFICACION,\
 INICIO_RUTINAS_VER, INICIO_RUTINAS_VER_RUTINA = range(64)
 
-db = pymysql.connect("localhost", "root", "password", "Imagym")
+db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 
 global current_state, conv_handler, updater
 
 ############# INICIO #############
 def start(update, context):
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	global current_state
@@ -109,7 +109,7 @@ def mandar_mensaje(update, context):
 	n_params = context.args
 	username = update.message.from_user.username
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	cur = db.cursor()
@@ -153,7 +153,7 @@ def any_message(update, context):
 			# Comprobar si la clave coincide con algún gimnasio
 			user_msg = user_msg_split[0]
 
-			db = pymysql.connect("localhost", "root", "password", "Imagym")
+			db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 			db.begin()
 			cur = db.cursor()
 			cur.execute("SELECT id_gym,nombre FROM Gimnasios where BINARY clave_clientes='"+user_msg+"';")
@@ -255,7 +255,7 @@ def show_inicio(update, context):
 def show_inicio_ficha(update, context):
 	global current_state
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -354,7 +354,7 @@ def modify_altura(update, context):
 	bot = context.bot
 	username_user = query.from_user.username
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	# Comprobar si ya hay datos registrados de hoy
@@ -392,7 +392,7 @@ def check_altura(update, context):
 	user_msg = update.message.text
 	username = update.message.from_user.username
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -431,7 +431,7 @@ def check_altura(update, context):
 					reply_markup=reply_markup
 				)
 			else:
-				db = pymysql.connect("localhost", "root", "password", "Imagym")
+				db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 				db.begin()
 
 				cur = db.cursor()
@@ -498,7 +498,7 @@ def modify_nacimiento(update, context):
 	bot = context.bot
 	username_user = query.from_user.username
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -532,7 +532,7 @@ def check_nacimiento(update, context):
 	user_msg = update.message.text
 	username = update.message.from_user.username
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	# Comprobar si ya hay datos registrados de hoy
@@ -564,7 +564,7 @@ def check_nacimiento(update, context):
 			birthday_date = datetime.strptime(user_msg, '%d-%m-%Y')
 			birthday_sql_format = user_msg[6:10] +'-'+ user_msg[3:5] +'-'+ user_msg[0:2] # Formato YYYY-mm-dd
 
-			db = pymysql.connect("localhost", "root", "password", "Imagym")
+			db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 			db.begin()
 
 			cur = db.cursor()
@@ -596,7 +596,7 @@ def modify_genero(update, context):
 	bot = context.bot
 	username_user = query.from_user.username
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -638,7 +638,7 @@ def check_genero_hombre(update, context):
 
 	username = query.from_user.username
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	cur = db.cursor()
@@ -666,7 +666,7 @@ def check_genero_mujer(update, context):
 
 	username = query.from_user.username
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	cur = db.cursor()
@@ -694,7 +694,7 @@ def check_genero_otro(update, context):
 
 	username = query.from_user.username
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	cur = db.cursor()
@@ -722,7 +722,7 @@ def check_genero_sin(update, context):
 
 	username = query.from_user.username
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	cur = db.cursor()
@@ -749,7 +749,7 @@ def modify_email(update, context):
 	bot = context.bot
 	username_user = query.from_user.username
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -784,7 +784,7 @@ def check_email(update, context):
 	user_msg = update.message.text
 	username = update.message.from_user.username
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	cur = db.cursor()
@@ -807,7 +807,7 @@ def check_email(update, context):
 def show_inicio_peso(update, context):
 	global current_state
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -952,7 +952,7 @@ def show_inicio_peso(update, context):
 def show_inicio_peso_anotar(update, context):
 	global current_state
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -1058,7 +1058,7 @@ def anotar_peso(update, context):
 	query = update.callback_query
 	bot = context.bot
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	username_user = query.from_user.username
@@ -1125,7 +1125,7 @@ def check_anotar_peso(update, context):
 	user_msg = update.message.text
 	username = update.message.from_user.username
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	# Comprobar si ya hay datos registrados de hoy
@@ -1166,7 +1166,7 @@ def check_anotar_peso(update, context):
 				reply_markup=reply_markup
 			)
 		else:
-			db = pymysql.connect("localhost", "root", "password", "Imagym")
+			db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 			db.begin()
 
 			cur = db.cursor()
@@ -1454,7 +1454,7 @@ def check_anotar_peso(update, context):
 def anotar_grasa(update, context):
 	global current_state
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	query = update.callback_query
@@ -1498,7 +1498,7 @@ def check_anotar_grasa(update, context):
 	user_msg = update.message.text
 	username = update.message.from_user.username
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	# Comprobar si ya hay datos registrados de hoy
@@ -1527,7 +1527,7 @@ def check_anotar_grasa(update, context):
 				reply_markup=reply_markup
 			)
 		else:
-			db = pymysql.connect("localhost", "root", "password", "Imagym")
+			db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 			db.begin()
 
 			cur = db.cursor()
@@ -1706,7 +1706,7 @@ def check_anotar_grasa(update, context):
 def anotar_musculo(update, context):
 	global current_state
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	query = update.callback_query
@@ -1750,7 +1750,7 @@ def check_anotar_musculo(update, context):
 	user_msg = update.message.text
 	username = update.message.from_user.username
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	# Comprobar si ya hay datos registrados de hoy
@@ -1779,7 +1779,7 @@ def check_anotar_musculo(update, context):
 				reply_markup=reply_markup
 			)
 		else:
-			db = pymysql.connect("localhost", "root", "password", "Imagym")
+			db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 			db.begin()
 
 			cur = db.cursor()
@@ -1958,7 +1958,7 @@ def check_anotar_musculo(update, context):
 def show_inicio_peso_establecer(update, context):
 	global current_state
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -2023,7 +2023,7 @@ def show_inicio_peso_establecer(update, context):
 def objetivo_peso(update, context):
 	global current_state
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -2080,7 +2080,7 @@ def check_objetivo_peso(update, context):
 				reply_markup=reply_markup
 			)
 		else:
-			db = pymysql.connect("localhost", "root", "password", "Imagym")
+			db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 			db.begin()
 
 			# Peso más reciente
@@ -2157,7 +2157,7 @@ def objetivo_peso_tiempo(update, context):
 	plazo = query.data
 	plazo = plazo[-1:]
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -2218,7 +2218,7 @@ def objetivo_peso_tiempo(update, context):
 def objetivo_grasa(update, context):
 	global current_state
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -2275,7 +2275,7 @@ def check_objetivo_grasa(update, context):
 				reply_markup=reply_markup
 			)
 		else:
-			db = pymysql.connect("localhost", "root", "password", "Imagym")
+			db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 			db.begin()
 
 			# Peso más reciente
@@ -2353,7 +2353,7 @@ def objetivo_grasa_tiempo(update, context):
 	plazo = query.data
 	plazo = plazo[-1:]
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -2414,7 +2414,7 @@ def objetivo_grasa_tiempo(update, context):
 def objetivo_musculo(update, context):
 	global current_state
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -2471,7 +2471,7 @@ def check_objetivo_musculo(update, context):
 				reply_markup=reply_markup
 			)
 		else:
-			db = pymysql.connect("localhost", "root", "password", "Imagym")
+			db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 			db.begin()
 
 			# Peso más reciente
@@ -2548,7 +2548,7 @@ def objetivo_musculo_tiempo(update, context):
 	plazo = query.data
 	plazo = plazo[-1:]
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -2630,7 +2630,7 @@ def objetivo_peso_tiempo_no(update, context):
 	bot = context.bot
 	username = query.from_user.username
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -2678,7 +2678,7 @@ def objetivo_peso_eliminar_si(update, context):
 	bot = context.bot
 	username = query.from_user.username
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -2719,7 +2719,7 @@ def objetivo_peso_eliminar_no(update, context):
 def show_inicio_peso_evolucion(update, context):
 	global current_state
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -2780,7 +2780,7 @@ def evolucion_peso(update, context):
 	)
 	time.sleep(.8)
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 	cur = db.cursor()
@@ -2888,7 +2888,7 @@ def evolucion_peso_rango(update, context):
 				fecha_date = datetime.strptime(fecha_string, '%d-%m-%Y')
 				fecha1 = fecha_string[6:10] +'-'+ fecha_string[3:5] +'-'+ fecha_string[0:2] # Formato YYYY-mm-dd
 
-				db = pymysql.connect("localhost", "root", "password", "Imagym")
+				db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 				db.begin()
 				# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 				cur = db.cursor()
@@ -2971,7 +2971,7 @@ def evolucion_peso_rango(update, context):
 					)
 					time.sleep(.8)
 
-					db = pymysql.connect("localhost", "root", "password", "Imagym")
+					db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 					db.begin()
 					# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 					cur = db.cursor()
@@ -3039,7 +3039,7 @@ def evolucion_grasa(update, context):
 	)
 	time.sleep(.8)
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 	cur = db.cursor()
@@ -3144,7 +3144,7 @@ def evolucion_grasa_rango(update, context):
 				fecha_date = datetime.strptime(fecha_string, '%d-%m-%Y')
 				fecha1 = fecha_string[6:10] +'-'+ fecha_string[3:5] +'-'+ fecha_string[0:2] # Formato YYYY-mm-dd
 
-				db = pymysql.connect("localhost", "root", "password", "Imagym")
+				db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 				db.begin()
 				# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 				cur = db.cursor()
@@ -3227,7 +3227,7 @@ def evolucion_grasa_rango(update, context):
 					)
 					time.sleep(.8)
 
-					db = pymysql.connect("localhost", "root", "password", "Imagym")
+					db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 					db.begin()
 					# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 					cur = db.cursor()
@@ -3295,7 +3295,7 @@ def evolucion_musculo(update, context):
 	)
 	time.sleep(.8)
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 	cur = db.cursor()
@@ -3400,7 +3400,7 @@ def evolucion_musculo_rango(update, context):
 				fecha_date = datetime.strptime(fecha_string, '%d-%m-%Y')
 				fecha1 = fecha_string[6:10] +'-'+ fecha_string[3:5] +'-'+ fecha_string[0:2] # Formato YYYY-mm-dd
 
-				db = pymysql.connect("localhost", "root", "password", "Imagym")
+				db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 				db.begin()
 				# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 				cur = db.cursor()
@@ -3483,7 +3483,7 @@ def evolucion_musculo_rango(update, context):
 					)
 					time.sleep(.8)
 
-					db = pymysql.connect("localhost", "root", "password", "Imagym")
+					db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 					db.begin()
 					# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 					cur = db.cursor()
@@ -3551,7 +3551,7 @@ def evolucion_imc(update, context):
 	)
 	time.sleep(.8)
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 	cur = db.cursor()
@@ -3656,7 +3656,7 @@ def evolucion_imc_rango(update, context):
 				fecha_date = datetime.strptime(fecha_string, '%d-%m-%Y')
 				fecha1 = fecha_string[6:10] +'-'+ fecha_string[3:5] +'-'+ fecha_string[0:2] # Formato YYYY-mm-dd
 
-				db = pymysql.connect("localhost", "root", "password", "Imagym")
+				db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 				db.begin()
 				# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 				cur = db.cursor()
@@ -3739,7 +3739,7 @@ def evolucion_imc_rango(update, context):
 					)
 					time.sleep(.8)
 
-					db = pymysql.connect("localhost", "root", "password", "Imagym")
+					db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 					db.begin()
 					# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 					cur = db.cursor()
@@ -3800,7 +3800,7 @@ def show_inicio_peso_valoracion(update, context):
 	query = update.callback_query
 	bot = context.bot
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	bot.send_message(
@@ -3857,7 +3857,7 @@ def show_inicio_peso_valoracion(update, context):
 def show_inicio_cardio(update, context):
 	global current_state
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -4015,7 +4015,7 @@ def show_inicio_cardio(update, context):
 def show_inicio_cardio_registrar(update, context):
 	global current_state
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -4120,7 +4120,7 @@ def show_inicio_cardio_registrar_actividad(update, context):
 	data = update.callback_query.data
 	id_actividad_cardio = data.split('_', 4)[4]
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT nombre FROM Actividad_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+";")
@@ -4177,7 +4177,7 @@ def registrar_cardio(update, context):
 
 	n_params = context.args
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -4409,7 +4409,7 @@ def show_inicio_cardio_ver(update,context):
 	bot = context.bot
 	username_user = query.from_user.username
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -4475,7 +4475,7 @@ def registrar_cardio_si(update, context):
 		text="Has registrado la actividad cardio con éxito ✔",
 	)
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	# Seleccionar la actividad de cardio más reciente
@@ -4556,7 +4556,7 @@ def registrar_cardio_no(update, context):
 	bot = context.bot
 	username = query.from_user.username
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -4627,7 +4627,7 @@ def ver_cardio_rango(update, context):
 
 					return
 
-				db = pymysql.connect("localhost", "root", "password", "Imagym")
+				db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 				db.begin()
 				cur = db.cursor()
 
@@ -4680,7 +4680,7 @@ def ver_cardio_rango(update, context):
 def show_inicio_cardio_establecer(update, context):
 	global current_state
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -4756,7 +4756,7 @@ def show_inicio_cardio_establecer_actividad(update, context):
 	data = update.callback_query.data
 	id_actividad_cardio = data.split('_', 4)[4]
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT id_actividad_cardio,nombre FROM Actividad_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+";")
@@ -4816,7 +4816,7 @@ def establecer_cardio_minutos(update, context):
 
 	n_params = context.args
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -4901,7 +4901,7 @@ def establecer_cardio_distancia(update, context):
 
 	n_params = context.args
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -4985,7 +4985,7 @@ def establecer_cardio_calorias(update, context):
 
 	n_params = context.args
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -5092,7 +5092,7 @@ def establecer_cardio_no(update, context):
 	bot = context.bot
 	username = query.from_user.username
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -5145,7 +5145,7 @@ def objetivo_cardio_eliminar_si(update, context):
 	bot = context.bot
 	username = query.from_user.username
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -5190,7 +5190,7 @@ def objetivo_cardio_eliminar_no(update, context):
 
 ############# RETOS #############
 def show_inicio_retos(update, context):
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	global current_state
 
@@ -5362,7 +5362,7 @@ def show_inicio_retos(update, context):
 	return INICIO_RETOS
 
 def show_inicio_retos_ver(update, context):
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	global current_state, conv_handler
 	query = update.callback_query
@@ -5392,7 +5392,7 @@ def show_inicio_retos_ver(update, context):
 	callback_query_list = []
 
 	for id_reto in resultado:
-		db = pymysql.connect("localhost", "root", "password", "Imagym")
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 		db.begin()
 		cur = db.cursor()
 
@@ -5446,7 +5446,7 @@ def show_inicio_retos_ver(update, context):
 
 def ver_reto(update, context):
 	global current_state
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -5570,7 +5570,7 @@ def ver_reto_apuntarse(update, context):
 	id_reto = id_reto_callback.split('_',5)
 	id_reto = id_reto[4]
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -5597,7 +5597,7 @@ def ver_reto_apuntarse(update, context):
 	cur.close()
 	db.close()
 	if not resultado_before and not resultado_after:
-		db = pymysql.connect("localhost", "root", "password", "Imagym")
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 		db.begin()
 		cur = db.cursor()
 		cur.execute("INSERT INTO Realiza_reto(id_reto, id_usuario, estado) VALUES (%s, %s, 'A')",(id_reto,username_user))
@@ -5660,7 +5660,7 @@ def primer_dia_reto(context):
 	username_user = query.from_user.username
 	id_reto = job.context[2]
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -5726,7 +5726,7 @@ def recordar_reto(context):
 	username_user = query.from_user.username
 	id_reto = job.context[2]
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -5783,7 +5783,7 @@ def descalificar_reto(context):
 	username_user = query.from_user.username
 	id_reto = job.context[2]
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -5842,7 +5842,7 @@ def show_inicio_retos_eliminar(update, context):
 	)
 	time.sleep(.8)
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT id_reto FROM Realiza_reto where id_usuario='"+username_user+"' AND estado='A';")
@@ -5904,7 +5904,7 @@ def eliminar_reto_confirmar(update, context):
 	id_reto = id_reto_callback.split('_',4)
 	id_reto = id_reto[3]
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -5950,7 +5950,7 @@ def eliminar_reto_confirmar_si(update, context):
 	id_reto = id_reto_callback.split('_',5)
 	id_reto = id_reto[4]
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -6017,7 +6017,7 @@ def eliminar_reto_confirmar_no(update, context):
 	return INICIO_RETOS_ELIMINAR
 
 def show_inicio_retos_anotar(update, context):
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	global current_state
 
@@ -6076,7 +6076,7 @@ def show_inicio_retos_anotar(update, context):
 	return INICIO_RETOS_ANOTAR_CONFIRMAR
 
 def inicio_retos_anotar_si(update, context):
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	global current_state
 
@@ -6192,7 +6192,7 @@ def inicio_retos_anotar_no(update, context):
 def show_inicio_retos_calendario(update, context):
 	global current_state
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -6262,7 +6262,7 @@ def show_inicio_retos_calendario(update, context):
 def show_inicio_retos_descalificar(update, context):
 	global current_state
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -6307,7 +6307,7 @@ def show_inicio_retos_descalificar(update, context):
 	return INICIO_RETOS_DESCALIFICAR_CONFIRMAR
 
 def inicio_retos_descalificar_si(update, context):
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	global current_state
 
@@ -6378,7 +6378,7 @@ def show_inicio_retos_historial(update, context):
 	)
 	time.sleep(.8)
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT id_reto FROM Realiza_reto where id_usuario='"+username_user+"' AND estado='D' or estado='C';")
@@ -6389,7 +6389,7 @@ def show_inicio_retos_historial(update, context):
 	list_keyboards = []
 
 	for id_reto in resultado:
-		db = pymysql.connect("localhost", "root", "password", "Imagym")
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 		db.begin()
 		cur = db.cursor()
 		cur.execute("SELECT id_ejercicio,nivel,fecha_inicio FROM Retos where id_reto="+str(id_reto[0])+";")
@@ -6459,7 +6459,7 @@ def historial_reto(update, context):
 	)
 	time.sleep(.8)
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT dia,estado FROM Realiza_reto where id_usuario='"+username_user+"' AND id_reto="+str(id_reto)+";")
@@ -6554,7 +6554,7 @@ def historial_reto(update, context):
 	return INICIO_RETOS_HISTORIAL_CLASIFICACION
 
 def createTable(id_reto, name):
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT dia,repeticiones FROM Calendario where id_reto="+str(id_reto)+";")
@@ -6650,7 +6650,7 @@ def createTable(id_reto, name):
 	plt.savefig(table_path)
 
 def createTableColors(id_reto, name, day_limit, id_usuario, name_graph):
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT dia,repeticiones FROM Calendario where id_reto="+str(id_reto)+";")
@@ -6799,7 +6799,7 @@ def createTableColors(id_reto, name, day_limit, id_usuario, name_graph):
 
 ############# EJERCICIO DEL MES #############
 def show_inicio_ejercicio(update, context):
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	global current_state
 
@@ -6961,7 +6961,7 @@ def show_inicio_ejercicio_apuntarse(update, context):
 	bot = context.bot
 	username_user = query.from_user.username
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -7012,7 +7012,7 @@ def primer_dia_ejercicio(context):
 	username_user = query.from_user.username
 	id_objetivo_mensual = job.context[2]
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -7084,7 +7084,7 @@ def show_inicio_ejercicio_ranking(update, context):
 	)
 	time.sleep(.8)
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -7144,7 +7144,7 @@ def show_inicio_ejercicio_ranking(update, context):
 def show_inicio_ejercicio_descalificar(update, context):
 	global current_state
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -7193,7 +7193,7 @@ def show_inicio_ejercicio_descalificar(update, context):
 	return INICIO_EJERCICIO_DESCALIFICAR_CONFIRMAR
 
 def inicio_ejercicio_descalificar_si(update, context):
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	global current_state
 
@@ -7246,7 +7246,7 @@ def inicio_ejercicio_descalificar_no(update, context):
 def show_inicio_ejercicio_eliminar(update, context):
 	global current_state
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -7296,7 +7296,7 @@ def show_inicio_ejercicio_eliminar(update, context):
 	return INICIO_EJERCICIO_ELIMINAR_CONFIRMAR
 
 def inicio_ejercicio_eliminar_si(update, context):
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	global current_state
 
@@ -7367,7 +7367,7 @@ def show_inicio_ejercicio_historial(update, context):
 	)
 	time.sleep(.8)
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT id_objetivo_mensual FROM Se_apunta where id_usuario='"+username_user+"' AND estado='C';")
@@ -7378,7 +7378,7 @@ def show_inicio_ejercicio_historial(update, context):
 	list_keyboards = []
 
 	for id_objetivo_mensual in resultado:
-		db = pymysql.connect("localhost", "root", "password", "Imagym")
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 		db.begin()
 		cur = db.cursor()
 		cur.execute("SELECT id_actividad_cardio,fecha_inicio FROM Ejercicio_del_mes where id_objetivo_mensual="+str(id_objetivo_mensual[0])+";")
@@ -7440,7 +7440,7 @@ def historial_ejercicio(update, context):
 	)
 	time.sleep(.8)
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT id_actividad_cardio,objetivo,fecha_inicio FROM Ejercicio_del_mes WHERE id_objetivo_mensual="+str(id_objetivo_mensual)+";")
@@ -7556,7 +7556,7 @@ def show_inicio_rutinas_ver(update, context):
 	bot = context.bot
 	username_user = query.from_user.username
 	
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	bot.send_message(
@@ -7576,7 +7576,7 @@ def show_inicio_rutinas_ver(update, context):
 	callback_query_list = []
 
 	for id_rutina in resultado:
-		db = pymysql.connect("localhost", "root", "password", "Imagym")
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 		db.begin()
 		cur = db.cursor()
 
@@ -7588,7 +7588,7 @@ def show_inicio_rutinas_ver(update, context):
 		nombre = cur.fetchall()
 		nombre = nombre[0][0]
 
-		cur.execute("SELECT id_rutina FROM Usuarios where id_rutina="+str(id_rutina[0])+" AND id_usuario='"+username_user+"';")
+		cur.execute("SELECT id_rutina FROM Sigue where id_rutina="+str(id_rutina[0])+" AND id_usuario='"+username_user+"';")
 		esta_apuntado = cur.fetchall()
 
 		cur.close()
@@ -7624,7 +7624,7 @@ def show_inicio_rutinas_ver(update, context):
 
 def ver_rutina(update, context):
 	global current_state
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -7646,7 +7646,7 @@ def ver_rutina(update, context):
 
 	text = "🏋️‍♂️ <b>RUTINA "+nombre.upper()+"</b> 🏋️‍♂️"
 
-	cur.execute("SELECT DISTINCT dia FROM Rutinas_ejercicios where id_rutina="+str(id_rutina)+";")
+	cur.execute("SELECT DISTINCT dia FROM Rutinas_ejercicios where id_rutina="+str(id_rutina)+" ORDER BY dia;")
 	resultado = cur.fetchall()
 
 	cur.close()
@@ -7670,7 +7670,7 @@ def ver_rutina(update, context):
 			else:
 				text=text+"<b>DOMINGO</b>"
 
-			db = pymysql.connect("localhost", "root", "password", "Imagym")
+			db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 			db.begin()
 			cur = db.cursor()
 			cur.execute("SELECT id_ejercicio,repeticiones FROM Rutinas_ejercicios where id_rutina="+str(id_rutina)+" AND dia='"+resultado[i][0]+"';")
@@ -7680,7 +7680,7 @@ def ver_rutina(update, context):
 			for i in range(len(ejercicios_dia)):
 				id_ejercicio = ejercicios_dia[i][0]
 				repeticiones = ejercicios_dia[i][1]
-				db = pymysql.connect("localhost", "root", "password", "Imagym")
+				db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 				db.begin()
 				cur = db.cursor()
 				cur.execute("SELECT nombre FROM Ejercicios where id_ejercicio="+str(id_ejercicio)+";")
@@ -7698,31 +7698,22 @@ def ver_rutina(update, context):
 	)
 
 	keyboard = []
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	cur = db.cursor()
-	cur.execute("SELECT id_rutina FROM Usuarios WHERE id_usuario='"+username_user+"';")
+	cur.execute("SELECT id_rutina FROM Sigue WHERE id_usuario='"+username_user+"' AND id_rutina="+str(id_rutina)+";")
 	resultado = cur.fetchall()
-	id_rutina_usuario = resultado[0][0]
-	if id_rutina_usuario is None:
-		keyboard.append([InlineKeyboardButton("Seguir esta rutina ✔", callback_data="inicio_rutinas_ver_apuntarse")])
-	else:
-		if id_rutina_usuario == id_rutina:
-			bot.send_message(
-				chat_id = query.message.chat_id,
-				text = "Ya sigues esta rutina ✔",
-				parse_mode='HTML'
-			)
-		else:
-			bot.send_message(
-				chat_id = query.message.chat_id,
-				text = "¿Quieres cambiar tu rutina actual por esta?",
-				parse_mode='HTML'
-			)
-			keyboard.append([InlineKeyboardButton("Seguir esta rutina ⭕", callback_data="inicio_rutinas_cambiar")])
 
-	id_trainer = resultado[0][0]
+	if not resultado:
+		keyboard.append([InlineKeyboardButton("Seguir esta rutina ✔", callback_data="inicio_rutinas_ver_apuntarse")])
+
+	else:
+		bot.send_message(
+			chat_id = query.message.chat_id,
+			text = "Ya sigues esta rutina ✔",
+			parse_mode='HTML'
+		)
 
 	keyboard.append([InlineKeyboardButton("Volver a Ver rutinas de entrenamiento 🔙", callback_data="back_inicio_rutinas_ver")])
 	keyboard.append([InlineKeyboardButton("Volver a Rutinas y entrenamiento 🔙", callback_data="back_inicio_rutinas")])
@@ -7777,7 +7768,7 @@ def show_inicio_soporte(update, context):
 
 
 def inicio_ficha(update, context):
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	update.message.reply_text(
@@ -7857,7 +7848,7 @@ def inicio_ficha(update, context):
 def inicio_peso(update, context):
 	global current_state
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	update.message.reply_text(
@@ -7991,7 +7982,7 @@ def inicio_peso(update, context):
 def inicio_peso_anotar(update, context):
 	global current_state
 
-	db = pymysql.connect("localhost", "root", "password", "Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	update.message.reply_text(

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost
--- Tiempo de generación: 12-06-2020 a las 09:50:29
+-- Tiempo de generación: 13-06-2020 a las 00:10:47
 -- Versión del servidor: 10.4.11-MariaDB
 -- Versión de PHP: 7.2.28
 
@@ -19,7 +19,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de datos: `Imagym-Server`
+-- Base de datos: `ImagymServer`
 --
 
 -- --------------------------------------------------------
@@ -133,7 +133,13 @@ CREATE TABLE `Ejercicios` (
 
 INSERT INTO `Ejercicios` (`id_ejercicio`, `nombre`, `tipo`) VALUES
 (1, 'Flexiones', 'reto'),
-(2, 'Abdominales', 'reto');
+(2, 'Abdominales', 'reto'),
+(3, 'Sentadillas', ''),
+(4, 'Lunges', ''),
+(5, 'Femoral sentado', ''),
+(6, 'Femoral tumbado', ''),
+(7, 'Press con mancuernas', ''),
+(8, 'Press inclinado', '');
 
 -- --------------------------------------------------------
 
@@ -194,7 +200,9 @@ INSERT INTO `Gimnasios` (`id_gym`, `nombre`, `cif`, `telefono`, `clave_admin`, `
 CREATE TABLE `Hace_rutina` (
   `id_usuario` varchar(20) NOT NULL,
   `id_rutina` int(11) NOT NULL,
-  `fecha` date NOT NULL
+  `fecha` date NOT NULL,
+  `id_ejercicio` int(11) NOT NULL,
+  `dia` varchar(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -306,6 +314,14 @@ CREATE TABLE `Realiza_reto` (
   `dia` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Volcado de datos para la tabla `Realiza_reto`
+--
+
+INSERT INTO `Realiza_reto` (`id_reto`, `id_usuario`, `estado`, `dia`) VALUES
+(2, 'Jumacasni', 'A', NULL),
+(3, 'Crisma_17', 'A', NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -367,6 +383,14 @@ CREATE TABLE `Rutinas` (
   `id_trainer` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Volcado de datos para la tabla `Rutinas`
+--
+
+INSERT INTO `Rutinas` (`id_rutina`, `date_add`, `id_trainer`) VALUES
+(1, '2020-06-12', 1),
+(2, '2020-06-12', 2);
+
 -- --------------------------------------------------------
 
 --
@@ -375,8 +399,38 @@ CREATE TABLE `Rutinas` (
 
 CREATE TABLE `Rutinas_ejercicios` (
   `id_rutina` int(11) NOT NULL,
-  `id_ejercicio` int(11) NOT NULL
+  `id_ejercicio` int(11) NOT NULL,
+  `dia` varchar(1) NOT NULL,
+  `repeticiones` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Volcado de datos para la tabla `Rutinas_ejercicios`
+--
+
+INSERT INTO `Rutinas_ejercicios` (`id_rutina`, `id_ejercicio`, `dia`, `repeticiones`) VALUES
+(1, 1, '1', '4x10'),
+(1, 1, '4', '5x12'),
+(1, 2, '4', '5x12'),
+(1, 3, '3', '4x12'),
+(1, 4, '3', '5x10'),
+(1, 4, '4', '6x8'),
+(1, 5, '3', '5x10'),
+(1, 6, '3', '5x12'),
+(1, 7, '1', '4x15'),
+(1, 8, '1', '4x12'),
+(2, 1, '1', '4x10'),
+(2, 1, '6', '3x20'),
+(2, 2, '1', '3x10'),
+(2, 2, '5', '3x20'),
+(2, 3, '2', '3x15'),
+(2, 3, '5', '3x20'),
+(2, 4, '2', '3x20'),
+(2, 4, '6', '3x20'),
+(2, 5, '3', '3x20'),
+(2, 6, '3', '3x20'),
+(2, 7, '4', '3x20'),
+(2, 8, '4', '3x20');
 
 -- --------------------------------------------------------
 
@@ -386,7 +440,19 @@ CREATE TABLE `Rutinas_ejercicios` (
 
 CREATE TABLE `Se_apunta` (
   `id_usuario` varchar(20) NOT NULL,
-  `id_objetivo_mensual` int(11) NOT NULL
+  `id_objetivo_mensual` int(11) NOT NULL,
+  `estado` varchar(1) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `Sigue`
+--
+
+CREATE TABLE `Sigue` (
+  `id_usuario` varchar(20) NOT NULL,
+  `id_rutina` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -408,7 +474,9 @@ CREATE TABLE `Trainers` (
 --
 
 INSERT INTO `Trainers` (`id_trainer`, `nombre`, `apellidos`, `DNI`, `id_gym`) VALUES
-(1, 'Juan Manuel', 'Castillo Nievas', '76591779P', 1);
+(1, 'Juan Manuel', 'Castillo Nievas', '76591779P', 1),
+(2, 'María', 'Luzón Martínez', '99999999B', 1),
+(3, 'Mariana', 'Orihuela Cazorla', '99999999A', 1);
 
 -- --------------------------------------------------------
 
@@ -517,8 +585,9 @@ ALTER TABLE `Gimnasios`
 -- Indices de la tabla `Hace_rutina`
 --
 ALTER TABLE `Hace_rutina`
-  ADD PRIMARY KEY (`id_usuario`,`id_rutina`,`fecha`),
-  ADD KEY `id_rutina` (`id_rutina`);
+  ADD PRIMARY KEY (`id_usuario`,`id_rutina`,`fecha`,`id_ejercicio`,`dia`),
+  ADD KEY `id_rutina` (`id_rutina`),
+  ADD KEY `id_ejercicio` (`id_ejercicio`);
 
 --
 -- Indices de la tabla `Musculos`
@@ -581,7 +650,7 @@ ALTER TABLE `Rutinas`
 -- Indices de la tabla `Rutinas_ejercicios`
 --
 ALTER TABLE `Rutinas_ejercicios`
-  ADD PRIMARY KEY (`id_rutina`,`id_ejercicio`),
+  ADD PRIMARY KEY (`id_rutina`,`id_ejercicio`,`dia`),
   ADD KEY `id_ejercicio` (`id_ejercicio`);
 
 --
@@ -591,6 +660,13 @@ ALTER TABLE `Se_apunta`
   ADD PRIMARY KEY (`id_usuario`,`id_objetivo_mensual`),
   ADD UNIQUE KEY `id_usuario` (`id_usuario`,`id_objetivo_mensual`),
   ADD KEY `id_objetivo_mensual` (`id_objetivo_mensual`);
+
+--
+-- Indices de la tabla `Sigue`
+--
+ALTER TABLE `Sigue`
+  ADD PRIMARY KEY (`id_usuario`,`id_rutina`),
+  ADD KEY `id_rutina` (`id_rutina`);
 
 --
 -- Indices de la tabla `Trainers`
@@ -627,7 +703,7 @@ ALTER TABLE `Actividad_cardio`
 -- AUTO_INCREMENT de la tabla `Ejercicios`
 --
 ALTER TABLE `Ejercicios`
-  MODIFY `id_ejercicio` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_ejercicio` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT de la tabla `Ejercicio_del_mes`
@@ -675,13 +751,13 @@ ALTER TABLE `Retos`
 -- AUTO_INCREMENT de la tabla `Rutinas`
 --
 ALTER TABLE `Rutinas`
-  MODIFY `id_rutina` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_rutina` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT de la tabla `Trainers`
 --
 ALTER TABLE `Trainers`
-  MODIFY `id_trainer` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id_trainer` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `Ubicaciones`
@@ -725,7 +801,8 @@ ALTER TABLE `Ejercita`
 --
 ALTER TABLE `Hace_rutina`
   ADD CONSTRAINT `Hace_rutina_ibfk_1` FOREIGN KEY (`id_rutina`) REFERENCES `Rutinas` (`id_rutina`),
-  ADD CONSTRAINT `Hace_rutina_ibfk_2` FOREIGN KEY (`id_usuario`) REFERENCES `Usuarios` (`id_usuario`);
+  ADD CONSTRAINT `Hace_rutina_ibfk_2` FOREIGN KEY (`id_usuario`) REFERENCES `Usuarios` (`id_usuario`),
+  ADD CONSTRAINT `Hace_rutina_ibfk_3` FOREIGN KEY (`id_ejercicio`) REFERENCES `Rutinas_ejercicios` (`id_ejercicio`);
 
 --
 -- Filtros para la tabla `Objetivo_personal_cardio`
@@ -786,6 +863,13 @@ ALTER TABLE `Rutinas_ejercicios`
 ALTER TABLE `Se_apunta`
   ADD CONSTRAINT `Se_apunta_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `Usuarios` (`id_usuario`),
   ADD CONSTRAINT `Se_apunta_ibfk_2` FOREIGN KEY (`id_objetivo_mensual`) REFERENCES `Ejercicio_del_mes` (`id_objetivo_mensual`);
+
+--
+-- Filtros para la tabla `Sigue`
+--
+ALTER TABLE `Sigue`
+  ADD CONSTRAINT `Sigue_ibfk_1` FOREIGN KEY (`id_rutina`) REFERENCES `Rutinas` (`id_rutina`),
+  ADD CONSTRAINT `Sigue_ibfk_2` FOREIGN KEY (`id_usuario`) REFERENCES `Usuarios` (`id_usuario`);
 
 --
 -- Filtros para la tabla `Trainers`
