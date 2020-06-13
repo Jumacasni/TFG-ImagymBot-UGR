@@ -315,7 +315,7 @@ def show_inicio_ficha(update, context):
 			peso = " ✏"
 			fecha = ""
 		else:
-			peso = str(resultado[0][0]).rstrip('0').rstrip('. ')+"kg 👉 "
+			peso = str(resultado[0][0])+"kg 👉 "
 			fecha = resultado[0][1]
 			if fecha == date.today():
 				fecha = "Registrado hoy"
@@ -856,22 +856,22 @@ def show_inicio_peso(update, context):
 
 		text="📌 <b>ÚLTIMA VEZ QUE ANOTASTE DATOS: "+fecha+"</b>"
 		if peso is not None:
-			text=text+"\n\n<b>👉 Peso:</b> "+str(peso).rstrip('0').rstrip('. ')+"kg"
+			text=text+"\n\n<b>👉 Peso:</b> "+str(peso)+"kg"
 		else:
 			text=text+"\n\n<b>👉 Peso:</b> sin datos"
 
 		if grasa is not None:
-			text=text+"\n<b>👉 Grasa:</b> "+str(grasa).rstrip('0').rstrip('. ')+"%"
+			text=text+"\n<b>👉 Grasa:</b> "+str(grasa)+"%"
 		else:
 			text=text+"\n<b>👉 Grasa:</b> sin datos"
 
 		if musculo is not None:
-			text=text+"\n<b>👉 Músculo:</b> "+str(musculo).rstrip('0').rstrip('. ')+"%"
+			text=text+"\n<b>👉 Músculo:</b> "+str(musculo)+"%"
 		else:
 			text=text+"\n<b>👉 Músculo:</b> sin datos"
 
 		if imc is not None:
-			text=text+"\n<b>👉 IMC:</b> "+str(imc).rstrip('0').rstrip('. ')
+			text=text+"\n<b>👉 IMC:</b> "+str(imc)
 
 		time.sleep(.8)
 		bot.send_message(
@@ -918,8 +918,8 @@ def show_inicio_peso(update, context):
 			else:
 				fecha_inicio = fecha_inicio.strftime("%d-%b-%Y")
 
-			text="📌 ACTUALMENTE TIENES UN <b>OBJETIVO DE "+tipo+"</b>.\n\n👉 <b>Último registro de "+tipo+":</b> "+str(peso).rstrip('0').rstrip('. ')+medida+"\nTu objetivo: "+str(peso_objetivo).rstrip('0').rstrip('. ')+medida
-			text=text+"\n👉 <b>Te queda:</b> "+str(diferencia_peso).rstrip('0').rstrip('. ')+medida
+			text="📌 ACTUALMENTE TIENES UN <b>OBJETIVO DE "+tipo+"</b>.\n\n👉 <b>Último registro de "+tipo+":</b> "+str(peso)+medida+"\nTu objetivo: "+str(peso_objetivo)+medida
+			text=text+"\n👉 <b>Te queda:</b> "+str(diferencia_peso)+medida
 			text=text+"\n👉 <b>Fecha inicio:</b> "+fecha_inicio+"\n👉 <b>Fecha fin:</b> "+fecha_fin
 
 			keyboard.append([InlineKeyboardButton("Eliminar objetivo 🏁", callback_data='inicio_peso_eliminar')])
@@ -1015,7 +1015,7 @@ def show_inicio_peso_anotar(update, context):
 
 			if resultado[0][0] is not None:
 				peso = resultado[0][0]
-				text=text+"\nPeso: "+str(peso).rstrip('0').rstrip('. ')+"kg"
+				text=text+"\nPeso: "+str(peso)+"kg"
 				keyboard.append([InlineKeyboardButton("Modificar peso", callback_data='inicio_peso_anotar_peso')])
 			else:
 				keyboard.append([InlineKeyboardButton("Anotar peso ✏", callback_data='inicio_peso_anotar_peso')])
@@ -1023,14 +1023,14 @@ def show_inicio_peso_anotar(update, context):
 
 			if resultado[0][1] is not None:
 				grasa = resultado[0][1]
-				text=text+"\nGrasa: "+str(grasa).rstrip('0').rstrip('. ')+"%"
+				text=text+"\nGrasa: "+str(grasa)+"%"
 				keyboard.append([InlineKeyboardButton("Modificar grasa", callback_data='inicio_peso_anotar_grasa')])
 			else:
 				keyboard.append([InlineKeyboardButton("Anotar grasa ✏", callback_data='inicio_peso_anotar_grasa')])
 
 			if resultado[0][2] is not None:
 				musculo = resultado[0][2]
-				text=text+"\nMúsculo: "+str(musculo).rstrip('0').rstrip('. ')+"%"
+				text=text+"\nMúsculo: "+str(musculo)+"%"
 				keyboard.append([InlineKeyboardButton("Modificar músculo", callback_data='inicio_peso_anotar_musculo')])
 			else:
 				keyboard.append([InlineKeyboardButton("Anotar músculo ✏", callback_data='inicio_peso_anotar_musculo')])
@@ -1108,7 +1108,7 @@ def anotar_peso(update, context):
 	else:
 		bot.send_message(
 			chat_id = query.message.chat_id,
-			text="Vas a modificar tu peso de hoy: "+str(hay_peso[0][0]).rstrip('0').rstrip('. ')+"kg\n\n¿Cuál es tu peso de hoy (en kg)?"
+			text="Vas a modificar tu peso de hoy: "+str(hay_peso[0][0])+"kg\n\n¿Cuál es tu peso de hoy (en kg)?"
 		)
 	time.sleep(.8)
 	bot.send_message(
@@ -1407,13 +1407,13 @@ def check_anotar_peso(update, context):
 						elif diferencia_peso > 0:
 							time.sleep(.8)
 							update.message.reply_text(
-								text="Has avanzado en tu objetivo. ¡GENIAL!\n\nPesas <b>"+str(diferencia_peso).rstrip('0').rstrip('. ')+"kg más</b> que la última vez.\n\nÚltima vez: "+str(round(peso_ultimo,2)).rstrip('0').rstrip('. ')+" kg el día "+fecha,
+								text="Has avanzado en tu objetivo. ¡GENIAL!\n\nPesas <b>"+str(diferencia_peso)+"kg más</b> que la última vez.\n\nÚltima vez: "+str(round(peso_ultimo,2))+" kg el día "+fecha,
 								parse_mode = 'HTML'
 							)
 						else:
 							time.sleep(.8)
 							update.message.reply_text(
-								text="No has avanzado en tu objetivo. ¡NO TE RINDAS!\n\nPesas <b>"+str(diferencia_peso).rstrip('0').rstrip('. ')+"kg menos</b> que la última vez.\n\nÚltima vez: "+str(round(peso_ultimo,2)).rstrip('0').rstrip('. ')+" kg el día "+fecha,
+								text="No has avanzado en tu objetivo. ¡NO TE RINDAS!\n\nPesas <b>"+str(diferencia_peso)+"kg menos</b> que la última vez.\n\nÚltima vez: "+str(round(peso_ultimo,2))+" kg el día "+fecha,
 								parse_mode = 'HTML'
 							)
 					else:
@@ -1425,13 +1425,13 @@ def check_anotar_peso(update, context):
 						elif diferencia_peso < 0:
 							time.sleep(.8)
 							update.message.reply_text(
-								text="Has avanzado en tu objetivo. ¡GENIAL!\n\nPesas <b>"+str(diferencia_peso).rstrip('0').rstrip('. ')+"kg menos</b> que la última vez.\n\nÚltima vez: "+str(round(peso_ultimo,2)).rstrip('0').rstrip('. ')+" kg el día "+fecha,
+								text="Has avanzado en tu objetivo. ¡GENIAL!\n\nPesas <b>"+str(diferencia_peso)+"kg menos</b> que la última vez.\n\nÚltima vez: "+str(round(peso_ultimo,2))+" kg el día "+fecha,
 								parse_mode = 'HTML'
 							)
 						else:
 							time.sleep(.8)
 							update.message.reply_text(
-								text="No has avanzado en tu objetivo. ¡NO TE RINDAS!\n\nPesas <b>"+str(diferencia_peso).rstrip('0').rstrip('. ')+"kg más</b> que la última vez.\n\nÚltima vez: "+str(round(peso_ultimo,2)).rstrip('0').rstrip('. ')+" kg el día "+fecha,
+								text="No has avanzado en tu objetivo. ¡NO TE RINDAS!\n\nPesas <b>"+str(diferencia_peso)+"kg más</b> que la última vez.\n\nÚltima vez: "+str(round(peso_ultimo,2))+" kg el día "+fecha,
 								parse_mode = 'HTML'
 							)
 
@@ -1669,12 +1669,12 @@ def check_anotar_grasa(update, context):
 						elif diferencia_peso > 0:
 							time.sleep(.8)
 							update.message.reply_text(
-								text="Has avanzado en tu objetivo. ¡GENIAL!\n\nTienes un "+str(diferencia_peso).rstrip('0').rstrip('. ')+"% más que la última vez"
+								text="Has avanzado en tu objetivo. ¡GENIAL!\n\nTienes un "+str(diferencia_peso)+"% más que la última vez"
 							)
 						else:
 							time.sleep(.8)
 							update.message.reply_text(
-								text="No has avanzado en tu objetivo. ¡NO TE RINDAS!\n\nTienes un "+str(diferencia_peso).rstrip('0').rstrip('. ')+"% menos que la última vez"
+								text="No has avanzado en tu objetivo. ¡NO TE RINDAS!\n\nTienes un "+str(diferencia_peso)+"% menos que la última vez"
 							)
 					else:
 						if diferencia_peso == 0:
@@ -1685,12 +1685,12 @@ def check_anotar_grasa(update, context):
 						elif diferencia_peso < 0:
 							time.sleep(.8)
 							update.message.reply_text(
-								text="Has avanzado en tu objetivo. ¡GENIAL!\n\nTienes un "+str(diferencia_peso).rstrip('0').rstrip('. ')+"% menos que la última vez"
+								text="Has avanzado en tu objetivo. ¡GENIAL!\n\nTienes un "+str(diferencia_peso)+"% menos que la última vez"
 							)
 						else:
 							time.sleep(.8)
 							update.message.reply_text(
-								text="No has avanzado en tu objetivo. ¡NO TE RINDAS!\n\nTienes un "+str(diferencia_peso).rstrip('0').rstrip('. ')+"% más que la última vez"
+								text="No has avanzado en tu objetivo. ¡NO TE RINDAS!\n\nTienes un "+str(diferencia_peso)+"% más que la última vez"
 							)
 
 			cur.close()
@@ -1921,12 +1921,12 @@ def check_anotar_musculo(update, context):
 						elif diferencia_peso > 0:
 							time.sleep(.8)
 							update.message.reply_text(
-								text="Has avanzado en tu objetivo. ¡GENIAL!\n\nTienes un "+str(diferencia_peso).rstrip('0').rstrip('. ')+"% más que la última vez"
+								text="Has avanzado en tu objetivo. ¡GENIAL!\n\nTienes un "+str(diferencia_peso)+"% más que la última vez"
 							)
 						else:
 							time.sleep(.8)
 							update.message.reply_text(
-								text="No has avanzado en tu objetivo. ¡NO TE RINDAS!\n\nTienes un "+str(diferencia_peso).rstrip('0').rstrip('. ')+"% menos que la última vez"
+								text="No has avanzado en tu objetivo. ¡NO TE RINDAS!\n\nTienes un "+str(diferencia_peso)+"% menos que la última vez"
 							)
 					else:
 						if diferencia_peso == 0:
@@ -1937,12 +1937,12 @@ def check_anotar_musculo(update, context):
 						elif diferencia_peso < 0:
 							time.sleep(.8)
 							update.message.reply_text(
-								text="Has avanzado en tu objetivo. ¡GENIAL!\n\nTienes un "+str(diferencia_peso).rstrip('0').rstrip('. ')+"% menos que la última vez"
+								text="Has avanzado en tu objetivo. ¡GENIAL!\n\nTienes un "+str(diferencia_peso)+"% menos que la última vez"
 							)
 						else:
 							time.sleep(.8)
 							update.message.reply_text(
-								text="No has avanzado en tu objetivo. ¡NO TE RINDAS!\n\nTienes un "+str(diferencia_peso).rstrip('0').rstrip('. ')+"% más que la última vez"
+								text="No has avanzado en tu objetivo. ¡NO TE RINDAS!\n\nTienes un "+str(diferencia_peso)+"% más que la última vez"
 							)
 
 			cur.close()
@@ -2049,7 +2049,7 @@ def objetivo_peso(update, context):
 
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="Tu último peso registrado es: "+str(peso).rstrip('0').rstrip('. ')+"kg"
+		text="Tu último peso registrado es: "+str(peso)+"kg"
 	)
 	time.sleep(.8)
 	bot.send_message(
@@ -2106,12 +2106,12 @@ def check_objetivo_peso(update, context):
 				if(diferencia_peso >= 0):
 					time.sleep(.8)
 					update.message.reply_text(
-						text="Tu objetivo es de "+str(diferencia_peso).rstrip('0').rstrip('. ')+"kg más que actualmente."
+						text="Tu objetivo es de "+str(diferencia_peso)+"kg más que actualmente."
 					)
 				else:
 					time.sleep(.8)
 					update.message.reply_text(
-						text="Tu objetivo es de "+str(abs(diferencia_peso)).rstrip('0').rstrip('. ')+"kg menos que actualmente."
+						text="Tu objetivo es de "+str(abs(diferencia_peso))+"kg menos que actualmente."
 					)
 
 				keyboard = [
@@ -2207,7 +2207,7 @@ def objetivo_peso_tiempo(update, context):
 	cur.close()
 	db.close()
 
-	text = "RESUMEN DEL OBJETIVO:\n\n<b>Peso objetivo:</b>  "+str(peso).rstrip('0').rstrip('. ')+"kg\n<b>Diferencia de peso:</b>  "+diferencia+"kg\n<b>Fecha fin:</b> "+fecha
+	text = "RESUMEN DEL OBJETIVO:\n\n<b>Peso objetivo:</b>  "+str(peso)+"kg\n<b>Diferencia de peso:</b>  "+diferencia+"kg\n<b>Fecha fin:</b> "+fecha
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		text=text,
@@ -2245,7 +2245,7 @@ def objetivo_grasa(update, context):
 
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="Tu último porcentaje de grasa registrado es: "+str(peso).rstrip('0').rstrip('. ')+"%"
+		text="Tu último porcentaje de grasa registrado es: "+str(peso)+"%"
 	)
 	time.sleep(.8)
 	bot.send_message(
@@ -2302,12 +2302,12 @@ def check_objetivo_grasa(update, context):
 				if(diferencia_peso >= 0):
 					time.sleep(.8)
 					update.message.reply_text(
-						text="Tu objetivo es de "+str(diferencia_peso).rstrip('0').rstrip('. ')+"% más que actualmente."
+						text="Tu objetivo es de "+str(diferencia_peso)+"% más que actualmente."
 					)
 				else:
 					time.sleep(.8)
 					update.message.reply_text(
-						text="Tu objetivo es de "+str(abs(diferencia_peso)).rstrip('0').rstrip('. ')+"% menos que actualmente."
+						text="Tu objetivo es de "+str(abs(diferencia_peso))+"% menos que actualmente."
 					)
 
 				keyboard = [
@@ -2404,7 +2404,7 @@ def objetivo_grasa_tiempo(update, context):
 	cur.close()
 	db.close()
 
-	text = "RESUMEN DEL OBJETIVO:\n\n<b>Porcentaje de grasa objetivo:</b>  "+str(peso).rstrip('0').rstrip('. ')+"kg\n<b>Diferencia de porcentaje:</b>  "+diferencia+"%\n<b>Fecha fin:</b>  "+fecha
+	text = "RESUMEN DEL OBJETIVO:\n\n<b>Porcentaje de grasa objetivo:</b>  "+str(peso)+"kg\n<b>Diferencia de porcentaje:</b>  "+diferencia+"%\n<b>Fecha fin:</b>  "+fecha
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		text=text,
@@ -2442,7 +2442,7 @@ def objetivo_musculo(update, context):
 
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="Tu último porcentaje de músculo registrado es: "+str(peso).rstrip('0').rstrip('. ')+"%"
+		text="Tu último porcentaje de músculo registrado es: "+str(peso)+"%"
 	)
 	time.sleep(.8)
 	bot.send_message(
@@ -2499,12 +2499,12 @@ def check_objetivo_musculo(update, context):
 				if(diferencia_peso >= 0):
 					time.sleep(.8)
 					update.message.reply_text(
-						text="Tu objetivo es de "+str(diferencia_peso).rstrip('0').rstrip('. ')+"% más que actualmente."
+						text="Tu objetivo es de "+str(diferencia_peso)+"% más que actualmente."
 					)
 				else:
 					time.sleep(.8)
 					update.message.reply_text(
-						text="Tu objetivo es de "+str(abs(diferencia_peso)).rstrip('0').rstrip('. ')+"% menos que actualmente."
+						text="Tu objetivo es de "+str(abs(diferencia_peso))+"% menos que actualmente."
 					)
 
 				keyboard = [
@@ -2600,7 +2600,7 @@ def objetivo_musculo_tiempo(update, context):
 	cur.close()
 	db.close()
 
-	text = "RESUMEN DEL OBJETIVO:\n\n<b>Porcentaje de músculo objetivo:</b> "+str(peso).rstrip('0').rstrip('. ')+"kg\n<b>Diferencia de porcentaje:</b> "+diferencia+"%\n<b>Fecha fin:</b> "+fecha
+	text = "RESUMEN DEL OBJETIVO:\n\n<b>Porcentaje de músculo objetivo:</b> "+str(peso)+"kg\n<b>Diferencia de porcentaje:</b> "+diferencia+"%\n<b>Fecha fin:</b> "+fecha
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		text=text,
@@ -3967,7 +3967,7 @@ def show_inicio_cardio(update, context):
 
 		if objetivo_tipo == "distancia":
 			tipo = "kilómetros"
-			text=text+"\nObjetivo: "+objetivo_numero.rstrip('0').rstrip('. ')+" "+tipo
+			text=text+"\nObjetivo: "+objetivo_numero+" "+tipo
 		elif objetivo_tipo == "calorias":
 			tipo = "calorías"
 			text=text+"\nObjetivo: "+objetivo_numero+" "+tipo
@@ -3994,8 +3994,8 @@ def show_inicio_cardio(update, context):
 		else:
 			diferencia = round(float(objetivo_numero) - float(resultado[0][0]), 2)
 			if diferencia > 0:
-				text=text+"Llevas ya <b>"+str(resultado[0][0]).rstrip('0').rstrip('. ')+" "+tipo+"</b>."
-				text=text+"\nTe quedan: "+str(diferencia).rstrip('0').rstrip('. ')+" "+tipo
+				text=text+"Llevas ya <b>"+str(resultado[0][0])+" "+tipo+"</b>."
+				text=text+"\nTe quedan: "+str(diferencia)+" "+tipo
 				porcentaje = round(float(resultado[0][0]) / float(objetivo_numero), 2) * 100
 				text=text+"\n¡Ya llevas un "+str(round(porcentaje,1))+"%!"
 
@@ -4290,7 +4290,7 @@ def registrar_cardio(update, context):
 				else:
 					text=text+"\n<b>Minutos: sin datos</b>"
 				if kilometros != 0:
-					text=text+"\n<b>Distancia:</b> "+str(kilometros).rstrip('0').rstrip('. ')+"km"
+					text=text+"\n<b>Distancia:</b> "+str(kilometros)+"km"
 					cur.execute("UPDATE Registra_cardio SET distancia="+str(kilometros)+" WHERE id_usuario='"+username+"' AND fecha='"+str(fecha)+"'")
 					db.commit()
 				else:
@@ -4332,7 +4332,7 @@ def registrar_cardio(update, context):
 						text="Añadirás <b>"
 						if objetivo_tipo == "distancia":
 							if kilometros != 0:
-								text=text+str(kilometros).rstrip('0').rstrip('. ')+" kilómetros</b>"
+								text=text+str(kilometros)+" kilómetros</b>"
 								text=text+" a tu objetivo en <b>"+nombre.lower()+"</b>"
 								time.sleep(.8)
 								update.message.reply_text(
@@ -4374,7 +4374,7 @@ def registrar_cardio(update, context):
 						text="\n\nAñadirás <b>"
 						if objetivo_tipo == "distancia":
 							if kilometros != 0:
-								text=text+str(kilometros).rstrip('0').rstrip('. ')+" kilómetros</b>"
+								text=text+str(kilometros)+" kilómetros</b>"
 								text=text+" al <b>ejercicio del mes</b>"
 								time.sleep(.8)
 								update.message.reply_text(
@@ -4472,7 +4472,7 @@ def show_inicio_cardio_ver(update,context):
 		if resultado[i][3] is not None:
 			text=text+str(resultado[i][3])+" minutos; "
 		if resultado[i][4] is not None:
-			text=text+str(resultado[i][4]).rstrip('0').rstrip('. ')+" kilómetros; "
+			text=text+str(resultado[i][4])+" kilómetros; "
 		if resultado[i][5] is not None:
 			text=text+"nivel/inclinación: "+str(resultado[i][5])+"; "
 		if resultado[i][6] is not None:
@@ -4686,7 +4686,7 @@ def ver_cardio_rango(update, context):
 						if resultado[i][3] is not None:
 							text=text+str(resultado[i][3])+" minutos; "
 						if resultado[i][4] is not None:
-							text=text+str(resultado[i][4]).rstrip('0').rstrip('. ')+" kilómetros; "
+							text=text+str(resultado[i][4])+" kilómetros; "
 						if resultado[i][5] is not None:
 							text=text+"nivel/inclinación: "+str(resultado[i][5])+"; "
 						if resultado[i][6] is not None:
@@ -5280,16 +5280,16 @@ def show_inicio_retos(update, context):
 		if not resultado:
 			keyboard.append([InlineKeyboardButton("Anotar progreso 📝", callback_data='inicio_retos_anotar')])
 
-		keyboard.append([InlineKeyboardButton("Calendario de mi reto 📆", callback_data='inicio_retos_calendario')])
+		keyboard.append([InlineKeyboardButton("Calendario del reto actual 📆", callback_data='inicio_retos_calendario')])
 
 	if retos_futuros:
 		keyboard.append([InlineKeyboardButton("Ver retos disponibles 🔛", callback_data='inicio_retos_ver')])
 
 	if reto_usuario:
-		keyboard.append([InlineKeyboardButton("Descalificarme del reto ❌", callback_data='inicio_retos_descalificar')])
+		keyboard.append([InlineKeyboardButton("Descalificarme del reto actual ❌", callback_data='inicio_retos_descalificar')])
 
 	if reto_usuario_futuro:
-		keyboard.append([InlineKeyboardButton("Eliminar mi inscripción de retos ❌", callback_data='inicio_retos_eliminar')])
+		keyboard.append([InlineKeyboardButton("Eliminar mi inscripción de próximos retos ❌", callback_data='inicio_retos_eliminar')])
 
 	if tiene_retos:
 		keyboard.append([InlineKeyboardButton("Ver mi historial de retos 📖", callback_data='inicio_retos_historial')])
@@ -5531,69 +5531,56 @@ def ver_reto(update, context):
 	resultado = cur.fetchall();
 	num_usuarios_apuntados = resultado[0][0]
 	if not esta_apuntado:
+		text="Aquí tienes el calendario de este reto.\n\n<b>Fecha de inicio:</b> "+fecha_inicio+"\n<b>Fecha fin:</b> "+fecha_fin
 		if num_usuarios_apuntados == 1:
-			text = "Hay "+str(num_usuarios_apuntados)+" usuario apuntado a este reto. ¡Anímate!"
+			text = text+"\n\nHay "+str(num_usuarios_apuntados)+" usuario apuntado a este reto. ¡Anímate!"
 		else:
-			text = "Hay "+str(num_usuarios_apuntados)+" usuarios apuntados a este reto. ¡Anímate!"
+			text = text+"\n\nHay "+str(num_usuarios_apuntados)+" usuarios apuntados a este reto. ¡Anímate!"
 
 		if num_usuarios_apuntados == 0:
-			text = "¡Aún no hay nadie apuntado a este reto! Sé la primera persona en apuntarse y corre la voz para competir con tus rivales 💪💪💪"
+			text = text+"\n\n¡Aún no hay nadie apuntado a este reto! Sé la primera persona en apuntarse y corre la voz para competir con tus rivales 💪💪💪"
 
 		keyboard = [
-			[InlineKeyboardButton("Apuntarse al reto ✔", callback_data="inicio_retos_ver_apuntarse_"+id_reto)],
+			[InlineKeyboardButton("Apuntarse al reto ✅", callback_data="inicio_retos_ver_apuntarse_"+id_reto)],
 			[InlineKeyboardButton("Volver a Retos disponibles 🔙", callback_data="back_inicio_retos_ver")],
 			[InlineKeyboardButton("Volver a Retos 🔙", callback_data="back_inicio_retos")],
 			[InlineKeyboardButton("Volver a Inicio 👣", callback_data="back_inicio")]
 		]
 		reply_markup = InlineKeyboardMarkup(keyboard)
 
+		text=text+"\n\nCompleta este reto y gana una insignia que podrás lucir en la página web 🎖"
 		bot.send_message(
 			chat_id = query.message.chat_id,
-			text = "Aquí tienes el calendario de este reto.\n\nFecha de inicio: "+fecha_inicio+"\nFecha fin: "+fecha_fin
+			text=text,
+			reply_markup=reply_markup,
+			parse_mode='HTML'
 		)
-		time.sleep(.8)
-		bot.send_message(
-			chat_id = query.message.chat_id,
-			text=text
-		)
-		bot.send_message(
-			chat_id = query.message.chat_id,
-			text="Completa este reto y gana una insignia que podrás lucir en la página web 🎖"
-		)
-		time.sleep(.8)
-		bot.send_message(
-			chat_id = query.message.chat_id,
-			text="<b>👣 Inicio > Retos > Retos disponibles > Información de un reto</b>",
-			parse_mode='HTML',
-			reply_markup = reply_markup
-		)
+		# time.sleep(.8)
+		# bot.send_message(
+		# 	chat_id = query.message.chat_id,
+		# 	text="<b>👣 Inicio > Retos > Retos disponibles > Información de un reto</b>",
+		# 	parse_mode='HTML',
+		# 	reply_markup = reply_markup
+		# )
 
 	else:
-		text="¡Ya tienes inscripción en este reto!\n\nFecha de inicio: "+fecha_inicio+"\nFecha fin: "+fecha_fin
+		text="¡Ya tienes inscripción en este reto!\n\n<b>Fecha de inicio:</b> "+fecha_inicio+"\n<b>Fecha fin:</b> "+fecha_fin
 		keyboard = [
+			[InlineKeyboardButton("Desapuntarse al reto ❌", callback_data="inicio_retos_ver_apuntarse_"+id_reto)],
 			[InlineKeyboardButton("Volver a Retos disponibles 🔙", callback_data="back_inicio_retos_ver")],
 			[InlineKeyboardButton("Volver a Retos 🔙", callback_data="back_inicio_retos")],
 			[InlineKeyboardButton("Volver a Inicio 👣", callback_data="back_inicio")]
 		]
 		reply_markup = InlineKeyboardMarkup(keyboard)
 
-		bot.send_message(
-			chat_id = query.message.chat_id,
-			text = text
-		)
 		if num_usuarios_apuntados == 1:
-			text = "¡No hay nadie más en este reto! ¡Corre la voz y anima a otra gente!"
+			text = text+"\n\n¡No hay nadie más en este reto! ¡Corre la voz y anima a otra gente!"
 		else:
-			text = "Hay "+str(num_usuarios_apuntados)+" usuarios apuntados a este reto. ¡Ya mismo empieza la competición!"
-		time.sleep(.8)
+			text = text+"\n\nHay "+str(num_usuarios_apuntados)+" usuarios apuntados a este reto. ¡Ya mismo empieza la competición!"
+
 		bot.send_message(
 			chat_id = query.message.chat_id,
-			text = text
-		)
-		time.sleep(.8)
-		bot.send_message(
-			chat_id = query.message.chat_id,
-			text="<b>👣 Inicio > Retos > Retos disponibles > Información de un reto</b>",
+			text=text,
 			parse_mode='HTML',
 			reply_markup = reply_markup
 		)
@@ -5624,6 +5611,8 @@ def ver_reto_apuntarse(update, context):
 	resultado = cur.fetchall()
 	start_day_reto = resultado[0][0]
 	end_day_reto = resultado[0][1]
+	fecha_inicio = start_day_reto.strftime('%d-%B-%Y')
+	fecha_fin = end_day_reto.strftime('%d-%B-%Y')
 	start_day_reto = start_day_reto.strftime("%Y-%m-%d")
 	end_day_reto = end_day_reto.strftime("%Y-%m-%d")
 
@@ -5632,70 +5621,79 @@ def ver_reto_apuntarse(update, context):
 	cur.execute("SELECT Retos.id_reto FROM Retos INNER JOIN Realiza_reto ON Retos.id_reto=Realiza_reto.id_reto and Retos.fecha_inicio <= '"+end_day_reto+"' and Retos.fecha_fin >= '"+end_day_reto+"' and Realiza_reto.id_usuario='"+username_user+"' and (Realiza_reto.estado='A' or Realiza_reto.estado='R')")
 	resultado_after = cur.fetchall()
 
-	keyboard = [
-		[InlineKeyboardButton("Volver a Retos disponibles 🔙", callback_data="back_inicio_retos_ver")],
-		[InlineKeyboardButton("Volver a Retos 🔙", callback_data="back_inicio_retos")],
-		[InlineKeyboardButton("Volver a Inicio 👣", callback_data="back_inicio")]
-	]
-	reply_markup = InlineKeyboardMarkup(keyboard)
+	keyboard=[]
+	
+	# Si está apuntado al reto
+	cur.execute("SELECT * FROM Realiza_reto INNER JOIN Retos ON Realiza_reto.id_reto = Retos.id_reto and Realiza_reto.id_usuario='"+username_user+"' and Realiza_reto.id_reto="+id_reto+" and Retos.fecha_inicio > CURDATE()")
+	esta_apuntado = cur.fetchall()
+	if esta_apuntado:
+		cur.execute("DELETE FROM Realiza_reto WHERE id_reto="+str(id_reto)+" AND id_usuario='"+username_user+"';")
+		db.commit()
+
+		# Quitar alarmas
+		alarma_primer_dia = username_user+"_"+str(id_reto)
+		alarma_descalificar = "descalificar_"+username_user+"_"+str(id_reto)
+		for job in context.job_queue.get_jobs_by_name(alarma_primer_dia):
+			job.schedule_removal()
+		for job in context.job_queue.get_jobs_by_name(alarma_descalificar):
+			job.schedule_removal()
+
+		cur.execute("SELECT COUNT(*) FROM Realiza_reto where id_reto="+str(id_reto)+";")
+		resultado = cur.fetchall();
+		num_usuarios_apuntados = resultado[0][0]
+		text="<b>NO ESTÁS APUNTADO A ESTE RETO</b>"
+		text=text+"\n\nAquí tienes el calendario de este reto.\n\n<b>Fecha de inicio:</b> "+fecha_inicio+"\n<b>Fecha fin:</b> "+fecha_fin
+		if num_usuarios_apuntados == 1:
+			text = text+"\n\nHay "+str(num_usuarios_apuntados)+" usuario apuntado a este reto. ¡Anímate!"
+		else:
+			text = text+"\n\nHay "+str(num_usuarios_apuntados)+" usuarios apuntados a este reto. ¡Anímate!"
+
+		if num_usuarios_apuntados == 0:
+			text = text+"\n\n¡Aún no hay nadie apuntado a este reto! Sé la primera persona en apuntarse y corre la voz para competir con tus rivales 💪💪💪"
+
+		text=text+"\n\nCompleta este reto y gana una insignia que podrás lucir en la página web 🎖"
+		keyboard.append([InlineKeyboardButton("Apuntarse al reto ✅", callback_data="inicio_retos_ver_apuntarse_"+str(id_reto))])
+
+	else:
+		if not resultado_before and not resultado_after:
+			cur.execute("INSERT INTO Realiza_reto(id_reto, id_usuario, estado) VALUES (%s, %s, 'A')",(id_reto,username_user))
+			db.commit()
+
+			text="<b>ESTÁS APUNTADO AL RETO</b>"
+			text=text+"\n\nTe deseo mucha suerte."
+
+			cur = db.cursor()
+			cur.execute("SELECT fecha_inicio FROM Retos WHERE id_reto="+id_reto)
+			resultado = cur.fetchall()
+			start_day_object = resultado[0][0]
+
+			ESP = tz.gettz('Europe/Madrid')
+			dt = datetime(start_day_object.year,start_day_object.month,start_day_object.day,8,0,0, tzinfo=ESP)
+
+			name_alarm=username_user+"_"+str(id_reto)
+			context.job_queue.run_once(primer_dia_reto, dt, context=(query.message.chat_id, update, id_reto), name=name_alarm)
+
+			text=text+"\n\nEl día que empice el reto te enviaré un recordatorio para que no se te olvide 🛎🛎🛎"
+			keyboard.append([InlineKeyboardButton("Desapuntarse del reto ❌", callback_data="inicio_retos_ver_apuntarse_"+str(id_reto))])
+
+		else:
+			text="No puedes apuntarte al reto porque sus fechas coinciden con otro reto al que ya estás apuntado"
 
 	cur.close()
 	db.close()
-	if not resultado_before and not resultado_after:
-		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
-		db.begin()
-		cur = db.cursor()
-		cur.execute("INSERT INTO Realiza_reto(id_reto, id_usuario, estado) VALUES (%s, %s, 'A')",(id_reto,username_user))
-		db.commit()
-		bot.send_message(
-			chat_id = query.message.chat_id,
-			text="⏳ Registrando tu inscripción al reto..."
-		)
-		time.sleep(1.5)
 
-		text="¡Te has apuntado al reto! Te deseo mucha suerte."
+	keyboard.append([InlineKeyboardButton("Volver a Retos disponibles 🔙", callback_data="back_inicio_retos_ver")])
+	keyboard.append([InlineKeyboardButton("Volver a Retos 🔙", callback_data="back_inicio_retos")])
+	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data="back_inicio")])
 
-		cur = db.cursor()
-		cur.execute("SELECT fecha_inicio FROM Retos WHERE id_reto="+id_reto)
-		resultado = cur.fetchall()
-		start_day_object = resultado[0][0]
-
-		ESP = tz.gettz('Europe/Madrid')
-		dt = datetime(start_day_object.year,start_day_object.month,start_day_object.day,8,0,0, tzinfo=ESP)
-
-		name_alarm=username_user+"_"+str(id_reto)
-		context.job_queue.run_once(primer_dia_reto, dt, context=(query.message.chat_id, update, id_reto), name=name_alarm)
-
-		bot.send_message(
-			chat_id = query.message.chat_id,
-			text = text
-		)
-		time.sleep(.8)
-		bot.send_message(
-			chat_id = query.message.chat_id,
-			text = "El día que empice el reto te enviaré un recordatorio para que no se te olvide 🛎🛎🛎"
-		)
-		time.sleep(.8)
-
-		cur.close()
-		db.close()
-
-		show_inicio_retos_ver(update, context)
-
-		current_state = "INICIO_RETOS_VER"
-		return INICIO_RETOS_VER
-
-	else:
-		bot.send_message(
-			chat_id = query.message.chat_id,
-			text = 'No puedes apuntarte al reto porque sus fechas coinciden con otro reto al que ya estás apuntado.',
-		)
-		time.sleep(.8)
-		bot.send_message(
-			chat_id = query.message.chat_id,
-			text = '👣 Inicio > Retos > Retos disponibles > Información de un reto',
-			reply_markup = reply_markup
-		)
+	reply_markup = InlineKeyboardMarkup(keyboard)
+	bot.edit_message_text(
+		chat_id = query.message.chat_id,
+		message_id = query.message.message_id,
+		text = text,
+		parse_mode='HTML',
+		reply_markup=reply_markup
+	)
 
 def primer_dia_reto(context):
 	global current_state, conv_handler
@@ -6031,7 +6029,7 @@ def eliminar_reto_confirmar_si(update, context):
 		show_inicio_retos(update, context)
 
 		current_state = "INICIO_RETOS"
-		return "INICIO_RETOS"
+		return INICIO_RETOS
 
 	else:
 		bot.send_message(
@@ -6906,7 +6904,7 @@ def show_inicio_ejercicio(update, context):
 	# Hay algún ejercicio del mes actualmente
 	if resultado:
 		keyboard.append([InlineKeyboardButton("Registrar cardio 🏃", callback_data='inicio_cardio_registrar')])
-		keyboard.append([InlineKeyboardButton("Ranking actual de este ejercicio del mes 🥇", callback_data='inicio_ejercicio_ranking')])
+		keyboard.append([InlineKeyboardButton("Ranking actual del ejercicio de este mes 🥇", callback_data='inicio_ejercicio_ranking')])
 		keyboard.append([InlineKeyboardButton("Me rindo en el ejercicio de este mes ❌", callback_data='inicio_ejercicio_descalificar')])
 		
 		id_objetivo_mensual = resultado[0][0]
@@ -7633,8 +7631,8 @@ def historial_ejercicio(update, context):
 		usuario = resultado[i][0]
 		puntuacion = round(float(resultado[i][1]),1)
 		cur.execute("SELECT SUM("+medida+") FROM Registra_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+" AND id_usuario='"+usuario+"' AND DATE(fecha)>='"+str(fecha_inicio)+"' AND DATE(fecha)<='"+str(fecha_fin)+"';")
-		resultado = cur.fetchall()
-		contador = resultado[0][0]
+		contador = cur.fetchall()
+		contador = contador[0][0]
 		if contador is None:
 			contador = 0
 		text=text+"\n"
@@ -7647,20 +7645,20 @@ def historial_ejercicio(update, context):
 
 		if usuario == username_user:
 			aparece_usuario = True
-			text=text+"<b>"+usuario+" - "+str(round(puntuacion,1))+" puntos - "+str(round(contador,1))+" "+tipo_objetivo+"</b>"
+			text=text+"<b>"+usuario+" - "+str(round(puntuacion,1))+" puntos - "+str(contador)+" "+tipo_objetivo+"</b>"
 		else:
-			text=text+usuario+" - "+str(round(puntuacion,1))+" puntos - "+str(round(contador,1))+" "+tipo_objetivo
+			text=text+usuario+" - "+str(round(puntuacion,1))+" puntos - "+str(contador)+" "+tipo_objetivo
 
 	if not aparece_usuario:
 		cur.execute("SELECT puntuacion FROM Se_apunta WHERE estado='R' AND id_usuario='"+username_user+"'")
 		resultado = cur.fetchall();
 		puntuacion_usuario = resultado[0][0]
 		cur.execute("SELECT SUM("+medida+") FROM Registra_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+" AND id_usuario='"+username_user+"' AND DATE(fecha)>='"+str(fecha_inicio)+"' AND DATE(fecha)<='"+str(fecha_fin)+"';")
-		resultado = cur.fetchall()
-		contador = resultado[0][0]
+		contador = cur.fetchall()
+		contador = contador[0][0]
 		if contador is None:
 			contador = 0
-		text=text+"\n\nTu puntuación: "+str(round(puntuacion_usuario,1))+" - "+str(round(contador,1))+" "+tipo_objetivo 
+		text=text+"\n\nTu puntuación: "+str(round(puntuacion_usuario,1))+" - "+str(contador)+" "+tipo_objetivo 
 
 	bot.send_message(
 		chat_id = query.message.chat_id,
@@ -8806,7 +8804,7 @@ def inicio_ficha(update, context):
 
 	time.sleep(.8)
 	keyboard = [
-		[InlineKeyboardButton("Peso: "+str(peso).rstrip('0').rstrip('. ')+"kg", callback_data='inicio_ficha_peso')],
+		[InlineKeyboardButton("Peso: "+str(peso)+"kg", callback_data='inicio_ficha_peso')],
 		[InlineKeyboardButton("Altura: "+altura, callback_data='inicio_ficha_altura')],
 		[InlineKeyboardButton("Fecha nacimiento: "+fecha_nacimiento, callback_data='inicio_ficha_nacimiento')],
 		[InlineKeyboardButton("Género: "+genero, callback_data='inicio_ficha_genero')],
@@ -8866,22 +8864,22 @@ def inicio_peso(update, context):
 
 			text="📌 Última vez que anotaste datos: "+fecha
 			if peso is not None:
-				text=text+"\n\nPeso: "+str(peso).rstrip('0').rstrip('. ')+"kg"
+				text=text+"\n\nPeso: "+str(peso)+"kg"
 			else:
 				text=text+"\n\nPeso: sin datos"
 
 			if grasa is not None:
-				text=text+"\nGrasa: "+str(grasa).rstrip('0').rstrip('. ')+"%"
+				text=text+"\nGrasa: "+str(grasa)+"%"
 			else:
 				text=text+"\nGrasa: sin datos"
 
 			if musculo is not None:
-				text=text+"\nMúsculo: "+str(musculo).rstrip('0').rstrip('. ')+"%"
+				text=text+"\nMúsculo: "+str(musculo)+"%"
 			else:
 				text=text+"\nMúsculo: sin datos"
 
 			if imc is not None:
-				text=text+"\nIMC: "+str(imc).rstrip('0').rstrip('. ')
+				text=text+"\nIMC: "+str(imc)
 
 			time.sleep(.8)
 			update.message.reply_text(
@@ -8925,8 +8923,8 @@ def inicio_peso(update, context):
 				else:
 					fecha_inicio = fecha_inicio.strftime("%d-%b-%Y")
 
-				text="📌 Actualmente tienes un <b>objetivo de "+tipo+"</b>.\n\nÚltimo registro de "+tipo+": "+str(peso).rstrip('0').rstrip('. ')+medida+"\nTu objetivo: "+str(peso_objetivo).rstrip('0').rstrip('. ')+medida
-				text=text+"\nTe queda: "+str(diferencia_peso).rstrip('0').rstrip('. ')+medida
+				text="📌 Actualmente tienes un <b>objetivo de "+tipo+"</b>.\n\nÚltimo registro de "+tipo+": "+str(peso)+medida+"\nTu objetivo: "+str(peso_objetivo)+medida
+				text=text+"\nTe queda: "+str(diferencia_peso)+medida
 				text=text+"\nFecha inicio: "+fecha_inicio+"\nFecha fin: "+fecha_fin
 
 				keyboard.append([InlineKeyboardButton("Eliminar objetivo 🏁", callback_data='inicio_peso_eliminar')])
@@ -9015,7 +9013,7 @@ def inicio_peso_anotar(update, context):
 
 			if resultado[0][0] is not None:
 				peso = resultado[0][0]
-				text=text+"\nPeso: "+str(peso).rstrip('0').rstrip('. ')+"kg"
+				text=text+"\nPeso: "+str(peso)+"kg"
 				keyboard.append([InlineKeyboardButton("Modificar peso", callback_data='inicio_peso_anotar_peso')])
 			else:
 				keyboard.append([InlineKeyboardButton("Anotar peso ✏", callback_data='inicio_peso_anotar_peso')])
@@ -9023,14 +9021,14 @@ def inicio_peso_anotar(update, context):
 
 			if resultado[0][1] is not None:
 				grasa = resultado[0][1]
-				text=text+"\nGrasa: "+str(grasa).rstrip('0').rstrip('. ')+"%"
+				text=text+"\nGrasa: "+str(grasa)+"%"
 				keyboard.append([InlineKeyboardButton("Modificar grasa", callback_data='inicio_peso_anotar_grasa')])
 			else:
 				keyboard.append([InlineKeyboardButton("Anotar grasa ✏", callback_data='inicio_peso_anotar_grasa')])
 
 			if resultado[0][2] is not None:
 				musculo = resultado[0][2]
-				text=text+"\nMúsculo: "+str(musculo).rstrip('0').rstrip('. ')+"%"
+				text=text+"\nMúsculo: "+str(musculo)+"%"
 				keyboard.append([InlineKeyboardButton("Modificar músculo", callback_data='inicio_peso_anotar_musculo')])
 			else:
 				keyboard.append([InlineKeyboardButton("Anotar músculo ✏", callback_data='inicio_peso_anotar_musculo')])
