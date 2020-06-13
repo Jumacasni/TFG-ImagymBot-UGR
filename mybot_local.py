@@ -57,7 +57,7 @@ INICIO_RETOS_DESCALIFICAR, INICIO_RETOS_DESCALIFICAR_CONFIRMAR, INICIO_RETOS_HIS
 INICIO_RUTINAS, INICIO_EJERCICIO, INICIO_SOPORTE, INICIO_EJERCICIO_REGISTRAR, INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD,\
 INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR, INICIO_EJERCICIO_RANKING, INICIO_EJERCICIO_DESCALIFICAR_CONFIRMAR,\
 INICIO_EJERCICIO_ELIMINAR_CONFIRMAR, INICIO_EJERCICIO_HISTORIAL, INICIO_EJERCICIO_HISTORIAL_CLASIFICACION,\
-INICIO_RUTINAS_VER, INICIO_RUTINAS_VER_RUTINA = range(64)
+INICIO_RUTINAS_VER, INICIO_RUTINAS_VER_RUTINA, INICIO_RUTINAS_ANOTAR, INICIO_RUTINAS_ANOTAR_RUTINA = range(66)
 
 db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 
@@ -2790,10 +2790,10 @@ def evolucion_peso(update, context):
 	current_time = cur.fetchall()
 
 	image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-	image_path_plot = "/home/castinievas/ImagymBot/evolucion/peso/"+image_name_plot
+	image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/peso/"+image_name_plot
 
 	# image_name_bar = current_user+"_"+current_date[0][0]+"_"+current_time[0][0]+"_bar.png"
-	# image_path_bar = "/home/castinievas/ingenieria_informatica/curso1920/TFG/graphs/"+image_name_bar
+	# image_path_bar = "/home/jumacasni/Documentos/ingenieria_informatica/curso1920/TFG/graphs/"+image_name_bar
 
 	cur.execute("SELECT fecha,peso FROM Peso WHERE id_usuario='"+username+"' ORDER BY DATE(fecha) ASC;")
 	user_date_weight = cur.fetchall()
@@ -2898,7 +2898,7 @@ def evolucion_peso_rango(update, context):
 				current_time = cur.fetchall()
 
 				image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-				image_path_plot = "/home/castinievas/ImagymBot/evolucion/peso/"+image_name_plot
+				image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/peso/"+image_name_plot
 
 				cur.execute("SELECT fecha,peso FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' ORDER BY DATE(fecha) ASC;")
 				user_date_weight = cur.fetchall()
@@ -2981,7 +2981,7 @@ def evolucion_peso_rango(update, context):
 					current_time = cur.fetchall()
 
 					image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-					image_path_plot = "/home/castinievas/ImagymBot/evolucion/peso/"+image_name_plot
+					image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/peso/"+image_name_plot
 
 					cur.execute("SELECT fecha,peso FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' and fecha<='"+fecha2+"' ORDER BY DATE(fecha) ASC;")
 					user_date_weight = cur.fetchall()
@@ -3049,7 +3049,7 @@ def evolucion_grasa(update, context):
 	current_time = cur.fetchall()
 
 	image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-	image_path_plot = "/home/castinievas/ImagymBot/evolucion/grasa/"+image_name_plot
+	image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/grasa/"+image_name_plot
 
 	cur.execute("SELECT fecha,grasa FROM Peso WHERE id_usuario='"+username+"' ORDER BY DATE(fecha) ASC;")
 	user_date_weight = cur.fetchall()
@@ -3154,7 +3154,7 @@ def evolucion_grasa_rango(update, context):
 				current_time = cur.fetchall()
 
 				image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-				image_path_plot = "/home/castinievas/ImagymBot/evolucion/grasa/"+image_name_plot
+				image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/grasa/"+image_name_plot
 
 				cur.execute("SELECT fecha,grasa FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' ORDER BY DATE(fecha) ASC;")
 				user_date_weight = cur.fetchall()
@@ -3237,7 +3237,7 @@ def evolucion_grasa_rango(update, context):
 					current_time = cur.fetchall()
 
 					image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-					image_path_plot = "/home/castinievas/ImagymBot/evolucion/peso/"+image_name_plot
+					image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/peso/"+image_name_plot
 
 					cur.execute("SELECT fecha,peso FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' and fecha<='"+fecha2+"' ORDER BY DATE(fecha) ASC;")
 					user_date_weight = cur.fetchall()
@@ -3305,7 +3305,7 @@ def evolucion_musculo(update, context):
 	current_time = cur.fetchall()
 
 	image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-	image_path_plot = "/home/castinievas/ImagymBot/evolucion/musculo/"+image_name_plot
+	image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/musculo/"+image_name_plot
 
 	cur.execute("SELECT fecha,musculo FROM Peso WHERE id_usuario='"+username+"' ORDER BY DATE(fecha) ASC;")
 	user_date_weight = cur.fetchall()
@@ -3410,7 +3410,7 @@ def evolucion_musculo_rango(update, context):
 				current_time = cur.fetchall()
 
 				image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-				image_path_plot = "/home/castinievas/ImagymBot/evolucion/IMC/"+image_name_plot
+				image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/IMC/"+image_name_plot
 
 				cur.execute("SELECT fecha,IMC FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' ORDER BY DATE(fecha) ASC;")
 				user_date_weight = cur.fetchall()
@@ -3493,7 +3493,7 @@ def evolucion_musculo_rango(update, context):
 					current_time = cur.fetchall()
 
 					image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-					image_path_plot = "/home/castinievas/ImagymBot/evolucion/IMC/"+image_name_plot
+					image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/IMC/"+image_name_plot
 
 					cur.execute("SELECT fecha,IMC FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' and fecha<='"+fecha2+"' ORDER BY DATE(fecha) ASC;")
 					user_date_weight = cur.fetchall()
@@ -3561,7 +3561,7 @@ def evolucion_imc(update, context):
 	current_time = cur.fetchall()
 
 	image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-	image_path_plot = "/home/castinievas/ImagymBot/evolucion/IMC/"+image_name_plot
+	image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/IMC/"+image_name_plot
 
 	cur.execute("SELECT fecha,IMC FROM Peso WHERE id_usuario='"+username+"' ORDER BY DATE(fecha) ASC;")
 	user_date_weight = cur.fetchall()
@@ -3666,7 +3666,7 @@ def evolucion_imc_rango(update, context):
 				current_time = cur.fetchall()
 
 				image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-				image_path_plot = "/home/castinievas/ImagymBot/evolucion/musculo/"+image_name_plot
+				image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/musculo/"+image_name_plot
 
 				cur.execute("SELECT fecha,musculo FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' ORDER BY DATE(fecha) ASC;")
 				user_date_weight = cur.fetchall()
@@ -3749,7 +3749,7 @@ def evolucion_imc_rango(update, context):
 					current_time = cur.fetchall()
 
 					image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-					image_path_plot = "/home/castinievas/ImagymBot/evolucion/musculo/"+image_name_plot
+					image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/musculo/"+image_name_plot
 
 					cur.execute("SELECT fecha,musculo FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' and fecha<='"+fecha2+"' ORDER BY DATE(fecha) ASC;")
 					user_date_weight = cur.fetchall()
@@ -3815,7 +3815,7 @@ def show_inicio_peso_valoracion(update, context):
 	resultado = cur.fetchall()
 	imc = resultado[0][0]
 
-	image_path = "/home/castinievas/ImagymBot/imagenes/IMC.jpg"
+	image_path = "/home/jumacasni/Documentos/ImagymBot/imagenes/IMC.jpg"
 
 	keyboard = [
 		[InlineKeyboardButton("Volver a Peso 🔙", callback_data='back_inicio_peso')],
@@ -5428,7 +5428,7 @@ def show_inicio_retos_ver(update, context):
 		if not callback_query_retos_ver_apuntarse in conv_handler.states[INICIO_RETOS_VER_RETO]:
 			conv_handler.states[INICIO_RETOS_VER_RETO].append(callback_query_retos_ver_apuntarse)
 
-		table_reto_path = "/home/castinievas/ImagymBot/retos/"+str(id_reto[0])+".png"
+		table_reto_path = "/home/jumacasni/Documentos/ImagymBot/retos/"+str(id_reto[0])+".png"
 		if not path.exists(table_reto_path):
 			createTable(id_reto[0], name_button)
 
@@ -5456,7 +5456,7 @@ def ver_reto(update, context):
 	id_reto_callback = query.data
 	id_reto = id_reto_callback.split('_',4)
 	id_reto = id_reto[3]
-	table_reto_path = "/home/castinievas/ImagymBot/retos/"+id_reto+".png"
+	table_reto_path = "/home/jumacasni/Documentos/ImagymBot/retos/"+id_reto+".png"
 
 	pic = open(table_reto_path, 'rb')
 
@@ -5707,14 +5707,13 @@ def primer_dia_reto(context):
 	)
 
 	for i in conv_handler.states:
-		show_inicio_retos = CallbackQueryHandler(show_inicio_retos, pattern='back_inicio_retos')
-		start_retos = CallbackQueryHandler(show_inicio_retos, pattern='inicio_retos')
-		show_inicio = CallbackQueryHandler(show_inicio, pattern='back_inicio')
-		if not show_inicio in conv_handler.states[i]:
-			conv_handler.states[i].append(show_inicio)
-		if not show_inicio_retos in conv_handler.states[i] and not start_retos in conv_handler.states[i]:
-			conv_handler.states[i].append(show_inicio_retos)
-
+		callback_show_inicio_retos = CallbackQueryHandler(show_inicio_retos, pattern='back_inicio_retos')
+		callback_start_retos = CallbackQueryHandler(show_inicio_retos, pattern='inicio_retos')
+		callback_show_inicio = CallbackQueryHandler(show_inicio, pattern='back_inicio')
+		if not callback_show_inicio in conv_handler.states[i]:
+			conv_handler.states[i].append(callback_show_inicio)
+		if not callback_show_inicio_retos in conv_handler.states[i] and not callback_start_retos in conv_handler.states[i]:
+			conv_handler.states[i].append(callback_show_inicio_retos)
 	cur.close()
 	db.close()
 
@@ -6224,7 +6223,7 @@ def show_inicio_retos_calendario(update, context):
 	text="Reto de "+ejercicio.lower()+", nivel "+str(nivel)+", "+fecha_inicio.strftime("%B")
 
 	nombre_imagen = str(id_reto)+"_"+username_user+"_"+str(dia_reto)
-	path_imagen = "/home/castinievas/ImagymBot/retos/"+nombre_imagen+".png"
+	path_imagen = "/home/jumacasni/Documentos/ImagymBot/retos/"+nombre_imagen+".png"
 
 	cur.close()
 	db.close()
@@ -6481,7 +6480,7 @@ def historial_reto(update, context):
 	text="Reto de "+ejercicio.lower()+", nivel "+str(nivel)+", "+fecha_inicio.strftime("%B")
 
 	nombre_imagen = str(id_reto)+"_"+username_user+"_historial"
-	path_imagen = "/home/castinievas/ImagymBot/retos/"+nombre_imagen+".png"
+	path_imagen = "/home/jumacasni/Documentos/ImagymBot/retos/"+nombre_imagen+".png"
 
 	if not path.exists(path_imagen):
 		createTableColors(id_reto,text,dia,username_user,nombre_imagen)
@@ -6646,7 +6645,7 @@ def createTable(id_reto, name):
 	plt.subplots_adjust(bottom=0.05)
 	the_table.scale(2, 2)
 
-	table_path = "/home/castinievas/ImagymBot/retos/"+str(id_reto)+".png"
+	table_path = "/home/jumacasni/Documentos/ImagymBot/retos/"+str(id_reto)+".png"
 	plt.savefig(table_path)
 
 def createTableColors(id_reto, name, day_limit, id_usuario, name_graph):
@@ -6791,7 +6790,7 @@ def createTableColors(id_reto, name, day_limit, id_usuario, name_graph):
 	if name_graph == "":
 		name_graph = str(id_reto)+"_"+id_usuario+"_"+str(day_limit)
 
-	table_path = "/home/castinievas/ImagymBot/retos/"+name_graph+".png"
+	table_path = "/home/jumacasni/Documentos/ImagymBot/retos/"+name_graph+".png"
 	plt.savefig(table_path)
 
 	cur.close()
@@ -7529,18 +7528,93 @@ def show_inicio_rutinas(update, context):
 	bot = context.bot
 	username_user = query.from_user.username
 
-	keyboard =[
-		[InlineKeyboardButton("Ver rutinas de entrenamiento 🏋", callback_data='inicio_rutinas_ver')],
-		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')],
-	]
-
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		text="⏳ Cargando Inicio > Rutinas y entrenamiento..."
 	)
-	time.sleep(1.5)
-	reply_markup = InlineKeyboardMarkup(keyboard)
+	time.sleep(1)
 
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
+	db.begin()
+	cur = db.cursor()
+	cur.execute("SELECT DISTINCT id_rutina FROM Hace_rutina WHERE fecha=CURDATE() AND id_usuario='"+username_user+"' ORDER BY id_rutina;")
+	rutinas = cur.fetchall()
+	cur.close()
+	db.close()
+
+	if not rutinas:
+		text="📌 Hoy no has anotado ningún ejercicio de las rutinas"
+
+	else:
+		text="<b>HOY DÍA "+date.today().strftime('%d-%B-%Y').upper()+" HAS HECHO:</b>"
+	for id_rutina in rutinas:
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
+		db.begin()
+		cur = db.cursor()
+		cur.execute("SELECT id_trainer FROM Rutinas where id_rutina="+str(id_rutina[0])+";")
+		resultado = cur.fetchall()
+		id_trainer = resultado[0][0]
+
+		cur.execute("SELECT nombre FROM Trainers where id_trainer="+str(id_trainer)+";")
+		nombre = cur.fetchall()
+		nombre = nombre[0][0]
+
+		dia_hoy = date.today().weekday()+1
+		if dia_hoy == 1:
+			dia_semana = "Lunes"
+		elif dia_hoy == 2:
+			dia_semana = "Martes"
+		elif dia_hoy == 3:
+			dia_semana = "Miércoles"
+		elif dia_hoy == 4:
+			dia_semana = "Jueves"
+		elif dia_hoy == 5:
+			dia_semana = "Viernes"
+		elif dia_hoy == 6:
+			dia_semana = "Sábado"
+		elif dia_hoy == 7:
+			dia_semana = "Domingo"
+
+		text=text+"\n\n📌 <b>Ejercicios hechos de la rutina del "+dia_semana.lower()+" de "+nombre+"</b>"
+		cur.execute("SELECT id_rutina FROM Sigue where id_rutina="+str(id_rutina[0])+" AND id_usuario='"+username_user+"';")
+		esta_apuntado = cur.fetchall()
+		if esta_apuntado:
+			text=text+" ⭐"
+		cur.execute("SELECT id_ejercicio FROM Hace_rutina WHERE fecha=CURDATE() AND id_usuario='"+username_user+"' AND id_rutina="+str(id_rutina[0])+";")
+		ejercicios = cur.fetchall()
+		cur.close()
+		db.close()
+		for i in range(len(ejercicios)):
+			id_ejercicio = ejercicios[i][0]
+			
+			db = pymysql.connect("localhost", "root", "password", "ImagymServer")
+			db.begin()
+			cur = db.cursor()
+			cur.execute("SELECT nombre FROM Ejercicios where id_ejercicio="+str(id_ejercicio)+";")
+			nombre_ejercicio = cur.fetchall()
+			nombre_ejercicio = nombre_ejercicio[0][0]
+
+			cur.execute("SELECT repeticiones FROM Rutinas_ejercicios WHERE id_ejercicio="+str(id_ejercicio)+" AND id_rutina="+str(id_rutina[0])+" AND dia='"+str(dia_hoy)+"';")
+			repeticiones = cur.fetchall()
+			repeticiones = repeticiones[0][0]
+
+			cur.close()
+			db.close()
+
+			text=text+"\n"+nombre_ejercicio+" - "+repeticiones+" 👉 id: "+str(id_ejercicio)
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text=text,
+		parse_mode='HTML'
+	)
+
+	keyboard = []
+	keyboard.append([InlineKeyboardButton("Ver rutinas de entrenamiento 🏋", callback_data='inicio_rutinas_ver')])
+	keyboard.append([InlineKeyboardButton("Anotar rutina de hoy 📝", callback_data='inicio_rutinas_anotar')])
+	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
+
+	reply_markup = InlineKeyboardMarkup(keyboard)
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		text="👣 Inicio > Rutinas y entrenamiento",
@@ -7563,7 +7637,7 @@ def show_inicio_rutinas_ver(update, context):
 		chat_id = query.message.chat_id,
 		text="⏳ Cargando Inicio > Rutinas y entrenamiento > Ver rutinas de entrenamiento..."
 	)
-	time.sleep(1.5)
+	time.sleep(1)
 
 	cur = db.cursor()
 	cur.execute("SELECT id_rutina FROM Rutinas;")
@@ -7596,19 +7670,23 @@ def show_inicio_rutinas_ver(update, context):
 
 		name_button = "Rutina de "+nombre
 		if esta_apuntado:
-			name_button=name_button+" ✔"
+			name_button=name_button+" ⭐"
 		button = InlineKeyboardButton(name_button, callback_data="inicio_rutinas_ver_"+str(id_rutina[0]))
 		keyboard = []
 		keyboard.append(button)
 		list_keyboards.append(keyboard)
 		callback_query_rutinas_ver = CallbackQueryHandler(ver_rutina, pattern="inicio_rutinas_ver_"+str(id_rutina[0]))
-		callback_query_rutinas_ver_apuntarse = CallbackQueryHandler(ver_rutina_apuntarse, pattern="inicio_rutinas_ver_apuntarse_"+str(id_rutina[0]))
+		callback_query_rutinas_ver_seguir = CallbackQueryHandler(ver_rutina_seguir, pattern="inicio_rutinas_ver_seguir_"+str(id_rutina[0]))
+		callback_query_rutinas_ver_dejar = CallbackQueryHandler(ver_rutina_dejar, pattern="inicio_rutinas_ver_dejar_"+str(id_rutina[0]))
 
 		if not callback_query_rutinas_ver in conv_handler.states[INICIO_RUTINAS_VER]:
 			conv_handler.states[INICIO_RUTINAS_VER].append(callback_query_rutinas_ver)
 
-		if not callback_query_rutinas_ver_apuntarse in conv_handler.states[INICIO_RUTINAS_VER_RUTINA]:
-			conv_handler.states[INICIO_RUTINAS_VER_RUTINA].append(callback_query_rutinas_ver_apuntarse)
+		if not callback_query_rutinas_ver_seguir in conv_handler.states[INICIO_RUTINAS_VER_RUTINA]:
+			conv_handler.states[INICIO_RUTINAS_VER_RUTINA].append(callback_query_rutinas_ver_seguir)
+
+		if not callback_query_rutinas_ver_dejar in conv_handler.states[INICIO_RUTINAS_VER_RUTINA]:
+			conv_handler.states[INICIO_RUTINAS_VER_RUTINA].append(callback_query_rutinas_ver_dejar)
 
 	list_keyboards.append([InlineKeyboardButton("Volver a Rutinas 🔙", callback_data='back_inicio_rutinas')])
 	list_keyboards.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
@@ -7689,7 +7767,7 @@ def ver_rutina(update, context):
 				cur.close()
 				db.close()
 
-				text=text+"\n"+nombre_ejercicio+" - "+repeticiones
+				text=text+"\n"+nombre_ejercicio+" - "+repeticiones+" 👉 id: "+str(id_ejercicio)
 
 	bot.send_message(
 		chat_id = query.message.chat_id,
@@ -7706,9 +7784,10 @@ def ver_rutina(update, context):
 	resultado = cur.fetchall()
 
 	if not resultado:
-		keyboard.append([InlineKeyboardButton("Seguir esta rutina ✔", callback_data="inicio_rutinas_ver_apuntarse")])
+		keyboard.append([InlineKeyboardButton("Añadir a favoritos ⭐", callback_data="inicio_rutinas_ver_seguir_"+str(id_rutina))])
 
 	else:
+		keyboard.append([InlineKeyboardButton("Quitar de favoritos ❌", callback_data="inicio_rutinas_ver_dejar_"+str(id_rutina))])
 		bot.send_message(
 			chat_id = query.message.chat_id,
 			text = "Ya sigues esta rutina ✔",
@@ -7731,8 +7810,408 @@ def ver_rutina(update, context):
 	current_state = "INICIO_RUTINAS_VER_RUTINA"
 	return INICIO_RUTINAS_VER_RUTINA
 
-def ver_rutina_apuntarse(update, context):
-	pass
+def ver_rutina_seguir(update, context):	
+	global current_state
+
+	query = update.callback_query
+	bot = context.bot
+	username_user = query.from_user.username
+
+	id_rutina_callback = query.data
+	id_rutina = id_rutina_callback.split('_',5)
+	id_rutina = id_rutina[4]
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="Estás siguiendo esta rutina ✔"
+	)
+	time.sleep(.8)
+
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
+	db.begin()
+	cur = db.cursor()
+
+	cur.execute("INSERT INTO Sigue(id_rutina,id_usuario) VALUES (%s, %s)",(id_rutina,username_user))
+	db.commit()
+
+	cur.close()
+	db.close()
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="Te voy a reedirigir al menú de Ver rutinas de entrenamiento 🔙"
+	)
+	time.sleep(.8)
+
+	show_inicio_rutinas_ver(update, context)
+
+	current_state = "INICIO_RUTINAS_VER"
+	return INICIO_RUTINAS_VER
+
+def ver_rutina_dejar(update, context):	
+	global current_state
+
+	query = update.callback_query
+	bot = context.bot
+	username_user = query.from_user.username
+
+	id_rutina_callback = query.data
+	id_rutina = id_rutina_callback.split('_',5)
+	id_rutina = id_rutina[4]
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="Ya no sigues esta rutina ❌"
+	)
+	time.sleep(.8)
+
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
+	db.begin()
+	cur = db.cursor()
+
+	cur.execute("DELETE FROM Sigue WHERE id_rutina="+str(id_rutina)+" AND id_usuario='"+username_user+"';")
+	db.commit()
+
+	cur.close()
+	db.close()
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="Te voy a reedirigir al menú de Ver rutinas de entrenamiento 🔙"
+	)
+	time.sleep(.8)
+
+	show_inicio_rutinas_ver(update, context)
+
+	current_state = "INICIO_RUTINAS_VER"
+	return INICIO_RUTINAS_VER
+
+def show_inicio_rutinas_anotar(update, context):
+	global current_state
+
+	query = update.callback_query
+	bot = context.bot
+	username_user = query.from_user.username
+
+	keyboard = []
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="⏳ Cargando Inicio > Rutinas y entrenamiento > Anotar rutina..."
+	)
+	time.sleep(1)
+
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
+	db.begin()
+	cur = db.cursor()
+
+	dia_hoy = date.today().weekday()+1
+
+	if dia_hoy == 1:
+		dia_semana = "Lunes"
+	elif dia_hoy == 2:
+		dia_semana = "Martes"
+	elif dia_hoy == 3:
+		dia_semana = "Miércoles"
+	elif dia_hoy == 4:
+		dia_semana = "Jueves"
+	elif dia_hoy == 5:
+		dia_semana = "Viernes"
+	elif dia_hoy == 6:
+		dia_semana = "Sábado"
+	elif dia_hoy == 7:
+		dia_semana = "Domingo"
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="Estas son todas las rutinas que se pueden anotar hoy <b>"+dia_semana.upper()+"</b>",
+		parse_mode='HTML'
+	)
+
+	list_keyboards=[]
+	# Primero se muestran las rutinas que tiene en favoritos
+	cur.execute("SELECT DISTINCT Rutinas_ejercicios.id_rutina FROM Rutinas_ejercicios INNER JOIN Sigue WHERE Rutinas_ejercicios.id_rutina=Sigue.id_rutina AND Rutinas_ejercicios.dia='"+str(dia_hoy)+"' AND Sigue.id_usuario='"+username_user+"';")
+	resultado = cur.fetchall()
+	cur.close()
+	db.close()
+
+	for id_rutina in resultado:
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
+		db.begin()
+		cur = db.cursor()
+
+		cur.execute("SELECT id_trainer FROM Rutinas where id_rutina="+str(id_rutina[0])+";")
+		resultado = cur.fetchall()
+		id_trainer = resultado[0][0]
+
+		cur.execute("SELECT nombre FROM Trainers where id_trainer="+str(id_trainer)+";")
+		nombre = cur.fetchall()
+		nombre = nombre[0][0]
+
+		cur.execute("SELECT id_rutina FROM Sigue where id_rutina="+str(id_rutina[0])+" AND id_usuario='"+username_user+"';")
+		esta_apuntado = cur.fetchall()
+
+		cur.close()
+		db.close()
+
+		name_button = "Rutina del "+dia_semana.lower()+" de "+nombre+" ⭐"
+		button = InlineKeyboardButton(name_button, callback_data="inicio_rutinas_anotar_"+str(id_rutina[0]))
+		keyboard = []
+		keyboard.append(button)
+		list_keyboards.append(keyboard)
+		callback_query_rutinas_anotar = CallbackQueryHandler(show_inicio_rutinas_anotar_rutina, pattern="inicio_rutinas_anotar_"+str(id_rutina[0]))
+
+		if not callback_query_rutinas_anotar in conv_handler.states[INICIO_RUTINAS_ANOTAR]:
+			conv_handler.states[INICIO_RUTINAS_ANOTAR].append(callback_query_rutinas_anotar)
+
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
+	db.begin()
+	cur = db.cursor()
+	# Ahora las rutinas que no tiene en favoritos
+	cur.execute("SELECT DISTINCT id_rutina FROM Rutinas_ejercicios WHERE Rutinas_ejercicios.dia='"+str(dia_hoy)+"' AND id_rutina NOT IN(SELECT DISTINCT Rutinas_ejercicios.id_rutina FROM Rutinas_ejercicios INNER JOIN Sigue WHERE Rutinas_ejercicios.id_rutina=Sigue.id_rutina AND Rutinas_ejercicios.dia='6' AND Sigue.id_usuario='"+username_user+"');")
+	resultado = cur.fetchall()
+	cur.close()
+	db.close()
+	for id_rutina in resultado:
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
+		db.begin()
+		cur = db.cursor()
+
+		cur.execute("SELECT id_trainer FROM Rutinas where id_rutina="+str(id_rutina[0])+";")
+		resultado = cur.fetchall()
+		id_trainer = resultado[0][0]
+
+		cur.execute("SELECT nombre FROM Trainers where id_trainer="+str(id_trainer)+";")
+		nombre = cur.fetchall()
+		nombre = nombre[0][0]
+
+		cur.execute("SELECT id_rutina FROM Sigue where id_rutina="+str(id_rutina[0])+" AND id_usuario='"+username_user+"';")
+		esta_apuntado = cur.fetchall()
+
+		cur.close()
+		db.close()
+
+		name_button = "Rutina del "+dia_semana.lower()+" de "+nombre
+		button = InlineKeyboardButton(name_button, callback_data="inicio_rutinas_anotar_"+str(id_rutina[0]))
+		keyboard = []
+		keyboard.append(button)
+		list_keyboards.append(keyboard)
+		callback_query_rutinas_anotar = CallbackQueryHandler(show_inicio_rutinas_anotar_rutina, pattern="inicio_rutinas_anotar_"+str(id_rutina[0]))
+
+		if not callback_query_rutinas_anotar in conv_handler.states[INICIO_RUTINAS_ANOTAR]:
+			conv_handler.states[INICIO_RUTINAS_ANOTAR].append(callback_query_rutinas_anotar)
+
+	list_keyboards.append([InlineKeyboardButton("Volver a Rutinas y entrenamiento 🔙", callback_data="back_inicio_rutinas")])
+	list_keyboards.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data="back_inicio")])
+
+	reply_markup = InlineKeyboardMarkup(list_keyboards)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="👣 Inicio > Rutinas y entrenamiento > Anotar rutina",
+		reply_markup=reply_markup
+	)
+
+	current_state = "INICIO_RUTINAS_ANOTAR"
+	return INICIO_RUTINAS_ANOTAR
+
+def show_inicio_rutinas_anotar_rutina(update, context):
+	global current_state
+
+	query = update.callback_query
+	bot = context.bot
+	username_user = query.from_user.username
+
+	id_rutina_callback = query.data
+	id_rutina = id_rutina_callback.split('_',4)
+	id_rutina = id_rutina[3]
+
+	dia_hoy = date.today().weekday()+1
+
+	if dia_hoy == 1:
+		dia_semana = "Lunes"
+	elif dia_hoy == 2:
+		dia_semana = "Martes"
+	elif dia_hoy == 3:
+		dia_semana = "Miércoles"
+	elif dia_hoy == 4:
+		dia_semana = "Jueves"
+	elif dia_hoy == 5:
+		dia_semana = "Viernes"
+	elif dia_hoy == 6:
+		dia_semana = "Sábado"
+	elif dia_hoy == 7:
+		dia_semana = "Domingo"
+
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
+	db.begin()
+	cur = db.cursor()
+	cur.execute("SELECT id_trainer FROM Rutinas where id_rutina="+str(id_rutina)+";")
+	resultado = cur.fetchall()
+	id_trainer = resultado[0][0]
+
+	cur.execute("SELECT nombre FROM Trainers where id_trainer="+str(id_trainer)+";")
+	nombre = cur.fetchall()
+	nombre = nombre[0][0]
+
+	text = "🏋️‍♂️ <b>RUTINA DEL "+dia_semana.upper()+" DE "+nombre.upper()+"</b> 🏋️‍♂️"
+
+	cur.execute("SELECT id_ejercicio,repeticiones FROM Rutinas_ejercicios where id_rutina="+str(id_rutina)+" AND dia='"+str(dia_hoy)+"';")
+	ejercicios_dia = cur.fetchall()
+	cur.close()
+	db.close()
+
+	text=text+"\n\nPulsa un ejercicio para anotarlo hoy.\n\nUn tick ☑ indica que ya has registrado el ejercicio hoy."
+
+	list_keyboards=[]
+	for i in range(len(ejercicios_dia)):
+		id_ejercicio = ejercicios_dia[i][0]
+		repeticiones = ejercicios_dia[i][1]
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
+		db.begin()
+		cur = db.cursor()
+		cur.execute("SELECT nombre FROM Ejercicios where id_ejercicio="+str(id_ejercicio)+";")
+		nombre_ejercicio = cur.fetchall()
+		nombre_ejercicio = nombre_ejercicio[0][0]
+
+		cur.execute("SELECT * FROM Hace_rutina WHERE fecha=CURDATE() AND id_rutina="+str(id_rutina)+" AND id_ejercicio="+str(id_ejercicio)+" AND dia='"+str(dia_hoy)+"' AND id_usuario='"+username_user+"';")
+		ya_hecho = cur.fetchall()
+
+		cur.close()
+		db.close()
+
+		name_button = nombre_ejercicio+" - "+repeticiones
+		name_button = name_button+" 👉 id: "+str(id_ejercicio)
+		if ya_hecho:
+			name_button = name_button+" ☑"
+
+		button = InlineKeyboardButton(name_button, callback_data="inicio_rutinas_anotar_"+str(id_rutina[0])+"_"+str(id_ejercicio)+"_"+str(dia_hoy))
+		keyboard = []
+		keyboard.append(button)
+		list_keyboards.append(keyboard)
+		callback_query_rutinas_anotar_rutina = CallbackQueryHandler(anotar_ejercicio_rutina, pattern="inicio_rutinas_anotar_"+str(id_rutina[0])+"_"+str(id_ejercicio)+"_"+str(dia_hoy))
+
+		if not callback_query_rutinas_anotar_rutina in conv_handler.states[INICIO_RUTINAS_ANOTAR_RUTINA]:
+			conv_handler.states[INICIO_RUTINAS_ANOTAR_RUTINA].append(callback_query_rutinas_anotar_rutina)
+
+	time.sleep(.8)
+	
+	list_keyboards.append([InlineKeyboardButton("Volver a Anotar rutina de hoy 🔙", callback_data='back_inicio_rutinas_anotar')])
+	list_keyboards.append([InlineKeyboardButton("Vover a Rutinas y entrenamiento 🔙", callback_data='back_inicio_rutinas')])
+	list_keyboards.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
+
+	reply_markup = InlineKeyboardMarkup(list_keyboards)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text=text,
+		reply_markup=reply_markup,
+		parse_mode='HTML'
+	)
+
+	current_state = "INICIO_RUTINAS_ANOTAR_RUTINA"
+	return INICIO_RUTINAS_ANOTAR_RUTINA
+
+def anotar_ejercicio_rutina(update, context):
+	global current_state
+
+	query = update.callback_query
+	bot = context.bot
+	username_user = query.from_user.username
+
+	callback_data = query.data
+	callback_data = callback_data.split('_',6)
+	id_rutina = callback_data[3]
+	id_ejercicio = callback_data[4]
+	dia = callback_data[5]
+
+	if dia == '1':
+		dia_semana = "Lunes"
+	elif dia == '2':
+		dia_semana = "Martes"
+	elif dia == '3':
+		dia_semana = "Miércoles"
+	elif dia == '4':
+		dia_semana = "Jueves"
+	elif dia == '5':
+		dia_semana = "Viernes"
+	elif dia == '6':
+		dia_semana = "Sábado"
+	elif dia == '7':
+			dia_semana = "Domingo"
+
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
+	db.begin()
+	cur = db.cursor()
+	cur.execute("SELECT * FROM Hace_rutina WHERE fecha=CURDATE() AND id_rutina="+id_rutina+" AND id_ejercicio="+str(id_ejercicio)+" AND dia='"+dia+"' AND id_usuario='"+username_user+"';")
+	ya_hecho = cur.fetchall()
+	if ya_hecho:
+		cur.execute("DELETE FROM Hace_rutina WHERE fecha=CURDATE() AND id_rutina="+id_rutina+" AND id_ejercicio="+str(id_ejercicio)+" AND dia='"+dia+"' AND id_usuario='"+username_user+"';")
+		db.commit()
+	else:
+		cur.execute("INSERT INTO Hace_rutina(id_rutina,id_usuario,fecha,dia,id_ejercicio) VALUES(%s, %s, %s, %s, %s)",(id_rutina,username_user,date.today(),dia,id_ejercicio))
+		db.commit()
+
+	cur.execute("SELECT id_trainer FROM Rutinas where id_rutina="+str(id_rutina)+";")
+	resultado = cur.fetchall()
+	id_trainer = resultado[0][0]
+
+	cur.execute("SELECT nombre FROM Trainers where id_trainer="+str(id_trainer)+";")
+	nombre = cur.fetchall()
+	nombre = nombre[0][0]
+
+	text = "🏋️‍♂️ <b>RUTINA DEL "+dia_semana.upper()+" DE "+nombre.upper()+"</b> 🏋️‍♂️"
+
+	cur.execute("SELECT id_ejercicio,repeticiones FROM Rutinas_ejercicios where id_rutina="+id_rutina+" AND dia='"+dia+"';")
+	ejercicios_dia = cur.fetchall()
+	cur.close()
+	db.close()
+
+	text=text+"\n\nPulsa un ejercicio para anotarlo hoy.\n\nUn tick ☑ indica que ya has registrado el ejercicio hoy."
+
+	list_keyboards=[]
+	for i in range(len(ejercicios_dia)):
+		id_ejercicio = ejercicios_dia[i][0]
+		repeticiones = ejercicios_dia[i][1]
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
+		db.begin()
+		cur = db.cursor()
+		cur.execute("SELECT nombre FROM Ejercicios where id_ejercicio="+str(id_ejercicio)+";")
+		nombre_ejercicio = cur.fetchall()
+		nombre_ejercicio = nombre_ejercicio[0][0]
+
+		name_button = nombre_ejercicio+" - "+repeticiones
+		cur.execute("SELECT * FROM Hace_rutina WHERE fecha=CURDATE() AND id_rutina="+id_rutina+" AND id_ejercicio="+str(id_ejercicio)+" AND dia='"+dia+"' AND id_usuario='"+username_user+"';")
+		ya_hecho = cur.fetchall()
+
+		name_button = name_button+" 👉 id: "+str(id_ejercicio)
+		if ya_hecho:
+			name_button = name_button+" ☑"
+
+		cur.close()
+		db.close()
+
+		button = InlineKeyboardButton(name_button, callback_data="inicio_rutinas_anotar_"+str(id_rutina[0])+"_"+str(id_ejercicio)+"_"+dia)
+		keyboard = []
+		keyboard.append(button)
+		list_keyboards.append(keyboard)
+		callback_query_rutinas_anotar_rutina = CallbackQueryHandler(anotar_ejercicio_rutina, pattern="inicio_rutinas_anotar_"+str(id_rutina[0])+"_"+str(id_ejercicio)+"_"+dia)
+
+		if not callback_query_rutinas_anotar_rutina in conv_handler.states[INICIO_RUTINAS_ANOTAR_RUTINA]:
+			conv_handler.states[INICIO_RUTINAS_ANOTAR_RUTINA].append(callback_query_rutinas_anotar_rutina)
+
+	time.sleep(.8)
+	
+	list_keyboards.append([InlineKeyboardButton("Volver a Anotar rutina de hoy 🔙", callback_data='back_inicio_rutinas_anotar')])
+	list_keyboards.append([InlineKeyboardButton("Vover a Rutinas y entrenamiento 🔙", callback_data='back_inicio_rutinas')])
+	list_keyboards.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
+
+	reply_markup = InlineKeyboardMarkup(list_keyboards)
+	bot.edit_message_text(
+		chat_id = query.message.chat_id,
+		message_id = query.message.message_id,
+		text=text,
+		reply_markup=reply_markup,
+		parse_mode='HTML'
+	)
 
 ############# SOPORTE #############
 def show_inicio_soporte(update, context):
@@ -7764,8 +8243,48 @@ def show_inicio_soporte(update, context):
 
 	current_state = "INICIO_SOPORTE"
 	return INICIO_SOPORTE
+	
+############# FUNCIONES DE ADMINISTRADOR #############
+def actualizar_ejercicios(update, context):
+	global conv_handler
 
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
+	db.begin()
+	cur = db.cursor()
+	cur.execute("SELECT id_ejercicio FROM Ejercicios;")
+	ejercicios = cur.fetchall()
 
+	for ejercicio in ejercicios:
+		print(str(ejercicio[0]))
+		handler_ejercicio = CommandHandler(str(ejercicio[0]), ver_ejercicio)
+		if not handler_ejercicio in conv_handler.states[INICIO_RUTINAS]:
+			conv_handler.states[INICIO_RUTINAS].append(handler_ejercicio)
+
+		if not handler_ejercicio in conv_handler.states[INICIO_RUTINAS_VER]:
+			conv_handler.states[INICIO_RUTINAS_VER].append(handler_ejercicio)
+
+		if not handler_ejercicio in conv_handler.states[INICIO_RUTINAS_VER_RUTINA]:
+			conv_handler.states[INICIO_RUTINAS_VER_RUTINA].append(handler_ejercicio)
+
+		if not handler_ejercicio in conv_handler.states[INICIO_RUTINAS_ANOTAR]:
+			conv_handler.states[INICIO_RUTINAS_ANOTAR].append(handler_ejercicio)
+
+		if not handler_ejercicio in conv_handler.states[INICIO_RUTINAS_ANOTAR_RUTINA]:
+			conv_handler.states[INICIO_RUTINAS_ANOTAR_RUTINA].append(handler_ejercicio)
+
+def ver_ejercicio(update, context):
+
+	id_ejercicio = update.message.text[1:]
+	image_path = "/home/jumacasni/Documentos/ImagymBot/ejercicios/"+id_ejercicio+".jpeg"
+	if path.exists(image_path):
+		pic = open(image_path, 'rb')
+		update.message.reply_photo(
+			photo = pic
+		)
+	else:
+		update.message.reply_text(
+			text="Ese id de ejercicio no existe."
+		)
 
 def inicio_ficha(update, context):
 	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
@@ -8124,10 +8643,12 @@ def main():
 		states={
 			WELCOME: [CommandHandler('start', start),
 					CommandHandler('mensaje', mandar_mensaje),
+					CommandHandler('ejercicios', actualizar_ejercicios),
 					MessageHandler(Filters.all, any_message)],
 
 			WELCOME_PRESS_START: [CommandHandler('start', start),
 								CommandHandler('mensaje', mandar_mensaje),
+								CommandHandler('ejercicios', actualizar_ejercicios),
 								MessageHandler(Filters.all, any_message),
 								CallbackQueryHandler(show_inicio, pattern='start_menu')],
 
@@ -8587,23 +9108,43 @@ def main():
 
 			INICIO_RUTINAS: [CommandHandler('start', start),
 						CommandHandler('mensaje', mandar_mensaje),
+						MessageHandler(Filters.command, ver_ejercicio),
 						MessageHandler(Filters.all, any_message),
-						CallbackQueryHandler(show_inicio_rutinas_ver, pattern='inicio_rutinas'),
+						CallbackQueryHandler(show_inicio_rutinas_ver, pattern='inicio_rutinas_ver'),
+						CallbackQueryHandler(show_inicio_rutinas_anotar, pattern='inicio_rutinas_anotar'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
 			INICIO_RUTINAS_VER: [CommandHandler('start', start),
 						CommandHandler('mensaje', mandar_mensaje),
+						MessageHandler(Filters.command, ver_ejercicio),
 						MessageHandler(Filters.all, any_message),
 						CallbackQueryHandler(show_inicio_rutinas, pattern='back_inicio_rutinas'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
+			INICIO_RUTINAS_ANOTAR: [CommandHandler('start', start),
+						CommandHandler('mensaje', mandar_mensaje),
+						MessageHandler(Filters.command, ver_ejercicio),
+						MessageHandler(Filters.all, any_message),
+						CallbackQueryHandler(show_inicio_rutinas, pattern='back_inicio_rutinas'),
+						CallbackQueryHandler(show_inicio, pattern='back_inicio')
+						],
 
 			INICIO_RUTINAS_VER_RUTINA: [CommandHandler('start', start),
 						CommandHandler('mensaje', mandar_mensaje),
+						MessageHandler(Filters.command, ver_ejercicio),
 						MessageHandler(Filters.all, any_message),
 						CallbackQueryHandler(show_inicio_rutinas_ver, pattern='back_inicio_rutinas_ver'),
+						CallbackQueryHandler(show_inicio_rutinas, pattern='back_inicio_rutinas'),
+						CallbackQueryHandler(show_inicio, pattern='back_inicio')
+						],
+
+			INICIO_RUTINAS_ANOTAR_RUTINA: [CommandHandler('start', start),
+						CommandHandler('mensaje', mandar_mensaje),
+						MessageHandler(Filters.command, ver_ejercicio),
+						MessageHandler(Filters.all, any_message),
+						CallbackQueryHandler(show_inicio_rutinas_anotar, pattern='back_inicio_rutinas_anotar'),
 						CallbackQueryHandler(show_inicio_rutinas, pattern='back_inicio_rutinas'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
