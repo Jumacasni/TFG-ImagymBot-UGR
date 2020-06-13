@@ -6259,8 +6259,12 @@ def show_inicio_retos_calendario(update, context):
 	ejercicio = cur.fetchall();
 	ejercicio = ejercicio[0][0]
 
-	dia_reto = date.today()-fecha_inicio
-	dia_reto = dia_reto.days+1
+	cur.execute("SELECT dia FROM Realiza_reto WHERE id_usuario='"+username_user+"' AND id_reto="+str(id_reto)+";")
+	dia = cur.fetchall()
+	if dia[0][0] is None:
+		dia_reto = 0
+	else:
+		dia_reto = dia[0][0]
 
 	text="Reto de "+ejercicio.lower()+", nivel "+str(nivel)+", "+fecha_inicio.strftime("%B")
 
