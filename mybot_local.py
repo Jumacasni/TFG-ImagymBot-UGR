@@ -850,33 +850,34 @@ def show_inicio_peso(update, context):
 		fecha = resultado[0][3]
 
 		if fecha == date.today():
-			fecha = "hoy"
+			fecha = "HOY"
 		else:
-			fecha = fecha.strftime("%d-%b-%Y")
+			fecha = fecha.strftime("%d-%B-%Y").upper()
 
-		text="📌 Última vez que anotaste datos: "+fecha
+		text="📌 <b>ÚLTIMA VEZ QUE ANOTASTE DATOS: "+fecha+"</b>"
 		if peso is not None:
-			text=text+"\n\nPeso: "+str(peso).rstrip('0').rstrip('. ')+"kg"
+			text=text+"\n\n<b>👉 Peso:</b> "+str(peso).rstrip('0').rstrip('. ')+"kg"
 		else:
-			text=text+"\n\nPeso: sin datos"
+			text=text+"\n\n<b>👉 Peso:</b> sin datos"
 
 		if grasa is not None:
-			text=text+"\nGrasa: "+str(grasa).rstrip('0').rstrip('. ')+"%"
+			text=text+"\n<b>👉 Grasa:</b> "+str(grasa).rstrip('0').rstrip('. ')+"%"
 		else:
-			text=text+"\nGrasa: sin datos"
+			text=text+"\n<b>👉 Grasa:</b> sin datos"
 
 		if musculo is not None:
-			text=text+"\nMúsculo: "+str(musculo).rstrip('0').rstrip('. ')+"%"
+			text=text+"\n<b>👉 Músculo:</b> "+str(musculo).rstrip('0').rstrip('. ')+"%"
 		else:
-			text=text+"\nMúsculo: sin datos"
+			text=text+"\n<b>👉 Músculo:</b> sin datos"
 
 		if imc is not None:
-			text=text+"\nIMC: "+str(imc).rstrip('0').rstrip('. ')
+			text=text+"\n<b>👉 IMC:</b> "+str(imc).rstrip('0').rstrip('. ')
 
 		time.sleep(.8)
 		bot.send_message(
 			chat_id = query.message.chat_id,
-			text=text
+			text=text,
+			parse_mode='HTML'
 		)
 
 		cur.execute("SELECT tipo,objetivo,fecha_fin,fecha_inicio FROM Objetivo_peso WHERE id_usuario='"+username_user+"' AND fecha_fin>CURDATE();")
@@ -917,9 +918,9 @@ def show_inicio_peso(update, context):
 			else:
 				fecha_inicio = fecha_inicio.strftime("%d-%b-%Y")
 
-			text="📌 Actualmente tienes un <b>objetivo de "+tipo+"</b>.\n\nÚltimo registro de "+tipo+": "+str(peso).rstrip('0').rstrip('. ')+medida+"\nTu objetivo: "+str(peso_objetivo).rstrip('0').rstrip('. ')+medida
-			text=text+"\nTe queda: "+str(diferencia_peso).rstrip('0').rstrip('. ')+medida
-			text=text+"\nFecha inicio: "+fecha_inicio+"\nFecha fin: "+fecha_fin
+			text="📌 ACTUALMENTE TIENES UN <b>OBJETIVO DE "+tipo+"</b>.\n\n👉 <b>Último registro de "+tipo+":</b> "+str(peso).rstrip('0').rstrip('. ')+medida+"\nTu objetivo: "+str(peso_objetivo).rstrip('0').rstrip('. ')+medida
+			text=text+"\n👉 <b>Te queda:</b> "+str(diferencia_peso).rstrip('0').rstrip('. ')+medida
+			text=text+"\n👉 <b>Fecha inicio:</b> "+fecha_inicio+"\n👉 <b>Fecha fin:</b> "+fecha_fin
 
 			keyboard.append([InlineKeyboardButton("Eliminar objetivo 🏁", callback_data='inicio_peso_eliminar')])
 			keyboard.append([InlineKeyboardButton("Evolución 📉", callback_data='inicio_peso_evolucion')])
@@ -2206,10 +2207,11 @@ def objetivo_peso_tiempo(update, context):
 	cur.close()
 	db.close()
 
-	text = "RESUMEN DEL OBJETIVO:\n\nPeso objetivo: "+str(peso).rstrip('0').rstrip('. ')+"kg\nDiferencia de peso: "+diferencia+"kg\nFecha fin: "+fecha
+	text = "RESUMEN DEL OBJETIVO:\n\n<b>Peso objetivo:</b>  "+str(peso).rstrip('0').rstrip('. ')+"kg\n<b>Diferencia de peso:</b>  "+diferencia+"kg\n<b>Fecha fin:</b> "+fecha
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text=text
+		text=text,
+		parse_mode='HTML'
 	)
 	keyboard = [
 		[InlineKeyboardButton("Si ✔", callback_data='objetivo_peso_tiempo_si')],
@@ -2402,10 +2404,11 @@ def objetivo_grasa_tiempo(update, context):
 	cur.close()
 	db.close()
 
-	text = "RESUMEN DEL OBJETIVO:\n\nPorcentaje de grasa objetivo: "+str(peso).rstrip('0').rstrip('. ')+"kg\nDiferencia de porcentaje: "+diferencia+"%\nFecha fin: "+fecha
+	text = "RESUMEN DEL OBJETIVO:\n\n<b>Porcentaje de grasa objetivo:</b>  "+str(peso).rstrip('0').rstrip('. ')+"kg\n<b>Diferencia de porcentaje:</b>  "+diferencia+"%\n<b>Fecha fin:</b>  "+fecha
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text=text
+		text=text,
+		parse_mode='HTML'
 	)
 	keyboard = [
 		[InlineKeyboardButton("Si ✔", callback_data='objetivo_peso_tiempo_si')],
@@ -2597,10 +2600,11 @@ def objetivo_musculo_tiempo(update, context):
 	cur.close()
 	db.close()
 
-	text = "RESUMEN DEL OBJETIVO:\n\nPorcentaje de músculo objetivo: "+str(peso).rstrip('0').rstrip('. ')+"kg\nDiferencia de porcentaje: "+diferencia+"%\nFecha fin: "+fecha
+	text = "RESUMEN DEL OBJETIVO:\n\n<b>Porcentaje de músculo objetivo:</b> "+str(peso).rstrip('0').rstrip('. ')+"kg\n<b>Diferencia de porcentaje:</b> "+diferencia+"%\n<b>Fecha fin:</b> "+fecha
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text=text
+		text=text,
+		parse_mode='HTML'
 	)
 	keyboard = [
 		[InlineKeyboardButton("Si ✔", callback_data='objetivo_peso_tiempo_si')],
@@ -4046,13 +4050,14 @@ def show_inicio_cardio_registrar(update, context):
 
 	query = update.callback_query
 	bot = context.bot
-	if current_state == "INICIO_EJERCICIO" or current_state == "INICIO_EJERCICIO_REGISTRAR":
+	print(current_state)
+	if current_state == "INICIO_EJERCICIO" or current_state == "INICIO_EJERCICIO_REGISTRAR" or current_state == "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD":
 		bot.send_message(
 			chat_id = query.message.chat_id,
 			text="<b>⏳ Cargando Inicio > Ejercicio del mes > Registrar cardio...</b>",
 			parse_mode='HTML'
 		)
-	elif current_state == "INICIO_CARDIO" or current_state == "INICIO_CARDIO_REGISTRAR":
+	elif current_state == "INICIO_CARDIO" or current_state == "INICIO_CARDIO_REGISTRAR" or current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD":
 		bot.send_message(
 			chat_id = query.message.chat_id,
 			text="<b>⏳ Cargando Inicio > Actividades cardio > Registrar cardio...</b>",
@@ -4097,10 +4102,10 @@ def show_inicio_cardio_registrar(update, context):
 			else:
 				conv_handler.states[INICIO_EJERCICIO_REGISTRAR].append(callback_query)
 
-	if current_state == "INICIO_EJERCICIO" or current_state == "INICIO_EJERCICIO_REGISTRAR":
+	if current_state == "INICIO_EJERCICIO" or current_state == "INICIO_EJERCICIO_REGISTRAR" or current_state == "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD":
 		keyboard.append([InlineKeyboardButton("Volver a Ejercicio del mes 🔙", callback_data='back_inicio_ejercicio')])
 		
-	elif current_state == "INICIO_CARDIO" or current_state == "INICIO_CARDIO_REGISTRAR":
+	elif current_state == "INICIO_CARDIO" or current_state == "INICIO_CARDIO_REGISTRAR" or current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD":
 		keyboard.append([InlineKeyboardButton("Volver a Actividad cardio 🔙", callback_data='back_inicio_cardio')])
 
 	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
@@ -4114,7 +4119,7 @@ def show_inicio_cardio_registrar(update, context):
 		text="¿Qué actividad quieres registrar?"
 	)
 
-	if current_state == "INICIO_EJERCICIO" or current_state == "INICIO_EJERCICIO_REGISTRAR":
+	if current_state == "INICIO_EJERCICIO" or current_state == "INICIO_EJERCICIO_REGISTRAR" or current_state == "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD":
 		reply_markup = InlineKeyboardMarkup(keyboard)
 		time.sleep(.8)
 		bot.send_message(
@@ -4127,7 +4132,7 @@ def show_inicio_cardio_registrar(update, context):
 		current_state = "INICIO_EJERCICIO_REGISTRAR"
 		return INICIO_EJERCICIO_REGISTRAR
 
-	elif current_state == "INICIO_CARDIO" or current_state == "INICIO_CARDIO_REGISTRAR":
+	elif current_state == "INICIO_CARDIO" or current_state == "INICIO_CARDIO_REGISTRAR" or current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD":
 		reply_markup = InlineKeyboardMarkup(keyboard)
 		time.sleep(.8)
 		bot.send_message(
@@ -4277,31 +4282,31 @@ def registrar_cardio(update, context):
 				nombre = resultado[0][0]
 
 				text="Vas a registrar lo siguiente:\n"
-				text=text+"\nActividad cardio: "+nombre
+				text=text+"\n<b>Actividad cardio:</b> "+nombre
 				if minutos != 0:
-					text=text+"\nMinutos: "+str(minutos)
+					text=text+"\n<b>Minutos:</b> "+str(minutos)
 					cur.execute("UPDATE Registra_cardio SET tiempo="+str(minutos)+" WHERE id_usuario='"+username+"' AND fecha='"+str(fecha)+"'")
 					db.commit()
 				else:
-					text=text+"\nMinutos: sin datos"
+					text=text+"\n<b>Minutos: sin datos</b>"
 				if kilometros != 0:
-					text=text+"\nDistancia: "+str(kilometros).rstrip('0').rstrip('. ')+"km"
+					text=text+"\n<b>Distancia:</b> "+str(kilometros).rstrip('0').rstrip('. ')+"km"
 					cur.execute("UPDATE Registra_cardio SET distancia="+str(kilometros)+" WHERE id_usuario='"+username+"' AND fecha='"+str(fecha)+"'")
 					db.commit()
 				else:
-					text=text+"\nDistancia: sin datos"
+					text=text+"\n<b>Distancia: sin datos</b>"
 				if nivel != 0:
-					text=text+"\nNivel: "+str(nivel)
+					text=text+"\n<b>Nivel:</b> "+str(nivel)
 					cur.execute("UPDATE Registra_cardio SET nivel="+str(nivel)+" WHERE id_usuario='"+username+"' AND fecha='"+str(fecha)+"'")
 					db.commit()
 				else:
-					text=text+"\nNivel/Inclinación: sin datos"
+					text=text+"\n<b>Nivel/Inclinación:</b> sin datos"
 				if calorias != 0:
-					text=text+"\nCalorías: "+str(calorias)
+					text=text+"\n<b>Calorías:</b> "+str(calorias)
 					cur.execute("UPDATE Registra_cardio SET calorias="+str(calorias)+" WHERE id_usuario='"+username+"' AND fecha='"+str(fecha)+"'")
 					db.commit()
 				else:
-					text=text+"\nCalorías: sin datos"
+					text=text+"\n<b>Calorías:</b> sin datos"
 
 				resultado = cur.fetchall()
 
@@ -4310,7 +4315,8 @@ def registrar_cardio(update, context):
 					[InlineKeyboardButton("No ❌", callback_data='registrar_cardio_no')]
 				]
 				update.message.reply_text(
-					text=text
+					text=text,
+					parse_mode='HTML'
 				)
 
 				# Si tiene un objetivo personal
@@ -5305,14 +5311,14 @@ def show_inicio_retos(update, context):
 		ejercicio = ejercicio[0][0]
 
 		if fecha_inicio == date.today():
-			text="¡Hoy empieza tu <b>reto de "+ejercicio.lower()+"</b>!"
+			text="⭐ <b>¡HOY EMPIEZA TU RETO DE "+ejercicio.upper()+"</b>!"
 			dia_reto = 1
 		else:
 			dia_reto = date.today()-fecha_inicio
 			dia_reto = dia_reto.days+1
-			text="¡Sigues en el <b>reto de "+ejercicio.lower()+"</b>"
+			text="<b>⭐¡SIGUES EN EL RETO DE "+ejercicio.upper()+"</b>"
 
-		text=text+"\n\nDía del reto: <b>"+str(dia_reto)+"</b>"
+		text=text+"\n\n👉 <b>Día del reto: </b>"+str(dia_reto)
 
 		cur.execute("SELECT repeticiones FROM Calendario WHERE id_reto="+str(id_reto)+" AND dia="+str(dia_reto)+";")
 		resultado = cur.fetchall();
@@ -5322,13 +5328,13 @@ def show_inicio_retos(update, context):
 		resultado = cur.fetchall()
 
 		if resultado:
-			text=text+"\n\n¡Hoy ya has anotado tu progreso! Has hecho <b>"+repeticiones+" "+ejercicio.lower()+"</b>"
+			text=text+"\n\n✅ ¡Hoy ya has anotado tu progreso! Has hecho <b>"+repeticiones+" "+ejercicio.lower()+"</b>"
 		else:
 			if repeticiones is None:
-				text=text+"\n\n¡Hoy toca descansar!"
+				text=text+"\n\n✅ ¡Hoy toca descansar!"
 
 			else:
-				text=text+"\n\nHoy debes hacer <b>"+repeticiones+" "+ejercicio.lower()+"</b>"
+				text=text+"\n<b>👉 Hoy debes hacer </b>"+repeticiones+" "+ejercicio.lower()
 
 		cur.execute("SELECT COUNT(*) FROM Realiza_reto WHERE id_reto="+str(id_reto)+" AND estado='R';")
 		resultado = cur.fetchall();
@@ -5359,8 +5365,8 @@ def show_inicio_retos(update, context):
 			ejercicio = cur.fetchall();
 			ejercicio = ejercicio[0][0]
 
-			text="📌 Tu próximo reto: <b>reto de "+ejercicio.lower()+"</b>"
-			text=text+"\n\nFecha de inicio: "+fecha_inicio_proximo_reto
+			text="📌 <b>TU PRÓXIMO RETO: RETO DE "+ejercicio.upper()+"</b>"
+			text=text+"\n\n<b>Fecha de inicio:</b> "+fecha_inicio_proximo_reto
 
 			bot.send_message(
 				chat_id = query.message.chat_id,
@@ -5374,11 +5380,11 @@ def show_inicio_retos(update, context):
 			text="📌 Actualmente no estás apuntado a ningún reto"
 		)
 
-	if retos_futuros:
-		bot.send_message(
-			chat_id = query.message.chat_id,
-			text="📌 Hay retos disponibles. ¡Echa un vistazo!"
-		)
+	# if retos_futuros:
+	# 	bot.send_message(
+	# 		chat_id = query.message.chat_id,
+	# 		text="📌 Hay retos disponibles. ¡Echa un vistazo!"
+	# 	)
 
 	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 	reply_markup = InlineKeyboardMarkup(keyboard)
@@ -6446,7 +6452,7 @@ def show_inicio_retos_historial(update, context):
 		nivel_ejercicio = resultado[0][1]
 		start_day = resultado[0][2]
 
-		cur.execute("SELECT estado FROM Realiza_reto WHERE id_reto="+str(id_reto[0])+" AND id_usuario='"+username_user+"' AND estado='D' or estado='C';")
+		cur.execute("SELECT estado FROM Realiza_reto WHERE id_reto="+str(id_reto[0])+" AND id_usuario='"+username_user+"';")
 		resultado = cur.fetchall();
 		if resultado[0][0] == 'C':
 			insignia = "🏆"
@@ -6527,7 +6533,7 @@ def historial_reto(update, context):
 	ejercicio = cur.fetchall();
 	ejercicio = ejercicio[0][0]
 
-	text="Reto de "+ejercicio.lower()+", nivel "+str(nivel)+", "+fecha_inicio.strftime("%B")
+	text="Reto de "+ejercicio.lower()+", nivel "+str(nivel)+", "+fecha_inicio.strftime("%B-%Y").upper()
 
 	nombre_imagen = str(id_reto)+"_"+username_user+"_historial"
 	path_imagen = "/home/jumacasni/Documentos/ImagymBot/retos/"+nombre_imagen+".png"
@@ -6578,7 +6584,7 @@ def historial_reto(update, context):
 				)
 				bot.send_message(
 					chat_id = query.message.chat_id,
-					text = "Las casillas en verde son los días que superaste 💪"
+					text = "Las casillas en azul claro son los días que superaste 💪"
 				)
 		else:
 			bot.send_message(
@@ -6620,13 +6626,17 @@ def createTable(id_reto, name):
 	plt.title(name, y=1.05)
 	plt.axis('off')
 	col_labels = ['Repeticiones']
+	col_colours = ['#f1c232']
 	row_labels = []
 	table_vals = []
+	cell_colours = []
+	row_colours = []
 
 	for i in range(mitad_1):
 		day = 'Día ' + str(resultado[i][0])
 		repeticiones = str(resultado[i][1])
 
+		row_colours.append('#f1c232')
 		if resultado[i][1] == 0 or not resultado[i][1]:
 			repeticiones = 'Descanso'
 
@@ -6638,6 +6648,8 @@ def createTable(id_reto, name):
 	# Draw table
 	the_table = plt.table(cellText=table_vals,
 	                      colWidths=[0.1],
+	                      rowColours=row_colours,
+	                      colColours=col_colours,
 	                      rowLabels=row_labels,
 	                      colLabels=col_labels,
 	                      loc='center left')
@@ -6653,6 +6665,7 @@ def createTable(id_reto, name):
 	for i in range(mitad_1, mitad_2):
 		day = 'Día ' + str(resultado[i][0])
 		repeticiones = str(resultado[i][1])
+		row_colours.append('#f1c232')
 		if resultado[i][1] == 0 or not resultado[i][1]:
 			repeticiones = 'Descanso'
 
@@ -6664,6 +6677,8 @@ def createTable(id_reto, name):
 	# Draw table
 	the_table = plt.table(cellText=table_vals,
 	                      colWidths=[0.1],
+	                      rowColours=row_colours,
+	                      colColours=col_colours,
 	                      rowLabels=row_labels,
 	                      colLabels=col_labels,
 	                      loc='center')
@@ -6679,6 +6694,7 @@ def createTable(id_reto, name):
 	for i in range(mitad_2, fin):
 		day = 'Día ' + str(resultado[i][0])
 		repeticiones = str(resultado[i][1])
+		row_colours.append('#f1c232')
 		if resultado[i][1] == 0 or not resultado[i][1]:
 			repeticiones = 'Descanso'
 
@@ -6690,6 +6706,8 @@ def createTable(id_reto, name):
 	# Draw table
 	the_table = plt.table(cellText=table_vals,
 	                      colWidths=[0.1],
+	                      rowColours=row_colours,
+	                      colColours=col_colours,
 	                      rowLabels=row_labels,
 	                      colLabels=col_labels,
 	                      loc='center right')
@@ -6705,7 +6723,7 @@ def createTableColors(id_reto, name, day_limit, id_usuario, name_graph):
 	cur = db.cursor()
 	cur.execute("SELECT dia,repeticiones FROM Calendario where id_reto="+str(id_reto)+";")
 	resultado = cur.fetchall();
-
+	print(resultado)
 	mitad_1 = round(len(resultado)/3)
 	mitad_2 = round(2*len(resultado)/3)
 	fin = len(resultado)
@@ -6718,12 +6736,14 @@ def createTableColors(id_reto, name, day_limit, id_usuario, name_graph):
 	plt.title(name, y=1.05)
 	plt.axis('off')
 	col_labels = ['Repeticiones']
+	col_colours = ['#f1c232']
 	row_labels = []
 	table_vals = []
 	cell_colours = []
+	row_colours = []
 
 	for i in range(mitad_1):
-		date = datetime.combine(fecha_inicio, datetime.min.time()) + timedelta(days=resultado[i][0])
+		date = datetime.combine(fecha_inicio, datetime.min.time()) + timedelta(days=resultado[i][0]-1)
 		date = datetime.strftime(date, '%d-%m')
 
 		day = 'Día '+date
@@ -6732,9 +6752,10 @@ def createTableColors(id_reto, name, day_limit, id_usuario, name_graph):
 		if resultado[i][1] == 0 or not resultado[i][1]:
 			repeticiones = 'Descanso'
 
+		row_colours.append('#f1c232')
 		if resultado[i][0] <= day_limit:
 			cell_color = []
-			cell_color.append('g')
+			cell_color.append('#cfe2f3')
 			cell_colours.append(cell_color)
 		else:
 			cell_color = []
@@ -6749,6 +6770,8 @@ def createTableColors(id_reto, name, day_limit, id_usuario, name_graph):
 	# Draw table
 	the_table = plt.table(cellText=table_vals,
 	                      colWidths=[0.1],
+	                      rowColours=row_colours,
+	                      colColours=col_colours,
 	                      cellColours=cell_colours,
 	                      rowLabels=row_labels,
 	                      colLabels=col_labels,
@@ -6759,12 +6782,14 @@ def createTableColors(id_reto, name, day_limit, id_usuario, name_graph):
 	# Segunda mitad
 	plt.axis('off')
 	col_labels = ['Repeticiones']
+	col_colours = ['#f1c232']
 	row_labels = []
 	table_vals = []
 	cell_colours = []
+	row_colours = []
 
 	for i in range(mitad_1, mitad_2):
-		date = datetime.combine(fecha_inicio, datetime.min.time()) + timedelta(days=resultado[i][0])
+		date = datetime.combine(fecha_inicio, datetime.min.time()) + timedelta(days=resultado[i][0]-1)
 		date = datetime.strftime(date, '%d-%m')
 
 		day = 'Día '+date
@@ -6773,9 +6798,10 @@ def createTableColors(id_reto, name, day_limit, id_usuario, name_graph):
 		if resultado[i][1] == 0 or not resultado[i][1]:
 			repeticiones = 'Descanso'
 
+		row_colours.append('#f1c232')
 		if resultado[i][0] <= day_limit:
 			cell_color = []
-			cell_color.append('g')
+			cell_color.append('#cfe2f3')
 			cell_colours.append(cell_color)
 		else:
 			cell_color = []
@@ -6790,6 +6816,8 @@ def createTableColors(id_reto, name, day_limit, id_usuario, name_graph):
 	# Draw table
 	the_table = plt.table(cellText=table_vals,
 	                      colWidths=[0.1],
+	                      rowColours=row_colours,
+	                      colColours=col_colours,
 	                      cellColours=cell_colours,
 	                      rowLabels=row_labels,
 	                      colLabels=col_labels,
@@ -6800,12 +6828,14 @@ def createTableColors(id_reto, name, day_limit, id_usuario, name_graph):
 	# Tercera mitad
 	plt.axis('off')
 	col_labels = ['Repeticiones']
+	col_colours = ['#f1c232']
 	row_labels = []
 	table_vals = []
 	cell_colours = []
+	row_colours = []
 
 	for i in range(mitad_2, fin):
-		date = datetime.combine(fecha_inicio, datetime.min.time()) + timedelta(days=resultado[i][0])
+		date = datetime.combine(fecha_inicio, datetime.min.time()) + timedelta(days=resultado[i][0]-1)
 		date = datetime.strftime(date, '%d-%m')
 
 		day = 'Día '+date
@@ -6814,9 +6844,10 @@ def createTableColors(id_reto, name, day_limit, id_usuario, name_graph):
 		if resultado[i][1] == 0 or not resultado[i][1]:
 			repeticiones = 'Descanso'
 
+		row_colours.append('#f1c232')
 		if resultado[i][0] <= day_limit:
 			cell_color = []
-			cell_color.append('g')
+			cell_color.append('#cfe2f3')
 			cell_colours.append(cell_color)
 		else:
 			cell_color = []
@@ -6831,6 +6862,8 @@ def createTableColors(id_reto, name, day_limit, id_usuario, name_graph):
 	# Draw table
 	the_table = plt.table(cellText=table_vals,
 	                      colWidths=[0.1],
+	                      rowColours=row_colours,
+	                      colColours=col_colours,
 	                      cellColours=cell_colours,
 	                      rowLabels=row_labels,
 	                      colLabels=col_labels,
@@ -6891,7 +6924,7 @@ def show_inicio_ejercicio(update, context):
 		nombre = resultado[0][0]
 
 		text="<b>⭐ RESUMEN DE LO QUE LLEVAS EN EL EJERCICIO DE ESTE MES ⭐</b>"
-		text=text+"\n\nActividad cardio: "+nombre.lower()
+		text=text+"\n\n<b>👉 Actividad cardio:</b> "+nombre.lower()
 		tipo_objetivo = objetivo.split(' ', 1)[1]
 		if tipo_objetivo == "distancia":
 			tipo_objetivo = "kilómetros"
@@ -6903,12 +6936,14 @@ def show_inicio_ejercicio(update, context):
 			tipo_objetivo = "minutos"
 			medida="tiempo"
 
-		text=text+"\nObjetivo: "+objetivo.split(' ', 1)[0]+" "+tipo_objetivo
+		text=text+"\n<b>👉Objetivo:</b> "+objetivo.split(' ', 1)[0]+" "+tipo_objetivo
 		cur.execute("SELECT SUM("+medida+") FROM Registra_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+" AND id_usuario='"+username_user+"' AND DATE(fecha)>='"+str(fecha_inicio)+"' AND DATE(fecha)<='"+str(fecha_fin)+"';")
 		resultado = cur.fetchall()
 		contador = resultado[0][0]
-		text=text+"\nLlevas: "+str(contador)+" "+tipo_objetivo
-		text=text+"\nPuntuación: "+str(puntuacion)+" puntos"
+		if contador is None:
+			contador = 0
+		text=text+"\n<b>👉 Llevas:</b> "+str(round(contador,1))+" "+tipo_objetivo
+		text=text+"\n<b>👉 Puntuación:</b> "+str(round(puntuacion,1))+" puntos"
 		text=text+"\n\nUna vez alcanzado el objetivo, los puntos que acumules de más se multiplicarán de acuerdo a tu IMC."
 
 		bot.send_message(
@@ -6935,7 +6970,7 @@ def show_inicio_ejercicio(update, context):
 		nombre = resultado[0][0]
 
 		text="<b>PRÓXIMO EJERCICIO DEL MES DE "+str(mes).upper()+"</b>"
-		text=text+"\n\nActividad cardio: "+nombre.lower()
+		text=text+"\n\n<b>👉 Actividad cardio:</b> "+nombre.lower()
 		tipo_objetivo = objetivo.split(' ', 1)[1]
 		if tipo_objetivo == "distancia":
 			tipo_objetivo = "kilómetros"
@@ -6944,7 +6979,7 @@ def show_inicio_ejercicio(update, context):
 		else:
 			tipo_objetivo = "minutos"
 
-		text=text+"\nObjetivo: "+objetivo.split(' ', 1)[0]+" "+tipo_objetivo
+		text=text+"\n<b>👉 Objetivo:</b> "+objetivo.split(' ', 1)[0]+" "+tipo_objetivo
 
 
 		cur.execute("SELECT COUNT(*) FROM Se_apunta WHERE id_objetivo_mensual="+str(id_ejercicio_futuro)+";")
@@ -7557,11 +7592,12 @@ def historial_ejercicio(update, context):
 	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
-	cur.execute("SELECT id_actividad_cardio,objetivo,fecha_inicio FROM Ejercicio_del_mes WHERE id_objetivo_mensual="+str(id_objetivo_mensual)+";")
+	cur.execute("SELECT id_actividad_cardio,objetivo,fecha_inicio,fecha_fin FROM Ejercicio_del_mes WHERE id_objetivo_mensual="+str(id_objetivo_mensual)+";")
 	resultado = cur.fetchall();
 	id_actividad_cardio = resultado[0][0]
 	objetivo = resultado[0][1]
 	fecha_inicio = resultado[0][2]
+	fecha_fin = resultado[0][3]
 
 	cur.execute("SELECT nombre FROM Actividad_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+";")
 	resultado = cur.fetchall()
@@ -7572,10 +7608,13 @@ def historial_ejercicio(update, context):
 	tipo_objetivo = objetivo.split(' ', 1)[1]
 	if tipo_objetivo == "distancia":
 		tipo_objetivo = "kilómetros"
+		medida = "distancia"
 	elif tipo_objetivo == "calorias":
 		tipo_objetivo = "calorías"
+		medida = "calorias"
 	else:
 		tipo_objetivo = "minutos"
+		medida = "tiempo"
 
 	text=text+"\nObjetivo: "+objetivo.split(' ', 1)[0]+" "+tipo_objetivo
 
@@ -7593,6 +7632,11 @@ def historial_ejercicio(update, context):
 	for i in range(len(resultado)):
 		usuario = resultado[i][0]
 		puntuacion = round(float(resultado[i][1]),1)
+		cur.execute("SELECT SUM("+medida+") FROM Registra_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+" AND id_usuario='"+usuario+"' AND DATE(fecha)>='"+str(fecha_inicio)+"' AND DATE(fecha)<='"+str(fecha_fin)+"';")
+		resultado = cur.fetchall()
+		contador = resultado[0][0]
+		if contador is None:
+			contador = 0
 		text=text+"\n"
 		if i == 0:
 			text=text+"🥇 "
@@ -7603,15 +7647,20 @@ def historial_ejercicio(update, context):
 
 		if usuario == username_user:
 			aparece_usuario = True
-			text=text+"<b>"+usuario+" - "+str(puntuacion)+" puntos</b>"
+			text=text+"<b>"+usuario+" - "+str(round(puntuacion,1))+" puntos - "+str(round(contador,1))+" "+tipo_objetivo+"</b>"
 		else:
-			text=text+usuario+" - "+str(puntuacion)+" puntos"
+			text=text+usuario+" - "+str(round(puntuacion,1))+" puntos - "+str(round(contador,1))+" "+tipo_objetivo
 
 	if not aparece_usuario:
 		cur.execute("SELECT puntuacion FROM Se_apunta WHERE estado='R' AND id_usuario='"+username_user+"'")
 		resultado = cur.fetchall();
 		puntuacion_usuario = resultado[0][0]
-		text=text+"\n\nTu puntuación: "+str(puntuacion_usuario)
+		cur.execute("SELECT SUM("+medida+") FROM Registra_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+" AND id_usuario='"+username_user+"' AND DATE(fecha)>='"+str(fecha_inicio)+"' AND DATE(fecha)<='"+str(fecha_fin)+"';")
+		resultado = cur.fetchall()
+		contador = resultado[0][0]
+		if contador is None:
+			contador = 0
+		text=text+"\n\nTu puntuación: "+str(round(puntuacion_usuario,1))+" - "+str(round(contador,1))+" "+tipo_objetivo 
 
 	bot.send_message(
 		chat_id = query.message.chat_id,
@@ -8213,7 +8262,7 @@ def show_inicio_rutinas_anotar_rutina(update, context):
 	cur.close()
 	db.close()
 
-	text=text+"\n\nPulsa un ejercicio para anotarlo o desapuntarlo de hoy.\n\nUn tick ☑ indica que ya has registrado el ejercicio hoy."
+	text=text+"\n\nPulsa un ejercicio para anotarlo o desapuntarlo de hoy.\n\nUn tick ✅ indica que ya has registrado el ejercicio hoy."
 
 	list_keyboards=[]
 	for i in range(len(ejercicios_dia)):
@@ -8235,7 +8284,7 @@ def show_inicio_rutinas_anotar_rutina(update, context):
 		name_button = nombre_ejercicio+" - "+repeticiones
 		name_button = name_button+" 👉 id: /"+str(id_ejercicio)
 		if ya_hecho:
-			name_button = name_button+" ☑"
+			name_button = name_button+" ✅"
 
 		button = InlineKeyboardButton(name_button, callback_data="inicio_rutinas_anotar_"+str(id_rutina[0])+"_"+str(id_ejercicio)+"_"+str(dia_hoy))
 		keyboard = []
@@ -8318,7 +8367,7 @@ def anotar_ejercicio_rutina(update, context):
 	cur.close()
 	db.close()
 
-	text=text+"\n\nPulsa un ejercicio para anotarlo o desapuntarlo de hoy.\n\nUn tick ☑ indica que ya has registrado el ejercicio hoy."
+	text=text+"\n\nPulsa un ejercicio para anotarlo o desapuntarlo de hoy.\n\nUn tick ✅ indica que ya has registrado el ejercicio hoy."
 
 	list_keyboards=[]
 	for i in range(len(ejercicios_dia)):
@@ -8337,7 +8386,7 @@ def anotar_ejercicio_rutina(update, context):
 
 		name_button = name_button+" 👉 id: /"+str(id_ejercicio)
 		if ya_hecho:
-			name_button = name_button+" ☑"
+			name_button = name_button+" ✅"
 
 		cur.close()
 		db.close()
@@ -8679,7 +8728,6 @@ def show_inicio_soporte_acerca(update, context):
 	time.sleep(1)
 
 def ver_ejercicio(update, context):
-
 	id_ejercicio = update.message.text[1:]
 	image_path = "/home/jumacasni/Documentos/ImagymBot/ejercicios/"+id_ejercicio+".jpeg"
 	if path.exists(image_path):
