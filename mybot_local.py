@@ -8221,29 +8221,56 @@ def show_inicio_soporte(update, context):
 	bot = context.bot
 	username_user = query.from_user.username
 
-	keyboard =[[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]]
-
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		text="⏳ Cargando Inicio > Soporte..."
 	)
-	time.sleep(1.5)
+	time.sleep(1)
+
+	keyboard = [
+		[InlineKeyboardButton("Acerca de ❓", callback_data='inicio_soporte_acerca')],
+		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
+	]
+
 	reply_markup = InlineKeyboardMarkup(keyboard)
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="Esta sección aún está en desarrollo. ¡Vuelve más adelante!",
+		text="👣 Inicio > Soporte",
 		reply_markup=reply_markup
 	)
 
-	# bot.send_message(
-	# 	chat_id = query.message.chat_id,
-	# 	text="👣 Inicio > Ejercicio del mes",
-	# 	reply_markup=reply_markup
-	# )
-
 	current_state = "INICIO_SOPORTE"
 	return INICIO_SOPORTE
+
+def show_inicio_soporte_acerca(update, context):
+	global current_state
+
+	query = update.callback_query
+	bot = context.bot
+	username_user = query.from_user.username
+
+	text="<b>ImagymBot</b> es un divulgador de gimnasios. Todos los retos, ejercicios del mes, actividades cardio y rutinas y entrenamiento los ofrece el propio gimnasio."
+	text=text+"\n\n👉<b>Retos:</b> un reto es un ejercicio que se hace cada día durante un tiempo limitado y cada día aumentando las repeticiones de ese ejercicio."
+	text=text+"\n\n👉<b>Ejercicio del mes:</b> el ejercicio del mes es hacer una actividad cardio durante todo un mes. El objetivo puede ser hacer un mínimo de minutos, kilómetros o calorías."
+	text=text+"\n\n👉<b>Rutinas y entrenamiento:</b> los monitores del gimnasio ofrecen sus rutinas a los usuarios. Cada día se podrá anotar cualquier ejercicio de cualquier rutina, siempre que exista para el día actual de la semana. Se podrán añadir rutinas a favoritos, apareciendo siempre en primer lugar cuando se quiere anotar."
 	
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text=text,
+		parse_mode='HTML'
+	)
+
+	keyboard = [
+		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
+	]
+	reply_markup = InlineKeyboardMarkup(keyboard)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="👣 Inicio > Soporte",
+		reply_markup=reply_markup
+	)
+	time.sleep(1)
+
 ############# FUNCIONES DE ADMINISTRADOR #############
 def actualizar_ejercicios(update, context):
 	global conv_handler
@@ -9152,7 +9179,7 @@ def main():
 			INICIO_SOPORTE: [CommandHandler('start', start),
 						CommandHandler('mensaje', mandar_mensaje),
 						MessageHandler(Filters.all, any_message),
-						CallbackQueryHandler(show_inicio_cardio_registrar, pattern='inicio_cardio_registrar'),
+						CallbackQueryHandler(show_inicio_soporte_acerca, pattern='inicio_soporte_acerca'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
