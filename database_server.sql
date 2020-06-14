@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost
--- Tiempo de generación: 13-06-2020 a las 00:10:47
+-- Tiempo de generación: 14-06-2020 a las 10:49:19
 -- Versión del servidor: 10.4.11-MariaDB
 -- Versión de PHP: 7.2.28
 
@@ -93,7 +93,103 @@ INSERT INTO `Calendario` (`id_reto`, `dia`, `repeticiones`) VALUES
 (3, 28, '70'),
 (3, 29, '75'),
 (3, 30, '75'),
-(3, 31, '80');
+(3, 31, '80'),
+(4, 1, '10'),
+(4, 2, '10'),
+(4, 3, '15'),
+(4, 4, '20'),
+(4, 5, '25'),
+(4, 6, '30'),
+(4, 7, NULL),
+(4, 8, '30'),
+(4, 9, '35'),
+(4, 10, '40'),
+(4, 11, '45'),
+(4, 12, '45'),
+(4, 13, '45'),
+(4, 14, '50'),
+(4, 15, '55'),
+(5, 1, '5'),
+(5, 2, '10'),
+(5, 3, '15'),
+(5, 4, '15'),
+(5, 5, '20'),
+(5, 6, '20'),
+(5, 7, '25'),
+(5, 8, '25'),
+(5, 9, '30'),
+(5, 10, '35'),
+(5, 11, '40'),
+(5, 12, '40'),
+(5, 13, '45'),
+(5, 14, '50'),
+(5, 15, NULL),
+(5, 16, '50'),
+(5, 17, '55'),
+(5, 18, '60'),
+(5, 19, '65'),
+(5, 20, '70'),
+(5, 21, '70'),
+(5, 22, '75'),
+(5, 23, '80'),
+(5, 24, '85'),
+(5, 25, '90'),
+(5, 26, '95'),
+(5, 27, '100'),
+(5, 28, '100'),
+(5, 29, '100'),
+(5, 30, '100'),
+(5, 31, '100'),
+(6, 1, '5'),
+(6, 2, '5'),
+(6, 3, '5'),
+(6, 4, '5'),
+(6, 5, '10'),
+(6, 6, '10'),
+(6, 7, '10'),
+(6, 8, '15'),
+(6, 9, '15'),
+(6, 10, '15'),
+(6, 11, '15'),
+(6, 12, '20'),
+(6, 13, '20'),
+(6, 14, '20'),
+(6, 15, '25'),
+(6, 16, '25'),
+(6, 17, '25'),
+(6, 18, '25'),
+(6, 19, '25'),
+(6, 20, '30'),
+(6, 21, '30'),
+(6, 22, '30'),
+(6, 23, '35'),
+(6, 24, '35'),
+(6, 25, '35'),
+(6, 26, '40'),
+(6, 27, '40'),
+(6, 28, '40'),
+(6, 29, '45'),
+(6, 30, '50'),
+(6, 31, '50'),
+(7, 1, '10'),
+(7, 2, '15'),
+(7, 3, '15'),
+(7, 4, '15'),
+(7, 5, '20'),
+(7, 6, '20'),
+(7, 7, '20'),
+(7, 8, '25'),
+(7, 9, '25'),
+(7, 10, '25'),
+(7, 11, '30'),
+(7, 12, '30'),
+(7, 13, '30'),
+(7, 14, '35'),
+(7, 15, '35'),
+(7, 16, '40'),
+(7, 17, '40'),
+(7, 18, '45'),
+(7, 19, '50');
 
 -- --------------------------------------------------------
 
@@ -113,6 +209,7 @@ CREATE TABLE `Cardio_en_gimnasio` (
 INSERT INTO `Cardio_en_gimnasio` (`id_gym`, `id_actividad_cardio`) VALUES
 (1, 1),
 (1, 2),
+(1, 3),
 (1, 4);
 
 -- --------------------------------------------------------
@@ -139,7 +236,9 @@ INSERT INTO `Ejercicios` (`id_ejercicio`, `nombre`, `tipo`) VALUES
 (5, 'Femoral sentado', ''),
 (6, 'Femoral tumbado', ''),
 (7, 'Press con mancuernas', ''),
-(8, 'Press inclinado', '');
+(8, 'Press inclinado', ''),
+(9, 'Burpees', 'reto'),
+(10, 'Dominadas', '');
 
 -- --------------------------------------------------------
 
@@ -156,6 +255,16 @@ CREATE TABLE `Ejercicio_del_mes` (
   `id_trainer` int(11) NOT NULL,
   `id_actividad_cardio` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Volcado de datos para la tabla `Ejercicio_del_mes`
+--
+
+INSERT INTO `Ejercicio_del_mes` (`id_objetivo_mensual`, `objetivo`, `fecha_inicio`, `fecha_fin`, `date_add`, `id_trainer`, `id_actividad_cardio`) VALUES
+(1, '400 minutos', '2020-07-01', '2020-07-31', '2020-06-13', 1, 2),
+(2, '200 distancia', '2020-04-01', '2020-04-30', '2020-03-28', 1, 2),
+(3, '500 minutos', '2020-05-01', '2020-05-30', '2020-04-30', 2, 4),
+(4, '700 minutos', '2020-06-01', '2020-06-30', '2020-06-01', 1, 3);
 
 -- --------------------------------------------------------
 
@@ -205,6 +314,17 @@ CREATE TABLE `Hace_rutina` (
   `dia` varchar(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Volcado de datos para la tabla `Hace_rutina`
+--
+
+INSERT INTO `Hace_rutina` (`id_usuario`, `id_rutina`, `fecha`, `id_ejercicio`, `dia`) VALUES
+('Jumacasni', 1, '2020-06-13', 7, '6'),
+('Jumacasni', 2, '2020-06-13', 1, '6'),
+('Jumacasni', 2, '2020-06-13', 4, '6'),
+('Jumacasni', 3, '2020-06-14', 5, '7'),
+('Jumacasni', 3, '2020-06-14', 6, '7');
+
 -- --------------------------------------------------------
 
 --
@@ -249,8 +369,8 @@ INSERT INTO `Objetivo_personal_cardio` (`id_objetivo_personal`, `objetivo`, `fec
 CREATE TABLE `Objetivo_peso` (
   `id_objetivo_peso` int(11) NOT NULL,
   `tipo` varchar(7) NOT NULL,
-  `objetivo` decimal(10,3) NOT NULL,
-  `diferencia` decimal(10,3) DEFAULT NULL,
+  `objetivo` decimal(10,1) NOT NULL,
+  `diferencia` decimal(10,1) DEFAULT NULL,
   `fecha_inicio` date DEFAULT NULL,
   `fecha_fin` date DEFAULT NULL,
   `date_add` date NOT NULL,
@@ -262,12 +382,34 @@ CREATE TABLE `Objetivo_peso` (
 --
 
 INSERT INTO `Objetivo_peso` (`id_objetivo_peso`, `tipo`, `objetivo`, `diferencia`, `fecha_inicio`, `fecha_fin`, `date_add`, `id_usuario`) VALUES
-(17, 'peso', '67.000', '-6.000', '2020-06-06', '2020-09-06', '2020-06-06', 'lulivi'),
-(18, 'peso', '60.000', '-1.000', '2020-06-06', '2020-07-06', '2020-06-06', 'PugnaireB'),
-(19, 'peso', '74.000', '-9.000', '2020-06-07', '2020-09-07', '2020-06-07', 'Eybra'),
-(20, 'peso', '65.000', '-25.000', '2020-06-07', '2020-12-07', '2020-06-07', 'Noa250'),
-(22, 'peso', '49.000', '-1.000', '2020-06-07', '2020-08-07', '2020-06-07', 'Monetillo'),
-(23, 'peso', '55.000', '-9.000', '2020-06-09', '2020-09-09', '2020-06-09', 'Crisoc');
+(17, 'peso', '67.0', '-6.0', '2020-06-06', '2020-09-06', '2020-06-06', 'lulivi'),
+(18, 'peso', '60.0', '-1.0', '2020-06-06', '2020-07-06', '2020-06-06', 'PugnaireB'),
+(19, 'peso', '74.0', '-9.0', '2020-06-07', '2020-09-07', '2020-06-07', 'Eybra'),
+(20, 'peso', '65.0', '-25.0', '2020-06-07', '2020-12-07', '2020-06-07', 'Noa250'),
+(22, 'peso', '49.0', '-1.0', '2020-06-07', '2020-08-07', '2020-06-07', 'Monetillo'),
+(23, 'peso', '55.0', '-9.0', '2020-06-09', '2020-09-09', '2020-06-09', 'Crisoc');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `Ofrecen`
+--
+
+CREATE TABLE `Ofrecen` (
+  `id_rutina` int(11) NOT NULL,
+  `id_trainer` int(11) NOT NULL,
+  `fecha_inicio` date NOT NULL,
+  `fecha_fin` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Volcado de datos para la tabla `Ofrecen`
+--
+
+INSERT INTO `Ofrecen` (`id_rutina`, `id_trainer`, `fecha_inicio`, `fecha_fin`) VALUES
+(1, 1, '2020-06-13', NULL),
+(2, 2, '2020-06-13', NULL),
+(3, 3, '2020-06-14', NULL);
 
 -- --------------------------------------------------------
 
@@ -277,10 +419,10 @@ INSERT INTO `Objetivo_peso` (`id_objetivo_peso`, `tipo`, `objetivo`, `diferencia
 
 CREATE TABLE `Peso` (
   `id_peso` int(11) NOT NULL,
-  `peso` decimal(10,3) DEFAULT NULL,
-  `grasa` decimal(10,3) DEFAULT NULL,
-  `musculo` decimal(10,3) DEFAULT NULL,
-  `IMC` decimal(10,3) DEFAULT NULL,
+  `peso` decimal(10,1) DEFAULT NULL,
+  `grasa` decimal(10,1) DEFAULT NULL,
+  `musculo` decimal(10,1) DEFAULT NULL,
+  `IMC` decimal(10,1) DEFAULT NULL,
   `fecha` date NOT NULL,
   `hora` time NOT NULL,
   `id_usuario` varchar(20) NOT NULL
@@ -291,15 +433,15 @@ CREATE TABLE `Peso` (
 --
 
 INSERT INTO `Peso` (`id_peso`, `peso`, `grasa`, `musculo`, `IMC`, `fecha`, `hora`, `id_usuario`) VALUES
-(9, '73.000', NULL, NULL, '25.260', '2020-06-06', '18:19:09', 'lulivi'),
-(10, '61.000', NULL, NULL, '20.620', '2020-06-06', '21:31:56', 'PugnaireB'),
-(11, '83.000', NULL, NULL, '26.790', '2020-06-07', '08:24:45', 'Eybra'),
-(13, '102.000', NULL, NULL, '31.480', '2020-06-07', '10:44:54', 'Danielbroxlr'),
-(14, '90.000', NULL, NULL, NULL, '2020-06-07', '11:21:49', 'Noa250'),
-(15, '94.000', NULL, NULL, '25.500', '2020-06-07', '15:20:05', 'Fran_Gr92'),
-(16, '50.000', NULL, NULL, '20.280', '2020-06-07', '16:55:29', 'Monetillo'),
-(17, '64.000', NULL, NULL, '23.510', '2020-06-07', '23:30:39', 'Crisoc'),
-(19, '94.000', NULL, NULL, NULL, '2020-06-11', '07:45:05', 'Jumacasni');
+(9, '73.0', NULL, NULL, '25.3', '2020-06-06', '18:19:09', 'lulivi'),
+(10, '61.0', NULL, NULL, '20.6', '2020-06-06', '21:31:56', 'PugnaireB'),
+(11, '83.0', NULL, NULL, '26.8', '2020-06-07', '08:24:45', 'Eybra'),
+(13, '102.0', NULL, NULL, '31.5', '2020-06-07', '10:44:54', 'Danielbroxlr'),
+(14, '90.0', NULL, NULL, NULL, '2020-06-07', '11:21:49', 'Noa250'),
+(15, '94.0', NULL, NULL, '25.5', '2020-06-07', '15:20:05', 'Fran_Gr92'),
+(16, '50.0', NULL, NULL, '20.3', '2020-06-07', '16:55:29', 'Monetillo'),
+(17, '64.0', NULL, NULL, '23.5', '2020-06-07', '23:30:39', 'Crisoc'),
+(19, '94.0', NULL, NULL, NULL, '2020-06-11', '07:45:05', 'Jumacasni');
 
 -- --------------------------------------------------------
 
@@ -319,8 +461,14 @@ CREATE TABLE `Realiza_reto` (
 --
 
 INSERT INTO `Realiza_reto` (`id_reto`, `id_usuario`, `estado`, `dia`) VALUES
-(2, 'Jumacasni', 'A', NULL),
-(3, 'Crisma_17', 'A', NULL);
+(3, 'Crisma_17', 'A', NULL),
+(3, 'Jumacasni', 'A', NULL),
+(4, 'Jumacasni', 'C', 15),
+(4, 'rosanamontes', 'C', 15),
+(5, 'Jumacasni', 'D', 17),
+(5, 'rosanamontes', 'C', 30),
+(7, 'Jumacasni', 'R', 3),
+(7, 'rosanamontes', 'R', 1);
 
 -- --------------------------------------------------------
 
@@ -333,7 +481,7 @@ CREATE TABLE `Registra_cardio` (
   `id_usuario` varchar(20) NOT NULL,
   `fecha` datetime NOT NULL,
   `tiempo` int(11) DEFAULT NULL,
-  `distancia` decimal(10,3) DEFAULT NULL,
+  `distancia` decimal(10,1) DEFAULT NULL,
   `nivel` int(11) DEFAULT NULL,
   `calorias` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -343,9 +491,14 @@ CREATE TABLE `Registra_cardio` (
 --
 
 INSERT INTO `Registra_cardio` (`id_actividad_cardio`, `id_usuario`, `fecha`, `tiempo`, `distancia`, `nivel`, `calorias`) VALUES
-(1, 'rosanamontes', '2020-06-11 08:25:48', 10, '1.000', NULL, 40),
-(2, 'Eybra', '2020-06-09 13:05:33', NULL, '10.000', NULL, NULL),
-(2, 'Eybra', '2020-06-09 13:08:28', NULL, '10.000', NULL, NULL);
+(1, 'rosanamontes', '2020-06-11 08:25:48', 10, '1.0', NULL, 40),
+(2, 'Eybra', '2020-06-09 13:05:33', NULL, '10.0', NULL, NULL),
+(2, 'Eybra', '2020-06-09 13:08:28', NULL, '10.0', NULL, NULL),
+(2, 'Jumacasni', '2020-04-08 20:53:10', NULL, '346.0', NULL, NULL),
+(2, 'rosanamontes', '2020-04-17 23:11:46', NULL, '200.0', NULL, NULL),
+(3, 'Jumacasni', '2020-06-14 10:11:02', 55, NULL, NULL, NULL),
+(4, 'Jumacasni', '2020-05-11 20:55:15', 500, NULL, NULL, NULL),
+(4, 'rosanamontes', '2020-05-06 23:10:36', 550, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -369,7 +522,11 @@ CREATE TABLE `Retos` (
 
 INSERT INTO `Retos` (`id_reto`, `nivel`, `fecha_inicio`, `fecha_fin`, `date_add`, `id_trainer`, `id_ejercicio`) VALUES
 (2, 1, '2020-06-13', '2020-06-15', '2020-06-12', 1, 1),
-(3, 3, '2020-07-01', '2020-07-31', '2020-06-12', 1, 2);
+(3, 3, '2020-07-01', '2020-07-31', '2020-06-12', 1, 2),
+(4, 2, '2020-05-01', '2020-05-31', '2020-04-17', 3, 9),
+(5, 4, '2020-04-01', '2020-04-15', '2020-03-28', 2, 10),
+(6, 2, '2020-08-01', '2020-08-31', '2020-06-14', 2, 1),
+(7, 3, '2020-06-12', '2020-06-30', '2020-06-11', 3, 4);
 
 -- --------------------------------------------------------
 
@@ -389,7 +546,8 @@ CREATE TABLE `Rutinas` (
 
 INSERT INTO `Rutinas` (`id_rutina`, `date_add`, `id_trainer`) VALUES
 (1, '2020-06-12', 1),
-(2, '2020-06-12', 2);
+(2, '2020-06-12', 2),
+(3, '2020-06-14', 3);
 
 -- --------------------------------------------------------
 
@@ -412,13 +570,19 @@ INSERT INTO `Rutinas_ejercicios` (`id_rutina`, `id_ejercicio`, `dia`, `repeticio
 (1, 1, '1', '4x10'),
 (1, 1, '4', '5x12'),
 (1, 2, '4', '5x12'),
+(1, 2, '7', '5x20'),
 (1, 3, '3', '4x12'),
 (1, 4, '3', '5x10'),
 (1, 4, '4', '6x8'),
 (1, 5, '3', '5x10'),
+(1, 5, '6', '6x13'),
+(1, 5, '7', '5x20'),
 (1, 6, '3', '5x12'),
 (1, 7, '1', '4x15'),
+(1, 7, '6', '6x14'),
 (1, 8, '1', '4x12'),
+(1, 8, '5', '5x20'),
+(1, 10, '2', '5x20'),
 (2, 1, '1', '4x10'),
 (2, 1, '6', '3x20'),
 (2, 2, '1', '3x10'),
@@ -430,7 +594,21 @@ INSERT INTO `Rutinas_ejercicios` (`id_rutina`, `id_ejercicio`, `dia`, `repeticio
 (2, 5, '3', '3x20'),
 (2, 6, '3', '3x20'),
 (2, 7, '4', '3x20'),
-(2, 8, '4', '3x20');
+(2, 8, '4', '3x20'),
+(3, 1, '1', '5x20'),
+(3, 1, '5', '5x20'),
+(3, 2, '1', '5x20'),
+(3, 2, '5', '5x20'),
+(3, 3, '2', '5x20'),
+(3, 3, '6', '5x20'),
+(3, 4, '2', '5x20'),
+(3, 4, '6', '5x20'),
+(3, 5, '3', '5x20'),
+(3, 5, '7', '5x20'),
+(3, 6, '3', '5x20'),
+(3, 6, '7', '5x20'),
+(3, 7, '4', '5x20'),
+(3, 8, '4', '5x20');
 
 -- --------------------------------------------------------
 
@@ -441,8 +619,23 @@ INSERT INTO `Rutinas_ejercicios` (`id_rutina`, `id_ejercicio`, `dia`, `repeticio
 CREATE TABLE `Se_apunta` (
   `id_usuario` varchar(20) NOT NULL,
   `id_objetivo_mensual` int(11) NOT NULL,
-  `estado` varchar(1) NOT NULL
+  `estado` varchar(1) NOT NULL,
+  `puntuacion` decimal(10,1) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Volcado de datos para la tabla `Se_apunta`
+--
+
+INSERT INTO `Se_apunta` (`id_usuario`, `id_objetivo_mensual`, `estado`, `puntuacion`) VALUES
+('Jumacasni', 1, 'A', '0.0'),
+('Jumacasni', 2, 'C', '404.5'),
+('Jumacasni', 3, 'C', '500.0'),
+('Jumacasni', 4, 'R', '55.0'),
+('rosanamontes', 1, 'A', '0.0'),
+('rosanamontes', 2, 'C', '200.0'),
+('rosanamontes', 3, 'C', '635.5'),
+('rosanamontes', 4, 'R', '0.0');
 
 -- --------------------------------------------------------
 
@@ -454,6 +647,14 @@ CREATE TABLE `Sigue` (
   `id_usuario` varchar(20) NOT NULL,
   `id_rutina` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Volcado de datos para la tabla `Sigue`
+--
+
+INSERT INTO `Sigue` (`id_usuario`, `id_rutina`) VALUES
+('Jumacasni', 2),
+('Jumacasni', 3);
 
 -- --------------------------------------------------------
 
@@ -611,6 +812,13 @@ ALTER TABLE `Objetivo_peso`
   ADD KEY `id_usuario` (`id_usuario`);
 
 --
+-- Indices de la tabla `Ofrecen`
+--
+ALTER TABLE `Ofrecen`
+  ADD PRIMARY KEY (`id_rutina`,`id_trainer`),
+  ADD KEY `id_trainer` (`id_trainer`);
+
+--
 -- Indices de la tabla `Peso`
 --
 ALTER TABLE `Peso`
@@ -703,13 +911,13 @@ ALTER TABLE `Actividad_cardio`
 -- AUTO_INCREMENT de la tabla `Ejercicios`
 --
 ALTER TABLE `Ejercicios`
-  MODIFY `id_ejercicio` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id_ejercicio` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de la tabla `Ejercicio_del_mes`
 --
 ALTER TABLE `Ejercicio_del_mes`
-  MODIFY `id_objetivo_mensual` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_objetivo_mensual` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `Gimnasios`
@@ -745,13 +953,13 @@ ALTER TABLE `Peso`
 -- AUTO_INCREMENT de la tabla `Retos`
 --
 ALTER TABLE `Retos`
-  MODIFY `id_reto` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id_reto` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT de la tabla `Rutinas`
 --
 ALTER TABLE `Rutinas`
-  MODIFY `id_rutina` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id_rutina` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de la tabla `Trainers`
@@ -816,6 +1024,13 @@ ALTER TABLE `Objetivo_personal_cardio`
 --
 ALTER TABLE `Objetivo_peso`
   ADD CONSTRAINT `Objetivo_peso_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `Usuarios` (`id_usuario`);
+
+--
+-- Filtros para la tabla `Ofrecen`
+--
+ALTER TABLE `Ofrecen`
+  ADD CONSTRAINT `Ofrecen_ibfk_1` FOREIGN KEY (`id_rutina`) REFERENCES `Rutinas` (`id_rutina`),
+  ADD CONSTRAINT `Ofrecen_ibfk_2` FOREIGN KEY (`id_trainer`) REFERENCES `Trainers` (`id_trainer`);
 
 --
 -- Filtros para la tabla `Peso`

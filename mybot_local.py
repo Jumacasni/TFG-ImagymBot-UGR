@@ -1998,26 +1998,45 @@ def show_inicio_peso_establecer(update, context):
 	cur.execute("SELECT musculo FROM Peso WHERE id_usuario='"+username_user+"' AND musculo IS NOT NULL;")
 	hay_musculo = cur.fetchall()
 
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="Selecciona un tipo de objetivo"
+	)
+
 	cur.close()
 	db.close()
 	# Si no hay nada registrado
 	keyboard = []
 	if hay_peso:
 		keyboard.append([InlineKeyboardButton("Establecer objetivo de peso", callback_data='inicio_peso_establecer_peso')])
-
+	else:
+		bot.send_message(
+			chat_id = query.message.chat_id,
+			text="Para establecer un objetivo de peso, debes anotar por primera vez tu peso"
+		)
 	if hay_grasa:
 		keyboard.append([InlineKeyboardButton("Establecer objetivo de grasa", callback_data='inicio_peso_establecer_grasa')])
+	else:
+		bot.send_message(
+			chat_id = query.message.chat_id,
+			text="Para establecer un objetivo de grasa, debes anotar por primera vez tu grasa"
+		)
 
 	if hay_musculo:
 		keyboard.append([InlineKeyboardButton("Establecer objetivo de músculo", callback_data='inicio_peso_establecer_musculo')])
+	else:
+		bot.send_message(
+			chat_id = query.message.chat_id,
+			text="Para establecer un objetivo de grasa, debes anotar por primera vez la grasa"
+		)
+
+	if not hay_peso or not hay_grasa or not hay_musculo:
+		keyboard.append([InlineKeyboardButton("Ir a Anotar datos ✏", callback_data='inicio_peso_anotar')])
 
 	keyboard.append([InlineKeyboardButton("Volver a Peso 🔙", callback_data='back_inicio_peso')])
 	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 
-	bot.send_message(
-		chat_id = query.message.chat_id,
-		text="Selecciona un tipo de objetivo"
-	)
+	
 
 	time.sleep(.8)
 	reply_markup = InlineKeyboardMarkup(keyboard)
@@ -5283,7 +5302,7 @@ def show_inicio_retos(update, context):
 		keyboard.append([InlineKeyboardButton("Calendario del reto actual 📆", callback_data='inicio_retos_calendario')])
 
 	if retos_futuros:
-		keyboard.append([InlineKeyboardButton("Ver retos disponibles 🔛", callback_data='inicio_retos_ver')])
+		keyboard.append([InlineKeyboardButton("Ver próximos retos 🔛", callback_data='inicio_retos_ver')])
 
 	if reto_usuario:
 		keyboard.append([InlineKeyboardButton("Descalificarme del reto actual ❌", callback_data='inicio_retos_descalificar')])
@@ -5311,12 +5330,12 @@ def show_inicio_retos(update, context):
 		ejercicio = ejercicio[0][0]
 
 		if fecha_inicio == date.today():
-			text="⭐ <b>¡HOY EMPIEZA TU RETO DE "+ejercicio.upper()+"</b>!"
+			text="⭐ <b>¡HOY EMPIEZA TU RETO DE "+ejercicio.upper()+"!</b>!"
 			dia_reto = 1
 		else:
 			dia_reto = date.today()-fecha_inicio
 			dia_reto = dia_reto.days+1
-			text="<b>⭐¡SIGUES EN EL RETO DE "+ejercicio.upper()+"</b>"
+			text="<b>⭐¡SIGUES EN EL RETO DE "+ejercicio.upper()+"!</b>"
 
 		text=text+"\n\n👉 <b>Día del reto: </b>"+str(dia_reto)
 
@@ -5329,12 +5348,31 @@ def show_inicio_retos(update, context):
 
 		if resultado:
 			text=text+"\n\n✅ ¡Hoy ya has anotado tu progreso! Has hecho <b>"+repeticiones+" "+ejercicio.lower()+"</b>"
+			# Seleccionar el próximo día del reto
+			cur.execute("SELECT dia,repeticiones FROM Calendario WHERE id_reto="+str(id_reto)+" AND dia=(SELECT MIN(dia) FROM Calendario WHERE id_reto="+str(id_reto)+" AND dia>"+str(dia_reto)+" AND repeticiones is NOT NULL);")
+			resultado = cur.fetchall()
+			dia_siguiente = resultado[0][0]
+			repeticiones = resultado[0][1]
+			diferencia_dias = int(dia_siguiente)-int(dia_reto)
+
+			if diferencia_dias == 1:
+				text = text+"\n\n👉 <b>Próximo día del reto:</b> mañana, "+repeticiones+" "+ejercicio.lower()
+				cur.execute("SELECT DATE_ADD(CURDATE(), INTERVAL 1 DAY);");
+				resultado = cur.fetchall()
+				fecha_recordatorio = resultado[0][0]
+			else:
+				cur.execute("SELECT DATE_ADD(CURDATE(), INTERVAL "+str(diferencia_dias)+" DAY);");
+				resultado = cur.fetchall()
+				fecha_recordatorio = resultado[0][0]
+				fecha = fecha_recordatorio.strftime('%d-%B-%Y')
+				text = text+"\n\n👉 <b>Próximo día del reto:</b> "+fecha+", "+repeticiones+" "+ejercicio.lower()
 		else:
 			if repeticiones is None:
 				text=text+"\n\n✅ ¡Hoy toca descansar!"
 
 			else:
 				text=text+"\n<b>👉 Hoy debes hacer </b>"+repeticiones+" "+ejercicio.lower()
+
 
 		cur.execute("SELECT COUNT(*) FROM Realiza_reto WHERE id_reto="+str(id_reto)+" AND estado='R';")
 		resultado = cur.fetchall();
@@ -5412,7 +5450,7 @@ def show_inicio_retos_ver(update, context):
 
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="<b>⏳ Cargando Inicio > Retos > Retos disponibles...</b>",
+		text="<b>⏳ Cargando Inicio > Retos > Ver próximos retos...</b>",
 		parse_mode='HTML'
 	)
 	time.sleep(.8)
@@ -5479,7 +5517,7 @@ def show_inicio_retos_ver(update, context):
 	reply_markup = InlineKeyboardMarkup(list_keyboards)
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="<b>👣 Inicio > Retos > Retos disponibles</b>",
+		text="<b>👣 Inicio > Retos > Ver próximos retos</b>",
 		parse_mode='HTML',
 		reply_markup=reply_markup
 	)
@@ -5534,15 +5572,14 @@ def ver_reto(update, context):
 		text="Aquí tienes el calendario de este reto.\n\n<b>Fecha de inicio:</b> "+fecha_inicio+"\n<b>Fecha fin:</b> "+fecha_fin
 		if num_usuarios_apuntados == 1:
 			text = text+"\n\nHay "+str(num_usuarios_apuntados)+" usuario apuntado a este reto. ¡Anímate!"
-		else:
+		elif num_usuarios_apuntados > 1:
 			text = text+"\n\nHay "+str(num_usuarios_apuntados)+" usuarios apuntados a este reto. ¡Anímate!"
-
-		if num_usuarios_apuntados == 0:
+		elif num_usuarios_apuntados == 0:
 			text = text+"\n\n¡Aún no hay nadie apuntado a este reto! Sé la primera persona en apuntarse y corre la voz para competir con tus rivales 💪💪💪"
 
 		keyboard = [
 			[InlineKeyboardButton("Apuntarse al reto ✅", callback_data="inicio_retos_ver_apuntarse_"+id_reto)],
-			[InlineKeyboardButton("Volver a Retos disponibles 🔙", callback_data="back_inicio_retos_ver")],
+			[InlineKeyboardButton("Volver a Ver próximos retos 🔙", callback_data="back_inicio_retos_ver")],
 			[InlineKeyboardButton("Volver a Retos 🔙", callback_data="back_inicio_retos")],
 			[InlineKeyboardButton("Volver a Inicio 👣", callback_data="back_inicio")]
 		]
@@ -5555,19 +5592,12 @@ def ver_reto(update, context):
 			reply_markup=reply_markup,
 			parse_mode='HTML'
 		)
-		# time.sleep(.8)
-		# bot.send_message(
-		# 	chat_id = query.message.chat_id,
-		# 	text="<b>👣 Inicio > Retos > Retos disponibles > Información de un reto</b>",
-		# 	parse_mode='HTML',
-		# 	reply_markup = reply_markup
-		# )
 
 	else:
-		text="¡Ya tienes inscripción en este reto!\n\n<b>Fecha de inicio:</b> "+fecha_inicio+"\n<b>Fecha fin:</b> "+fecha_fin
+		text="<b>ESTÁS APUNTADO A ESTE RETO</b>\n\n<b>Fecha de inicio:</b> "+fecha_inicio+"\n<b>Fecha fin:</b> "+fecha_fin
 		keyboard = [
 			[InlineKeyboardButton("Desapuntarse al reto ❌", callback_data="inicio_retos_ver_apuntarse_"+id_reto)],
-			[InlineKeyboardButton("Volver a Retos disponibles 🔙", callback_data="back_inicio_retos_ver")],
+			[InlineKeyboardButton("Volver a Ver próximos retos 🔙", callback_data="back_inicio_retos_ver")],
 			[InlineKeyboardButton("Volver a Retos 🔙", callback_data="back_inicio_retos")],
 			[InlineKeyboardButton("Volver a Inicio 👣", callback_data="back_inicio")]
 		]
@@ -5682,7 +5712,7 @@ def ver_reto_apuntarse(update, context):
 	cur.close()
 	db.close()
 
-	keyboard.append([InlineKeyboardButton("Volver a Retos disponibles 🔙", callback_data="back_inicio_retos_ver")])
+	keyboard.append([InlineKeyboardButton("Volver a Ver próximos retos 🔙", callback_data="back_inicio_retos_ver")])
 	keyboard.append([InlineKeyboardButton("Volver a Retos 🔙", callback_data="back_inicio_retos")])
 	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data="back_inicio")])
 
@@ -6161,7 +6191,7 @@ def inicio_retos_anotar_si(update, context):
 	time.sleep(1)
 
 	# Seleccionar el próximo día del reto
-	cur.execute("SELECT dia,repeticiones FROM Calendario WHERE id_reto="+str(id_reto)+" AND dia=(SELECT MIN(dia) FROM Calendario WHERE id_reto="+str(id_reto)+" AND dia>"+str(dia_reto)+" AND repeticiones != NULL);")
+	cur.execute("SELECT dia,repeticiones FROM Calendario WHERE id_reto="+str(id_reto)+" AND dia=(SELECT MIN(dia) FROM Calendario WHERE id_reto="+str(id_reto)+" AND dia>"+str(dia_reto)+" AND repeticiones is NOT NULL);")
 	resultado = cur.fetchall()
 
 	# Si no hay próximo día de reto o la fecha fin es hoy
@@ -6186,7 +6216,7 @@ def inicio_retos_anotar_si(update, context):
 			text = "Tu reto continua mañana. ¡Te lo recordaré! ⏰⏰⏰"
 			cur.execute("SELECT DATE_ADD(CURDATE(), INTERVAL 1 DAY);");
 			resultado = cur.fetchall()
-			fecha_recordatorio = fecha_recordatorio[0][0]
+			fecha_recordatorio = resultado[0][0]
 		else:
 			cur.execute("SELECT DATE_ADD(CURDATE(), INTERVAL "+str(diferencia_dias)+" DAY);");
 			resultado = cur.fetchall()
@@ -6425,7 +6455,7 @@ def show_inicio_retos_historial(update, context):
 
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="<b>⏳ Cargando Inicio > Retos > Historial de retos...</b>",
+		text="<b>⏳ Cargando Inicio > Retos > Ver mi historial de retos...</b>",
 		parse_mode='HTML'
 	)
 	time.sleep(.8)
@@ -6433,11 +6463,11 @@ def show_inicio_retos_historial(update, context):
 	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
-	cur.execute("SELECT id_reto FROM Realiza_reto where id_usuario='"+username_user+"' AND estado='D' or estado='C';")
+	cur.execute("SELECT id_reto FROM Realiza_reto WHERE id_usuario='"+username_user+"' AND (estado='D' or estado='C');")
 	cur.close()
 	db.close()
 	resultado = cur.fetchall();
-
+	print(resultado)
 	list_keyboards = []
 
 	for id_reto in resultado:
@@ -6487,7 +6517,7 @@ def show_inicio_retos_historial(update, context):
 	time.sleep(1)
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="<b>👣 Inicio > Retos > Historial</b>",
+		text="<b>👣 Inicio > Retos > Ver mi historial de retos</b>",
 		parse_mode='HTML',
 		reply_markup=reply_markup
 	)
@@ -6587,11 +6617,15 @@ def historial_reto(update, context):
 		else:
 			bot.send_message(
 				chat_id = query.message.chat_id,
-				text = +str(n_personas_c)+" usuarios consiguieron completar este reto 🎉"
+				text = "Las casillas en azul claro son los días que superaste 💪"
+			)
+			bot.send_message(
+				chat_id = query.message.chat_id,
+				text = str(n_personas_c)+" usuarios consiguieron completar este reto 🎉"
 			)
 
 	keyboard = [
-		[InlineKeyboardButton("Volver a Historial de retos 🔙", callback_data='back_inicio_retos_historial')],
+		[InlineKeyboardButton("Volver a Ver mi historial de retos 🔙", callback_data='back_inicio_retos_historial')],
 		[InlineKeyboardButton("Volver a Retos 🔙", callback_data='back_inicio_retos')],
 		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')],
 	]
@@ -6621,6 +6655,7 @@ def createTable(id_reto, name):
 	fin = len(resultado)
 
 	# Primera mitad
+	plt.clf()
 	plt.title(name, y=1.05)
 	plt.axis('off')
 	col_labels = ['Repeticiones']
@@ -6731,6 +6766,7 @@ def createTableColors(id_reto, name, day_limit, id_usuario, name_graph):
 	fecha_inicio = fecha_inicio[0][0]
 
 	# Primera mitad
+	plt.clf()
 	plt.title(name, y=1.05)
 	plt.axis('off')
 	col_labels = ['Repeticiones']
@@ -6940,7 +6976,7 @@ def show_inicio_ejercicio(update, context):
 		contador = resultado[0][0]
 		if contador is None:
 			contador = 0
-		text=text+"\n<b>👉 Llevas:</b> "+str(round(contador,1))+" "+tipo_objetivo
+		text=text+"\n<b>👉 Llevas:</b> "+str(contador)+" "+tipo_objetivo
 		text=text+"\n<b>👉 Puntuación:</b> "+str(round(puntuacion,1))+" puntos"
 		text=text+"\n\nUna vez alcanzado el objetivo, los puntos que acumules de más se multiplicarán de acuerdo a tu IMC."
 
@@ -7769,7 +7805,7 @@ def show_inicio_rutinas(update, context):
 			cur.close()
 			db.close()
 
-			text=text+"\n"+nombre_ejercicio+" - "+repeticiones+" 👉 id: /"+str(id_ejercicio)
+			text=text+"\n"+nombre_ejercicio+" - "+repeticiones+" 👉 tutorial: /"+str(id_ejercicio)
 
 	bot.send_message(
 		chat_id = query.message.chat_id,
@@ -7942,7 +7978,7 @@ def ver_rutina(update, context):
 				cur.close()
 				db.close()
 
-				text=text+"\n"+nombre_ejercicio+" - "+repeticiones+" 👉 id: /"+str(id_ejercicio)
+				text=text+"\n"+nombre_ejercicio+" - "+repeticiones+" 👉 tutorial: /"+str(id_ejercicio)
 
 	keyboard = []
 	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
@@ -7956,6 +7992,7 @@ def ver_rutina(update, context):
 		keyboard.append([InlineKeyboardButton("Añadir a favoritos ⭐", callback_data="inicio_rutinas_ver_seguir_"+str(id_rutina))])
 
 	else:
+		text=text+"\n\n<b>Añadida a favoritos</b>⭐"
 		keyboard.append([InlineKeyboardButton("Quitar de favoritos ❌", callback_data="inicio_rutinas_ver_seguir_"+str(id_rutina))])
 
 	keyboard.append([InlineKeyboardButton("Volver a Ver rutinas de entrenamiento 🔙", callback_data="back_inicio_rutinas_ver")])
@@ -8053,7 +8090,7 @@ def ver_rutina_seguir(update, context):
 				cur.close()
 				db.close()
 
-				text=text+"\n"+nombre_ejercicio+" - "+repeticiones+" 👉 id: /"+str(id_ejercicio)
+				text=text+"\n"+nombre_ejercicio+" - "+repeticiones+" 👉 tutorial: /"+str(id_ejercicio)
 
 	keyboard = []
 	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
@@ -8067,6 +8104,7 @@ def ver_rutina_seguir(update, context):
 		keyboard.append([InlineKeyboardButton("Añadir a favoritos ⭐", callback_data="inicio_rutinas_ver_seguir_"+str(id_rutina))])
 
 	else:
+		text=text+"\n\n<b>Añadida a favoritos</b>⭐"
 		keyboard.append([InlineKeyboardButton("Quitar de favoritos ❌", callback_data="inicio_rutinas_ver_seguir_"+str(id_rutina))])
 
 	keyboard.append([InlineKeyboardButton("Volver a Ver rutinas de entrenamiento 🔙", callback_data="back_inicio_rutinas_ver")])
@@ -8280,7 +8318,7 @@ def show_inicio_rutinas_anotar_rutina(update, context):
 		db.close()
 
 		name_button = nombre_ejercicio+" - "+repeticiones
-		name_button = name_button+" 👉 id: /"+str(id_ejercicio)
+		name_button = name_button+" 👉 tutorial: /"+str(id_ejercicio)
 		if ya_hecho:
 			name_button = name_button+" ✅"
 
@@ -8382,7 +8420,7 @@ def anotar_ejercicio_rutina(update, context):
 		cur.execute("SELECT * FROM Hace_rutina WHERE fecha=CURDATE() AND id_rutina="+id_rutina+" AND id_ejercicio="+str(id_ejercicio)+" AND dia='"+dia+"' AND id_usuario='"+username_user+"';")
 		ya_hecho = cur.fetchall()
 
-		name_button = name_button+" 👉 id: /"+str(id_ejercicio)
+		name_button = name_button+" 👉 tutorial: /"+str(id_ejercicio)
 		if ya_hecho:
 			name_button = name_button+" ✅"
 
@@ -8498,7 +8536,7 @@ def show_inicio_rutinas_consultar(update, context):
 			cur.close()
 			db.close()
 
-			text=text+"\n"+nombre_ejercicio+" - "+repeticiones+" 👉 id: /"+str(id_ejercicio)
+			text=text+"\n"+nombre_ejercicio+" - "+repeticiones+" 👉 tutorial: /"+str(id_ejercicio)
 
 	bot.send_message(
 		chat_id = query.message.chat_id,
@@ -8632,7 +8670,7 @@ def rutinas_consultar_fecha(update, context):
 							cur.close()
 							db.close()
 
-							text=text+"\n"+nombre_ejercicio+" - "+repeticiones+" 👉 id: /"+str(id_ejercicio)
+							text=text+"\n"+nombre_ejercicio+" - "+repeticiones+" 👉 tutorial: /"+str(id_ejercicio)
 
 				else:
 					text="No hay ningún entrenamiento registrado el día "+fecha_date.strftime('%d-%B-%Y')
@@ -9257,6 +9295,7 @@ def main():
 						CallbackQueryHandler(objetivo_peso, pattern='inicio_peso_establecer_peso'),
 						CallbackQueryHandler(objetivo_grasa, pattern='inicio_peso_establecer_grasa'),
 						CallbackQueryHandler(objetivo_musculo, pattern='inicio_peso_establecer_musculo'),
+						CallbackQueryHandler(show_inicio_peso_anotar, pattern='inicio_peso_anotar'),
 						CallbackQueryHandler(show_inicio_peso, pattern='back_inicio_peso'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
