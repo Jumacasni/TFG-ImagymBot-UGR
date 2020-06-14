@@ -253,6 +253,21 @@ def show_inicio(update, context):
 	current_state = "INICIO"
 	return INICIO
 
+def usuario_pulsa_boton_anterior(update, context):
+	query = update.callback_query
+	bot = context.bot
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="<b>🚫 No puedes pulsar un botón de un menú anterior 🚫</b>",
+		parse_mode='HTML'
+	)
+
+def usuario_usa_comando_anterior(update, context):
+	update.message.reply_text(
+		text="<b>🚫 No puedes usar ese comando en este momento 🚫</b>",
+		parse_mode='HTML'
+	)
+
 ############# MI FICHA PERSONAL #############
 def show_inicio_ficha(update, context):
 	global current_state
@@ -9094,8 +9109,7 @@ def inicio_peso_anotar(update, context):
 	current_state = "INICIO_PESO_ANOTAR"
 	return INICIO_PESO_ANOTAR
 
-############# FUNCIONES AUXILIARES #############
-def actualizar_ejercicios(update, context):
+def actualizar_ejercicios():
 	global conv_handler
 
 	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
@@ -9105,8 +9119,12 @@ def actualizar_ejercicios(update, context):
 	ejercicios = cur.fetchall()
 
 	for ejercicio in ejercicios:
-		print(str(ejercicio[0]))
 		handler_ejercicio = CommandHandler(str(ejercicio[0]), ver_ejercicio)
+		handler_fallback = CommandHandler(str(ejercicio[0]), usuario_usa_comando_anterior)
+
+		if not handler_fallback in conv_handler.fallbacks:
+			conv_handler.fallbacks.append(handler_fallback)
+
 		if not handler_ejercicio in conv_handler.states[INICIO_RUTINAS]:
 			conv_handler.states[INICIO_RUTINAS].append(handler_ejercicio)
 
@@ -9121,21 +9139,6 @@ def actualizar_ejercicios(update, context):
 
 		if not handler_ejercicio in conv_handler.states[INICIO_RUTINAS_ANOTAR_RUTINA]:
 			conv_handler.states[INICIO_RUTINAS_ANOTAR_RUTINA].append(handler_ejercicio)
-
-# def delete_messages(update, context):
-# 	bot = context.bot
-# 	query = update.callback_query
-# 	for id_msg in messages:
-# 		try:
-# 			bot.delete_message(update.message.chat_id, id_msg)
-# 		except:
-# 			None
-# 	for id_msg in messages:
-# 		try:
-# 			bot.delete_message(query.message.chat_id, id_msg)
-# 		except:
-# 			None
-# 	messages.clear()
 
 def error(update, context):
 	"""Log Errors caused by Updates."""
@@ -9158,31 +9161,25 @@ def error(update, context):
 		None
 	logger.warning('Update "%s" caused error "%s"', update, context.error)
 
-
 def main():
 	global conv_handler
 
 	updater = Updater('984370362:AAHLDLk5DzZT7cx-z03NsecK_muV_h1NGMU', use_context=True)
 
 	conv_handler = ConversationHandler(
-		entry_points=[CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message_start)],
+		entry_points=[CommandHandler('start',start),
+						CommandHandler('ejercicios', actualizar_ejercicios),
+						MessageHandler(Filters.text & (~Filters.command), any_message_start)],
 		states={
-			WELCOME: [CommandHandler('start', start),
-					CommandHandler('mensaje', mandar_mensaje),
-					CommandHandler('ejercicios', actualizar_ejercicios),
-					MessageHandler(Filters.all, any_message)],
+			WELCOME: [
+					MessageHandler(Filters.text & (~Filters.command), any_message)],
 
-			WELCOME_PRESS_START: [CommandHandler('start', start),
-								CommandHandler('mensaje', mandar_mensaje),
-								CommandHandler('ejercicios', actualizar_ejercicios),
-								MessageHandler(Filters.all, any_message),
+			WELCOME_PRESS_START: [
+								MessageHandler(Filters.text & (~Filters.command), any_message),
 								CallbackQueryHandler(show_inicio, pattern='start_menu')],
 
-			INICIO: [CommandHandler('start', start),
-					CommandHandler('mensaje', mandar_mensaje),
-					MessageHandler(Filters.all, any_message),
+			INICIO: [
+					MessageHandler(Filters.text & (~Filters.command), any_message),
 					CallbackQueryHandler(show_inicio_peso, pattern='inicio_peso'),
 					CallbackQueryHandler(show_inicio_cardio, pattern='inicio_cardio'),
 					CallbackQueryHandler(show_inicio_retos, pattern='inicio_retos'),
@@ -9193,9 +9190,8 @@ def main():
 					CallbackQueryHandler(show_inicio_soporte, pattern='inicio_soporte'),
 					],
 
-			INICIO_FICHA: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_FICHA: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(anotar_peso, pattern='inicio_ficha_peso'),
 						CallbackQueryHandler(modify_altura, pattern='inicio_ficha_altura'),
 						CallbackQueryHandler(modify_nacimiento, pattern='inicio_ficha_nacimiento'),
@@ -9204,27 +9200,23 @@ def main():
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_FICHA_PESO: [CommandHandler('start', start),
-								CommandHandler('mensaje', mandar_mensaje),
-								MessageHandler(Filters.all, check_anotar_peso),
+			INICIO_FICHA_PESO: [
+								MessageHandler(Filters.text & (~Filters.command), check_anotar_peso),
 								CallbackQueryHandler(show_inicio_ficha, pattern='back_inicio_ficha')
 								],
 
-			INICIO_FICHA_ALTURA: [CommandHandler('start', start),
-								CommandHandler('mensaje', mandar_mensaje),
-								MessageHandler(Filters.all, check_altura),
+			INICIO_FICHA_ALTURA: [
+								MessageHandler(Filters.text & (~Filters.command), check_altura),
 								CallbackQueryHandler(show_inicio_ficha, pattern='back_inicio_ficha')
 								],
 
-			INICIO_FICHA_NACIMIENTO: [CommandHandler('start', start),
-									CommandHandler('mensaje', mandar_mensaje),
-									MessageHandler(Filters.all, check_nacimiento),
+			INICIO_FICHA_NACIMIENTO: [
+									MessageHandler(Filters.text & (~Filters.command), check_nacimiento),
 									CallbackQueryHandler(show_inicio_ficha, pattern='back_inicio_ficha')
 									],
 
-			INICIO_FICHA_GENERO: [CommandHandler('start', start),
-								CommandHandler('mensaje', mandar_mensaje),
-								MessageHandler(Filters.all, any_message),
+			INICIO_FICHA_GENERO: [
+								MessageHandler(Filters.text & (~Filters.command), any_message),
 								CallbackQueryHandler(check_genero_hombre, pattern='select_genero_hombre'),
 								CallbackQueryHandler(check_genero_mujer, pattern='select_genero_mujer'),
 								CallbackQueryHandler(check_genero_otro, pattern='select_genero_otro'),
@@ -9232,15 +9224,13 @@ def main():
 								CallbackQueryHandler(show_inicio_ficha, pattern='back_inicio_ficha')
 								],
 
-			INICIO_FICHA_EMAIL: [CommandHandler('start', start),
-								CommandHandler('mensaje', mandar_mensaje),
-								MessageHandler(Filters.all, check_email),
+			INICIO_FICHA_EMAIL: [
+								MessageHandler(Filters.text & (~Filters.command), check_email),
 								CallbackQueryHandler(show_inicio_ficha, pattern='back_inicio_ficha')
 								],
 
-			INICIO_PESO: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_PESO: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_peso_anotar, pattern='inicio_peso_anotar'),
 						CallbackQueryHandler(show_inicio_peso_establecer, pattern='inicio_peso_establecer'),
 						CallbackQueryHandler(show_inicio_peso_eliminar, pattern='inicio_peso_eliminar'),
@@ -9249,9 +9239,8 @@ def main():
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_PESO_ANOTAR: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_PESO_ANOTAR: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(anotar_peso, pattern='inicio_peso_anotar_peso'),
 						CallbackQueryHandler(anotar_grasa, pattern='inicio_peso_anotar_grasa'),
 						CallbackQueryHandler(anotar_musculo, pattern='inicio_peso_anotar_musculo'),
@@ -9259,39 +9248,33 @@ def main():
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_PESO_ANOTAR_PESO: [CommandHandler('start', start),
-									CommandHandler('mensaje', mandar_mensaje),
-									MessageHandler(Filters.all, check_anotar_peso),
+			INICIO_PESO_ANOTAR_PESO: [
+									MessageHandler(Filters.text & (~Filters.command), check_anotar_peso),
 									CallbackQueryHandler(show_inicio_peso_anotar, pattern='back_inicio_peso_anotar')
 									],
 
-			INICIO_PESO_ANOTAR_PESO_ALTURA: [CommandHandler('start', start),
-									CommandHandler('mensaje', mandar_mensaje),
-									MessageHandler(Filters.all, check_altura),
+			INICIO_PESO_ANOTAR_PESO_ALTURA: [
+									MessageHandler(Filters.text & (~Filters.command), check_altura),
 									CallbackQueryHandler(show_inicio_peso_anotar, pattern='back_inicio_peso_anotar')
 									],
 
-			INICIO_FICHA_PESO_ALTURA: [CommandHandler('start', start),
-									CommandHandler('mensaje', mandar_mensaje),
-									MessageHandler(Filters.all, check_altura),
+			INICIO_FICHA_PESO_ALTURA: [
+									MessageHandler(Filters.text & (~Filters.command), check_altura),
 									CallbackQueryHandler(show_inicio_ficha, pattern='back_inicio_ficha')
 									],
 
-			INICIO_PESO_ANOTAR_GRASA: [CommandHandler('start', start),
-									CommandHandler('mensaje', mandar_mensaje),
-									MessageHandler(Filters.all, check_anotar_grasa),
+			INICIO_PESO_ANOTAR_GRASA: [
+									MessageHandler(Filters.text & (~Filters.command), check_anotar_grasa),
 									CallbackQueryHandler(show_inicio_peso_anotar, pattern='back_inicio_peso_anotar')
 									],
 
-			INICIO_PESO_ANOTAR_MUSCULO: [CommandHandler('start', start),
-									CommandHandler('mensaje', mandar_mensaje),
-									MessageHandler(Filters.all, check_anotar_musculo),
+			INICIO_PESO_ANOTAR_MUSCULO: [
+									MessageHandler(Filters.text & (~Filters.command), check_anotar_musculo),
 									CallbackQueryHandler(show_inicio_peso_anotar, pattern='back_inicio_peso_anotar')
 									],
 
-			INICIO_PESO_ESTABLECER: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_PESO_ESTABLECER: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(objetivo_peso, pattern='inicio_peso_establecer_peso'),
 						CallbackQueryHandler(objetivo_grasa, pattern='inicio_peso_establecer_grasa'),
 						CallbackQueryHandler(objetivo_musculo, pattern='inicio_peso_establecer_musculo'),
@@ -9300,15 +9283,13 @@ def main():
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_PESO_ESTABLECER_PESO: [CommandHandler('start', start),
-									CommandHandler('mensaje', mandar_mensaje),
-									MessageHandler(Filters.all, check_objetivo_peso),
+			INICIO_PESO_ESTABLECER_PESO: [
+									MessageHandler(Filters.text & (~Filters.command), check_objetivo_peso),
 									CallbackQueryHandler(show_inicio_peso_establecer, pattern='back_inicio_peso_establecer')
 									],
 
-			INICIO_PESO_ESTABLECER_PESO_TIEMPO: [CommandHandler('start', start),
-												CommandHandler('mensaje', mandar_mensaje),
-												MessageHandler(Filters.all, any_message),
+			INICIO_PESO_ESTABLECER_PESO_TIEMPO: [
+												MessageHandler(Filters.text & (~Filters.command), any_message),
 												CallbackQueryHandler(objetivo_peso_tiempo, pattern='objetivo_peso_1'),
 												CallbackQueryHandler(objetivo_peso_tiempo, pattern='objetivo_peso_2'),
 												CallbackQueryHandler(objetivo_peso_tiempo, pattern='objetivo_peso_3'),
@@ -9317,15 +9298,13 @@ def main():
 												CallbackQueryHandler(show_inicio_peso_establecer, pattern='back_inicio_peso_establecer')
 												],
 
-			INICIO_PESO_ESTABLECER_GRASA: [CommandHandler('start', start),
-									CommandHandler('mensaje', mandar_mensaje),
-									MessageHandler(Filters.all, check_objetivo_grasa),
+			INICIO_PESO_ESTABLECER_GRASA: [
+									MessageHandler(Filters.text & (~Filters.command), check_objetivo_grasa),
 									CallbackQueryHandler(show_inicio_peso_establecer, pattern='back_inicio_peso_establecer')
 									],
 
-			INICIO_PESO_ESTABLECER_GRASA_TIEMPO: [CommandHandler('start', start),
-												CommandHandler('mensaje', mandar_mensaje),
-												MessageHandler(Filters.all, any_message),
+			INICIO_PESO_ESTABLECER_GRASA_TIEMPO: [
+												MessageHandler(Filters.text & (~Filters.command), any_message),
 												CallbackQueryHandler(objetivo_grasa_tiempo, pattern='objetivo_grasa_1'),
 												CallbackQueryHandler(objetivo_grasa_tiempo, pattern='objetivo_grasa_2'),
 												CallbackQueryHandler(objetivo_grasa_tiempo, pattern='objetivo_grasa_3'),
@@ -9334,15 +9313,13 @@ def main():
 												CallbackQueryHandler(show_inicio_peso_establecer, pattern='back_inicio_peso_establecer')
 												],
 
-			INICIO_PESO_ESTABLECER_MUSCULO: [CommandHandler('start', start),
-											CommandHandler('mensaje', mandar_mensaje),
-											MessageHandler(Filters.all, check_objetivo_musculo),
+			INICIO_PESO_ESTABLECER_MUSCULO: [
+											MessageHandler(Filters.text & (~Filters.command), check_objetivo_musculo),
 											CallbackQueryHandler(show_inicio_peso_establecer, pattern='back_inicio_peso_establecer')
 									],
 
-			INICIO_PESO_ESTABLECER_MUSCULO_TIEMPO: [CommandHandler('start', start),
-												CommandHandler('mensaje', mandar_mensaje),
-												MessageHandler(Filters.all, any_message),
+			INICIO_PESO_ESTABLECER_MUSCULO_TIEMPO: [
+												MessageHandler(Filters.text & (~Filters.command), any_message),
 												CallbackQueryHandler(objetivo_musculo_tiempo, pattern='objetivo_musculo_1'),
 												CallbackQueryHandler(objetivo_musculo_tiempo, pattern='objetivo_musculo_2'),
 												CallbackQueryHandler(objetivo_musculo_tiempo, pattern='objetivo_musculo_3'),
@@ -9351,23 +9328,20 @@ def main():
 												CallbackQueryHandler(show_inicio_peso_establecer, pattern='back_inicio_peso_establecer')
 												],
 
-			INICIO_PESO_ESTABLECER_PESO_TIEMPO_CONFIRMAR: [CommandHandler('start', start),
-														CommandHandler('mensaje', mandar_mensaje),
-														MessageHandler(Filters.all, any_message),
+			INICIO_PESO_ESTABLECER_PESO_TIEMPO_CONFIRMAR: [
+														MessageHandler(Filters.text & (~Filters.command), any_message),
 														CallbackQueryHandler(objetivo_peso_tiempo_si, pattern='objetivo_peso_tiempo_si'),
 														CallbackQueryHandler(objetivo_peso_tiempo_no, pattern='objetivo_peso_tiempo_no')
 														],
 
-			INICIO_PESO_ELIMINAR: [CommandHandler('start', start),
-								CommandHandler('mensaje', mandar_mensaje),
-								MessageHandler(Filters.all, any_message),
+			INICIO_PESO_ELIMINAR: [
+								MessageHandler(Filters.text & (~Filters.command), any_message),
 								CallbackQueryHandler(objetivo_peso_eliminar_si, pattern='objetivo_peso_eliminar_si'),
 								CallbackQueryHandler(objetivo_peso_eliminar_no, pattern='objetivo_peso_eliminar_no')
 								],
 
-			INICIO_PESO_EVOLUCION: [CommandHandler('start', start),
-								CommandHandler('mensaje', mandar_mensaje),
-								MessageHandler(Filters.all, any_message),
+			INICIO_PESO_EVOLUCION: [
+								MessageHandler(Filters.text & (~Filters.command), any_message),
 								CallbackQueryHandler(evolucion_peso, pattern='inicio_peso_evolucion_peso'),
 								CallbackQueryHandler(evolucion_grasa, pattern='inicio_peso_evolucion_grasa'),
 								CallbackQueryHandler(evolucion_musculo, pattern='inicio_peso_evolucion_musculo'),
@@ -9375,44 +9349,38 @@ def main():
 								CallbackQueryHandler(show_inicio_peso, pattern='back_inicio_peso')
 								],
 
-			INICIO_PESO_EVOLUCION_PESO: [CommandHandler('start', start),
-										CommandHandler('mensaje', mandar_mensaje),
-										MessageHandler(Filters.all, any_message),
+			INICIO_PESO_EVOLUCION_PESO: [
+										MessageHandler(Filters.text & (~Filters.command), any_message),
 										CallbackQueryHandler(show_inicio_peso_evolucion, pattern='back_inicio_peso_evolucion'),
 										CommandHandler("rango", evolucion_peso_rango)
 										],
 
-			INICIO_PESO_EVOLUCION_GRASA: [CommandHandler('start', start),
-										CommandHandler('mensaje', mandar_mensaje),
-										MessageHandler(Filters.all, any_message),
+			INICIO_PESO_EVOLUCION_GRASA: [
+										MessageHandler(Filters.text & (~Filters.command), any_message),
 										CallbackQueryHandler(show_inicio_peso_evolucion, pattern='back_inicio_peso_evolucion'),
 										CommandHandler("rango", evolucion_grasa_rango)
 										],
 
-			INICIO_PESO_EVOLUCION_MUSCULO: [CommandHandler('start', start),
-										CommandHandler('mensaje', mandar_mensaje),
+			INICIO_PESO_EVOLUCION_MUSCULO: [
 										CallbackQueryHandler(show_inicio_peso_evolucion, pattern='back_inicio_peso_evolucion'),
 										CommandHandler("rango", evolucion_musculo_rango),
-										MessageHandler(Filters.all, any_message)
+										MessageHandler(Filters.text & (~Filters.command), any_message)
 										],
 
-			INICIO_PESO_EVOLUCION_IMC: [CommandHandler('start', start),
-										CommandHandler('mensaje', mandar_mensaje),
+			INICIO_PESO_EVOLUCION_IMC: [
 										CallbackQueryHandler(show_inicio_peso_evolucion, pattern='back_inicio_peso_evolucion'),
 										CommandHandler("rango", evolucion_imc_rango),
-										MessageHandler(Filters.all, any_message)
+										MessageHandler(Filters.text & (~Filters.command), any_message)
 										],
 
-			INICIO_PESO_VALORACION: [CommandHandler('start', start),
-								CommandHandler('mensaje', mandar_mensaje),
+			INICIO_PESO_VALORACION: [
 								CallbackQueryHandler(show_inicio_peso, pattern='back_inicio_peso'),
 								CallbackQueryHandler(show_inicio, pattern='back_inicio'),
-								MessageHandler(Filters.all, any_message)
+								MessageHandler(Filters.text & (~Filters.command), any_message)
 								],
 
-			INICIO_CARDIO: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_CARDIO: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_cardio_registrar, pattern='inicio_cardio_registrar'),
 						CallbackQueryHandler(show_inicio_cardio_ver, pattern='inicio_cardio_ver'),
 						CallbackQueryHandler(show_inicio_cardio_establecer, pattern='inicio_cardio_establecer'),
@@ -9420,68 +9388,59 @@ def main():
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_CARDIO_REGISTRAR: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_CARDIO_REGISTRAR: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_cardio, pattern='back_inicio_cardio'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_CARDIO_REGISTRAR_ACTIVIDAD: [CommandHandler('start', start),
-									CommandHandler('mensaje', mandar_mensaje),
+			INICIO_CARDIO_REGISTRAR_ACTIVIDAD: [
 									CommandHandler("cardio", registrar_cardio),
 									CallbackQueryHandler(show_inicio_cardio_registrar, pattern='back_inicio_cardio_registrar'),
-									MessageHandler(Filters.all, any_message),
+									MessageHandler(Filters.text & (~Filters.command), any_message),
 									],
 
-			INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR: [CommandHandler('start', start),
-														CommandHandler('mensaje', mandar_mensaje),
+			INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR: [
 														CallbackQueryHandler(registrar_cardio_si, pattern='registrar_cardio_si'),
 														CallbackQueryHandler(registrar_cardio_no, pattern='registrar_cardio_no'),
-														MessageHandler(Filters.all, any_message),
+														MessageHandler(Filters.text & (~Filters.command), any_message),
 														],
 
-			INICIO_CARDIO_VER: [CommandHandler('start', start),
-							CommandHandler('mensaje', mandar_mensaje),
+			INICIO_CARDIO_VER: [
 							CallbackQueryHandler(show_inicio_cardio, pattern='back_inicio_cardio'),
 							CallbackQueryHandler(show_inicio, pattern='back_inicio'),
 							CommandHandler("consultar", ver_cardio_rango),
-							MessageHandler(Filters.all, any_message),
+							MessageHandler(Filters.text & (~Filters.command), any_message),
 							],
 
-			INICIO_CARDIO_ESTABLECER: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_CARDIO_ESTABLECER: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_cardio, pattern='back_inicio_cardio'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_CARDIO_ESTABLECER_ACTIVIDAD: [CommandHandler('start', start),
-									CommandHandler('mensaje', mandar_mensaje),
+			INICIO_CARDIO_ESTABLECER_ACTIVIDAD: [
 									CommandHandler('minutos', establecer_cardio_minutos),
 									CommandHandler('distancia', establecer_cardio_distancia),
 									CommandHandler('calorias', establecer_cardio_calorias),
 									CallbackQueryHandler(show_inicio_cardio_establecer, pattern='back_inicio_cardio_establecer'),
-									MessageHandler(Filters.all, any_message),
+									MessageHandler(Filters.text & (~Filters.command), any_message),
 									],
 
-			INICIO_CARDIO_ESTABLECER_ACTIVIDAD_CONFIRMAR: [CommandHandler('start', start),
-														CommandHandler('mensaje', mandar_mensaje),
+			INICIO_CARDIO_ESTABLECER_ACTIVIDAD_CONFIRMAR: [
 														CallbackQueryHandler(establecer_cardio_si, pattern='establecer_cardio_si'),
 														CallbackQueryHandler(establecer_cardio_no, pattern='establecer_cardio_no'),
-														MessageHandler(Filters.all, any_message),
+														MessageHandler(Filters.text & (~Filters.command), any_message),
 														],
 
-			INICIO_CARDIO_ELIMINAR: [CommandHandler('start', start),
-								CommandHandler('mensaje', mandar_mensaje),
+			INICIO_CARDIO_ELIMINAR: [
 								CallbackQueryHandler(objetivo_cardio_eliminar_si, pattern='objetivo_cardio_eliminar_si'),
 								CallbackQueryHandler(objetivo_cardio_eliminar_no, pattern='objetivo_cardio_eliminar_no'),
-								MessageHandler(Filters.all, any_message),
+								MessageHandler(Filters.text & (~Filters.command), any_message),
 								],
 
-			INICIO_RETOS: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_RETOS: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_retos_ver, pattern='inicio_retos_ver'),
 						CallbackQueryHandler(show_inicio_retos_eliminar, pattern='inicio_retos_eliminar'),
 						CallbackQueryHandler(show_inicio_retos_anotar, pattern='inicio_retos_anotar'),
@@ -9491,80 +9450,70 @@ def main():
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_RETOS_VER: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_RETOS_VER: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_retos, pattern='back_inicio_retos'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_RETOS_VER_RETO: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_RETOS_VER_RETO: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_retos_ver, pattern='back_inicio_retos_ver'),
 						CallbackQueryHandler(show_inicio_retos, pattern='back_inicio_retos'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_RETOS_ELIMINAR: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_RETOS_ELIMINAR: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_retos, pattern='back_inicio_retos'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_RETOS_ELIMINAR_CONFIRMAR: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_RETOS_ELIMINAR_CONFIRMAR: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(eliminar_reto_confirmar_no, pattern='eliminar_reto_confirmar_no'),
 						CallbackQueryHandler(show_inicio_retos_eliminar, pattern='back_inicio_retos_eliminar'),
 						CallbackQueryHandler(show_inicio_retos, pattern='back_inicio_retos'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_RETOS_ANOTAR_CONFIRMAR: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_RETOS_ANOTAR_CONFIRMAR: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(inicio_retos_anotar_si, pattern='inicio_retos_anotar_si'),
 						CallbackQueryHandler(inicio_retos_anotar_no, pattern='inicio_retos_anotar_no'),
 						CallbackQueryHandler(show_inicio_retos, pattern='back_inicio_retos'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_RETOS_CALENDARIO: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_RETOS_CALENDARIO: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_retos, pattern='back_inicio_retos'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_RETOS_DESCALIFICAR_CONFIRMAR: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_RETOS_DESCALIFICAR_CONFIRMAR: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(inicio_retos_descalificar_si, pattern='inicio_retos_descalificar_si'),
 						CallbackQueryHandler(inicio_retos_descalificar_no, pattern='inicio_retos_descalificar_no'),
 						CallbackQueryHandler(show_inicio_retos, pattern='back_inicio_retos'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_RETOS_HISTORIAL: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_RETOS_HISTORIAL: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_retos, pattern='back_inicio_retos'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_RETOS_HISTORIAL_CLASIFICACION: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_RETOS_HISTORIAL_CLASIFICACION: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_retos_historial, pattern='back_inicio_retos_historial'),
 						CallbackQueryHandler(show_inicio_retos, pattern='back_inicio_retos'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_EJERCICIO: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_EJERCICIO: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_cardio_registrar, pattern='inicio_cardio_registrar'),
 						CallbackQueryHandler(show_inicio_ejercicio_apuntarse, pattern='inicio_ejercicio_apuntarse'),
 						CallbackQueryHandler(show_inicio_ejercicio_ranking, pattern='inicio_ejercicio_ranking'),
@@ -9574,135 +9523,243 @@ def main():
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_EJERCICIO_REGISTRAR: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_EJERCICIO_REGISTRAR: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_ejercicio, pattern='back_inicio_ejercicio'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_EJERCICIO_RANKING: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_EJERCICIO_RANKING: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_ejercicio, pattern='back_inicio_ejercicio'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD: [CommandHandler('start', start),
-									CommandHandler('mensaje', mandar_mensaje),
+			INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD: [
 									CommandHandler("cardio", registrar_cardio),
 									CallbackQueryHandler(show_inicio_cardio_registrar, pattern='back_inicio_cardio_registrar'),
-									MessageHandler(Filters.all, any_message),
+									MessageHandler(Filters.text & (~Filters.command), any_message),
 									],
 
-			INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR: [CommandHandler('start', start),
-														CommandHandler('mensaje', mandar_mensaje),
+			INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR: [
 														CallbackQueryHandler(registrar_cardio_si, pattern='registrar_cardio_si'),
 														CallbackQueryHandler(registrar_cardio_no, pattern='registrar_cardio_no'),
-														MessageHandler(Filters.all, any_message),
+														MessageHandler(Filters.text & (~Filters.command), any_message),
 														],
 
-			INICIO_EJERCICIO_DESCALIFICAR_CONFIRMAR: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_EJERCICIO_DESCALIFICAR_CONFIRMAR: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(inicio_ejercicio_descalificar_si, pattern='inicio_ejercicio_descalificar_si'),
 						CallbackQueryHandler(inicio_ejercicio_descalificar_no, pattern='inicio_ejercicio_descalificar_no'),
 						CallbackQueryHandler(show_inicio_ejercicio, pattern='back_inicio_ejercicio'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_EJERCICIO_ELIMINAR_CONFIRMAR: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_EJERCICIO_ELIMINAR_CONFIRMAR: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(inicio_ejercicio_eliminar_si, pattern='inicio_ejercicio_eliminar_si'),
 						CallbackQueryHandler(inicio_ejercicio_eliminar_no, pattern='inicio_ejercicio_eliminar_no'),
 						CallbackQueryHandler(show_inicio_ejercicio, pattern='back_inicio_ejercicio'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_EJERCICIO_HISTORIAL: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_EJERCICIO_HISTORIAL: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_ejercicio, pattern='back_inicio_ejercicio'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_EJERCICIO_HISTORIAL_CLASIFICACION: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_EJERCICIO_HISTORIAL_CLASIFICACION: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_ejercicio_historial, pattern='back_inicio_ejercicio_historial'),
 						CallbackQueryHandler(show_inicio_ejercicio, pattern='back_inicio_ejercicio'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_RUTINAS: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
+			INICIO_RUTINAS: [
 						MessageHandler(Filters.command, ver_ejercicio),
-						MessageHandler(Filters.all, any_message),
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_rutinas_ver, pattern='inicio_rutinas_ver'),
 						CallbackQueryHandler(show_inicio_rutinas_anotar, pattern='inicio_rutinas_anotar'),
 						CallbackQueryHandler(show_inicio_rutinas_consultar, pattern='inicio_rutinas_consultar'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_RUTINAS_VER: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
+			INICIO_RUTINAS_VER: [
 						MessageHandler(Filters.command, ver_ejercicio),
-						MessageHandler(Filters.all, any_message),
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_rutinas, pattern='back_inicio_rutinas'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_RUTINAS_ANOTAR: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
+			INICIO_RUTINAS_ANOTAR: [
 						MessageHandler(Filters.command, ver_ejercicio),
-						MessageHandler(Filters.all, any_message),
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_rutinas, pattern='back_inicio_rutinas'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_RUTINAS_CONSULTAR: [CommandHandler('start', start),
+			INICIO_RUTINAS_CONSULTAR: [
 						CommandHandler('consultar', rutinas_consultar_fecha),
-						CommandHandler('mensaje', mandar_mensaje),
 						MessageHandler(Filters.command, ver_ejercicio),
-						MessageHandler(Filters.all, any_message),
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_rutinas, pattern='back_inicio_rutinas'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_RUTINAS_VER_RUTINA: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
+			INICIO_RUTINAS_VER_RUTINA: [
 						MessageHandler(Filters.command, ver_ejercicio),
-						MessageHandler(Filters.all, any_message),
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_rutinas_ver, pattern='back_inicio_rutinas_ver'),
 						CallbackQueryHandler(show_inicio_rutinas, pattern='back_inicio_rutinas'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_RUTINAS_ANOTAR_RUTINA: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
+			INICIO_RUTINAS_ANOTAR_RUTINA: [
 						MessageHandler(Filters.command, ver_ejercicio),
-						MessageHandler(Filters.all, any_message),
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_rutinas_anotar, pattern='back_inicio_rutinas_anotar'),
 						CallbackQueryHandler(show_inicio_rutinas, pattern='back_inicio_rutinas'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
-			INICIO_SOPORTE: [CommandHandler('start', start),
-						CommandHandler('mensaje', mandar_mensaje),
-						MessageHandler(Filters.all, any_message),
+			INICIO_SOPORTE: [
+						MessageHandler(Filters.text & (~Filters.command), any_message),
 						CallbackQueryHandler(show_inicio_soporte_acerca, pattern='inicio_soporte_acerca'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
 		},
-		fallbacks=[CommandHandler('start',start)]
+		fallbacks=[CommandHandler('start',start),
+				CommandHandler('mensaje', mandar_mensaje),
+				CommandHandler('ejercicios', actualizar_ejercicios),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='start_menu'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_peso'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_cardio'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_retos'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_ejercicio'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_rutinas'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_ficha'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='show_inicio'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_soporte'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_ficha_peso'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_ficha_altura'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_ficha_nacimiento'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_ficha_genero'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_ficha_email'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio_ficha'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='select_genero_hombre'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='select_genero_mujer'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='select_genero_otro'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='select_genero_sin'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_peso_anotar'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_peso_establecer'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_peso_eliminar'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_peso_evolucion'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_peso_valoracion'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_peso_anotar_peso'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_peso_anotar_grasa'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_peso_anotar_musculo'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio_peso'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio_peso_anotar'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_peso_establecer_peso'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_peso_establecer_grasa'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_peso_establecer_musculo'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio_peso_establecer'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='objetivo_peso_1'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='objetivo_peso_2'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='objetivo_peso_3'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='objetivo_peso_4'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='objetivo_peso_5'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='objetivo_grasa_1'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='objetivo_grasa_2'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='objetivo_grasa_3'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='objetivo_grasa_4'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='objetivo_grasa_5'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='objetivo_musculo_1'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='objetivo_musculo_2'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='objetivo_musculo_3'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='objetivo_musculo_4'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='objetivo_musculo_5'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='objetivo_peso_tiempo_si'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='objetivo_peso_tiempo_no'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='objetivo_peso_eliminar_si'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='objetivo_peso_eliminar_no'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_peso_evolucion_peso'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_peso_evolucion_grasa'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_peso_evolucion_musculo'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_peso_evolucion_imc'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio_peso_evolucion'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio_peso'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_cardio_registrar'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_cardio_ver'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_cardio_establecer'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_cardio_eliminar'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio_cardio_registrar'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='registrar_cardio_si'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='registrar_cardio_no'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio_cardio'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio_cardio_establecer'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='establecer_cardio_si'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='establecer_cardio_no'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='objetivo_cardio_eliminar_si'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='objetivo_cardio_eliminar_no'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_retos_ver'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_retos_eliminar'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_retos_anotar'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_retos_calendario'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_retos_descalificar'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_retos_historial'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio_retos_ver'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='eliminar_reto_confirmar_no'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio_retos_eliminar'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_retos_anotar_si'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_retos_anotar_no'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_retos_descalificar_si'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_retos_descalificar_no'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio_retos_historial'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio_retos'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_cardio_registrar'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_ejercicio_apuntarse'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_ejercicio_ranking'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_ejercicio_descalificar'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_ejercicio_eliminar'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_ejercicio_historial'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio_ejercicio'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio_cardio_registrar'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_ejercicio_descalificar_si'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_ejercicio_descalificar_no'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_ejercicio_eliminar_si'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_ejercicio_eliminar_no'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio_ejercicio_historial'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_rutinas_ver'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_rutinas_anotar'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_rutinas_consultar'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio_rutinas'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio_rutinas_ver'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio_rutinas_anotar'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_soporte_acerca'),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio'),
+				CommandHandler("rango", usuario_usa_comando_anterior),
+				CommandHandler("rango", usuario_usa_comando_anterior),
+				CommandHandler("rango", usuario_usa_comando_anterior),
+				CommandHandler("rango", usuario_usa_comando_anterior),
+				CommandHandler("cardio", usuario_usa_comando_anterior),
+				CommandHandler("consultar", usuario_usa_comando_anterior),
+				CommandHandler('minutos', usuario_usa_comando_anterior),
+				CommandHandler('distancia', usuario_usa_comando_anterior),
+				CommandHandler('calorias', usuario_usa_comando_anterior),
+				CommandHandler("cardio", usuario_usa_comando_anterior),
+				CommandHandler('consultar', usuario_usa_comando_anterior)
+		]
 	)
 	updater.dispatcher.add_handler(conv_handler)
 	updater.dispatcher.add_error_handler(error)
 
 	# Start the Bot
 	updater.start_polling()#allowed_updates=[])
+
+	actualizar_ejercicios()
 
 	# Run the bot until the user presses Ctrl-C or the process receives SIGINT,
 	# SIGTERM or SIGABRT

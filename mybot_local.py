@@ -9109,7 +9109,7 @@ def inicio_peso_anotar(update, context):
 	current_state = "INICIO_PESO_ANOTAR"
 	return INICIO_PESO_ANOTAR
 
-def actualizar_ejercicios(update, context):
+def actualizar_ejercicios():
 	global conv_handler
 
 	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
@@ -9140,21 +9140,6 @@ def actualizar_ejercicios(update, context):
 		if not handler_ejercicio in conv_handler.states[INICIO_RUTINAS_ANOTAR_RUTINA]:
 			conv_handler.states[INICIO_RUTINAS_ANOTAR_RUTINA].append(handler_ejercicio)
 
-# def delete_messages(update, context):
-# 	bot = context.bot
-# 	query = update.callback_query
-# 	for id_msg in messages:
-# 		try:
-# 			bot.delete_message(update.message.chat_id, id_msg)
-# 		except:
-# 			None
-# 	for id_msg in messages:
-# 		try:
-# 			bot.delete_message(query.message.chat_id, id_msg)
-# 		except:
-# 			None
-# 	messages.clear()
-
 def error(update, context):
 	"""Log Errors caused by Updates."""
 
@@ -9175,7 +9160,6 @@ def error(update, context):
 	except:
 		None
 	logger.warning('Update "%s" caused error "%s"', update, context.error)
-
 
 def main():
 	global conv_handler
@@ -9774,6 +9758,8 @@ def main():
 
 	# Start the Bot
 	updater.start_polling()#allowed_updates=[])
+
+	actualizar_ejercicios()
 
 	# Run the bot until the user presses Ctrl-C or the process receives SIGINT,
 	# SIGTERM or SIGABRT
