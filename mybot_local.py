@@ -262,6 +262,11 @@ def usuario_pulsa_boton_anterior(update, context):
 		parse_mode='HTML'
 	)
 
+def usuario_usa_comando_anterior(update, context):
+	update.message.reply_text(
+		text="<b>🚫 No puedes usar ese comando en este momento 🚫</b>",
+		parse_mode='HTML'
+	)
 
 ############# MI FICHA PERSONAL #############
 def show_inicio_ficha(update, context):
@@ -9104,7 +9109,6 @@ def inicio_peso_anotar(update, context):
 	current_state = "INICIO_PESO_ANOTAR"
 	return INICIO_PESO_ANOTAR
 
-############# FUNCIONES AUXILIARES #############
 def actualizar_ejercicios(update, context):
 	global conv_handler
 
@@ -9115,8 +9119,12 @@ def actualizar_ejercicios(update, context):
 	ejercicios = cur.fetchall()
 
 	for ejercicio in ejercicios:
-		print(str(ejercicio[0]))
 		handler_ejercicio = CommandHandler(str(ejercicio[0]), ver_ejercicio)
+		handler_fallback = CommandHandler(str(ejercicio[0]), usuario_usa_comando_anterior)
+
+		if not handler_fallback in conv_handler.fallbacks:
+			conv_handler.fallbacks.append(handler_fallback)
+
 		if not handler_ejercicio in conv_handler.states[INICIO_RUTINAS]:
 			conv_handler.states[INICIO_RUTINAS].append(handler_ejercicio)
 
@@ -9176,14 +9184,13 @@ def main():
 
 	conv_handler = ConversationHandler(
 		entry_points=[CommandHandler('start',start),
+						CommandHandler('ejercicios', actualizar_ejercicios),
 						MessageHandler(Filters.text & (~Filters.command), any_message_start)],
 		states={
 			WELCOME: [
-					CommandHandler('ejercicios', actualizar_ejercicios),
 					MessageHandler(Filters.text & (~Filters.command), any_message)],
 
 			WELCOME_PRESS_START: [
-								CommandHandler('ejercicios', actualizar_ejercicios),
 								MessageHandler(Filters.text & (~Filters.command), any_message),
 								CallbackQueryHandler(show_inicio, pattern='start_menu')],
 
@@ -9641,7 +9648,8 @@ def main():
 		},
 		fallbacks=[CommandHandler('start',start),
 				CommandHandler('mensaje', mandar_mensaje),
-				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='start_menu')
+				CommandHandler('ejercicios', actualizar_ejercicios),
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='start_menu'),
 				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_peso'),
 				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_cardio'),
 				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_retos'),
@@ -9747,7 +9755,18 @@ def main():
 				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio_rutinas_ver'),
 				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio_rutinas_anotar'),
 				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_soporte_acerca'),
-				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio')
+				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='back_inicio'),
+				CommandHandler("rango", usuario_usa_comando_anterior),
+				CommandHandler("rango", usuario_usa_comando_anterior),
+				CommandHandler("rango", usuario_usa_comando_anterior),
+				CommandHandler("rango", usuario_usa_comando_anterior),
+				CommandHandler("cardio", usuario_usa_comando_anterior),
+				CommandHandler("consultar", usuario_usa_comando_anterior),
+				CommandHandler('minutos', usuario_usa_comando_anterior),
+				CommandHandler('distancia', usuario_usa_comando_anterior),
+				CommandHandler('calorias', usuario_usa_comando_anterior),
+				CommandHandler("cardio", usuario_usa_comando_anterior),
+				CommandHandler('consultar', usuario_usa_comando_anterior)
 		]
 	)
 	updater.dispatcher.add_handler(conv_handler)
