@@ -65,42 +65,46 @@ global current_state, conv_handler, updater
 
 ############# INICIO #############
 def start(update, context):
-	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
-	db.begin()
-
 	global current_state
 
 	name_user = update.message.from_user.first_name
 	username_user = update.message.from_user.username
 
-	cur = db.cursor()
-	cur.execute("SELECT id_usuario FROM Usuarios where id_usuario='"+username_user+"';")
-	resultado = cur.fetchall()
-	cur.close()
-	db.close()
-
-	if not resultado:
-		msg = update.message.reply_text(
-			text="¡Bienvenido/a a Imagym! Introduce la contraseña de tu gimnasio para hablar conmigo.")
-
-		# Le decimos al bot que estamos en el estado WELCOME
-		current_state = 'WELCOME'
-		return WELCOME
-
-	else:
-		msg = update.message.reply_text(
-			text="¡Bienvenido/a de nuevo, "+name_user)
-		keyboard = [
-			[InlineKeyboardButton("Empezar Imagym ➡", callback_data='start_menu')]
-		]
-		reply_markup = InlineKeyboardMarkup(keyboard)
+	if username_user is None:
 		update.message.reply_text(
-			text="Pulsa el botón para empezar",
-			reply_markup=reply_markup
+			text="¡Bienvenido/a a Imagym! Parece que no tienes un usuario/alias de Telegram. Ve a ajustes, ponte un nombre de usuario y podremos empezar!!"
 		)
+	else:
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
+		db.begin()
+		cur = db.cursor()
+		cur.execute("SELECT id_usuario FROM Usuarios where id_usuario='"+username_user+"';")
+		resultado = cur.fetchall()
+		cur.close()
+		db.close()
 
-		current_state = 'WELCOME_PRESS_START'
-		return WELCOME_PRESS_START
+		if not resultado:
+			update.message.reply_text(
+				text="¡Bienvenido/a a Imagym! Soy un divulgador de gimnasios y mi objetivo es fortalecer la comunidad de un gimnasio. Introduce la contraseña de tu gimnasio para hablar conmigo 😃")
+
+			# Le decimos al bot que estamos en el estado WELCOME
+			current_state = 'WELCOME'
+			return WELCOME
+
+		else:
+			update.message.reply_text(
+				text="¡Bienvenido/a de nuevo, "+name_user)
+			keyboard = [
+				[InlineKeyboardButton("Empezar Imagym ➡", callback_data='start_menu')]
+			]
+			reply_markup = InlineKeyboardMarkup(keyboard)
+			update.message.reply_text(
+				text="Pulsa el botón para empezar",
+				reply_markup=reply_markup
+			)
+
+			current_state = 'WELCOME_PRESS_START'
+			return WELCOME_PRESS_START
 
 def mandar_mensaje(update, context):
 	global current_state
