@@ -47,7 +47,7 @@ INICIO_PESO_ANOTAR_MUSCULO, INICIO_PESO_ESTABLECER, INICIO_PESO_ESTABLECER_PESO,
 INICIO_PESO_ESTABLECER_GRASA, INICIO_PESO_ESTABLECER_GRASA_TIEMPO,\
 INICIO_PESO_ESTABLECER_MUSCULO, INICIO_PESO_ESTABLECER_MUSCULO_TIEMPO,\
 INICIO_PESO_ESTABLECER_PESO_TIEMPO_CONFIRMAR, INICIO_PESO_ELIMINAR, INICIO_PESO_EVOLUCION,\
-INICIO_PESO_EVOLUCION_PESO, INICIO_PESO_VALORACION, INICIO_PESO_EVOLUCION_GRASA, INICIO_PESO_EVOLUCION_MUSCULO,\
+INICIO_PESO_EVOLUCION_PESO, INICIO_FICHA_VALORACION, INICIO_PESO_EVOLUCION_GRASA, INICIO_PESO_EVOLUCION_MUSCULO,\
 INICIO_PESO_EVOLUCION_IMC, INICIO_CARDIO, INICIO_CARDIO_REGISTRAR, INICIO_CARDIO_REGISTRAR_ACTIVIDAD,\
 INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR, INICIO_CARDIO_VER, INICIO_CARDIO_ESTABLECER, INICIO_CARDIO_ESTABLECER_ACTIVIDAD,\
 INICIO_CARDIO_ESTABLECER_ACTIVIDAD_CONFIRMAR, INICIO_CARDIO_ELIMINAR, INICIO_FICHA_PESO, INICIO_RETOS,\
@@ -278,19 +278,35 @@ def show_inicio_ficha(update, context):
 
 	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
+	cur = db.cursor()
 
+	# Obtener datos
 	query = update.callback_query
+	username_user = query.from_user.username
 	bot = context.bot
+
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		text="<b>⏳ Cargando Inicio > Mi ficha personal...</b>",
 		parse_mode='HTML'
 	)
+	time.sleep(.8)
 
-	# Obtener datos
-	username_user = query.from_user.username
+	# IMC más reciente
+	cur.execute("SELECT imc FROM Peso WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username_user+"' AND imc IS NOT NULL)")
+	imc = cur.fetchall()
+	text="Pulsa un botón para cambiar la información"
 
-	cur = db.cursor()
+	if imc:
+		imc = imc[0][0]
+		text=text+"\n\n<b>👉Tu IMC actual:</b> "+str(imc)
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text=text,
+		parse_mode='HTML'
+	)
+
 	cur.execute("SELECT altura, fecha_nacimiento, genero, email FROM Usuarios where id_usuario='"+username_user+"';")
 	resultado = cur.fetchall()
 
@@ -344,20 +360,18 @@ def show_inicio_ficha(update, context):
 	cur.close()
 	db.close()
 
-	time.sleep(.8)
 	keyboard = [
 		[InlineKeyboardButton("Peso: "+peso+fecha, callback_data='inicio_ficha_peso')],
 		[InlineKeyboardButton("Altura: "+altura, callback_data='inicio_ficha_altura')],
 		[InlineKeyboardButton("Fecha nacimiento: "+fecha_nacimiento, callback_data='inicio_ficha_nacimiento')],
 		[InlineKeyboardButton("Género: "+genero, callback_data='inicio_ficha_genero')],
-		[InlineKeyboardButton("Correo electrónico: "+email, callback_data='inicio_ficha_email')],
-		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
+		[InlineKeyboardButton("Correo electrónico: "+email, callback_data='inicio_ficha_email')]
 	]
 
-	bot.send_message(
-		chat_id = query.message.chat_id,
-		text="Pulsa un botón para cambiar la información"
-	)
+	if imc:
+		keyboard.append([InlineKeyboardButton("Valoración del IMC 🗨", callback_data='inicio_ficha_valoracion')])
+
+	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 
 	reply_markup = InlineKeyboardMarkup(keyboard)
 	bot.send_message(
@@ -480,7 +494,7 @@ def check_altura(update, context):
 
 				if current_state == "INICIO_PESO_ANOTAR_PESO_ALTURA":
 					update.message.reply_text(
-						text="¡Genial! Puedes comprobar tu IMC desde <b>👣 Inicio > Mi objetivo de peso</b>",
+						text="¡Genial! Puedes comprobar tu IMC desde <b>👣 Inicio > Mi ficha personal</b>",
 						parse_mode='HTML'
 					)
 
@@ -491,7 +505,7 @@ def check_altura(update, context):
 
 				elif current_state == "INICIO_FICHA_PESO_ALTURA":
 					update.message.reply_text(
-						text="¡Genial! Puedes comprobar tu IMC desde <b>👣 Inicio > Mi objetivo de peso</b>",
+						text="¡Genial! Puedes comprobar tu IMC desde <b>👣 Inicio > Mi ficha personal</b>",
 						parse_mode='HTML'
 					)
 
@@ -826,6 +840,64 @@ def check_email(update, context):
 	current_state = "INICIO_FICHA"
 	return INICIO_FICHA
 
+def show_inicio_ficha_valoracion(update, context):
+	global current_state
+	query = update.callback_query
+	bot = context.bot
+
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
+	db.begin()
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="⏳ Generando informe de tu IMC... "
+	)
+	time.sleep(.8)
+	# IMC más reciente
+	username_user = query.from_user.username
+	cur = db.cursor()
+	cur.execute("SELECT imc FROM Peso WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username_user+"' AND imc IS NOT NULL)")
+	resultado = cur.fetchall()
+	imc = resultado[0][0]
+
+	image_path = "/home/jumacasni/Documentos/ImagymBot/imagenes/IMC.jpg"
+
+	keyboard = [
+		[InlineKeyboardButton("Volver a Mi ficha personal 🔙", callback_data='back_inicio_ficha')],
+		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
+	]
+	reply_markup = InlineKeyboardMarkup(keyboard)
+
+	if imc < 18.5:
+		text = "Tu IMC es "+str(imc)+"\nTienes una delgadez muy severa. Quizá deberías acudir a un médico o nutricionista."
+	elif imc >= 18.5 and imc < 25:
+		text = "Tu IMC es "+str(imc)+"\n¡Estás en el peso perfecto! Sigue así."
+	elif imc >= 25 and imc < 30:
+		text = "Tu IMC es "+str(imc)+"\nTienes un peso un poco por encima de lo normal. Conmigo puedes trabajar para llegar al peso perfecto. ¡Ánimo!"
+	elif imc >= 30 and imc < 35:
+		text = "Tu IMC es "+str(imc)+"\nTienes una obesidad moderada. Haciendo ejercicio y con una dieta saludable podemos hacer grandes cosas y mejorar ese peso. ¡Ánimo!"
+	elif imc >= 35 and imc < 40:
+		text = "Tu IMC es "+str(imc)+"\nTienes obesidad severa. Puedo ayudarte a mejorar tu IMC, aunque no estaría mal que consultaras tu estado de salud a un médico o nutricionista."
+	else:
+		text = "Tu IMC es "+str(imc)+"\nTienes obesidad mórbida. Deberías acudir a un médico o nutricionista."
+
+	photo_imc = open(image_path, 'rb')
+	bot.send_photo(
+		chat_id = query.message.chat_id,
+		photo = photo_imc,
+		text = "Esta imagen muestra una tabla con los valores del IMC."
+	)
+	time.sleep(.8)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		message_id = query.message.message_id,
+		text=text,
+		reply_markup=reply_markup
+	)
+
+	current_state = "INICIO_FICHA_VALORACION"
+	return INICIO_FICHA_VALORACION
+
 ############# MI OBJETIVO DE PESO #############
 def show_inicio_peso(update, context):
 	global current_state
@@ -846,7 +918,7 @@ def show_inicio_peso(update, context):
 	time.sleep(.8)
 
 	# Peso más reciente
-	cur.execute("SELECT peso,grasa,musculo,fecha,hora,imc FROM Peso WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username_user+"')")
+	cur.execute("SELECT peso,grasa,musculo,fecha,hora FROM Peso WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username_user+"')")
 	resultado = cur.fetchall()
 
 
@@ -865,7 +937,6 @@ def show_inicio_peso(update, context):
 		peso = resultado[0][0]
 		grasa = resultado[0][1]
 		musculo = resultado[0][2]
-		imc = resultado[0][5]
 		fecha = resultado[0][3]
 
 		if fecha == date.today():
@@ -888,9 +959,6 @@ def show_inicio_peso(update, context):
 			text=text+"\n<b>👉 Músculo:</b> "+str(musculo)+"%"
 		else:
 			text=text+"\n<b>👉 Músculo:</b> sin datos"
-
-		if imc is not None:
-			text=text+"\n<b>👉 IMC:</b> "+str(imc)
 
 		time.sleep(.8)
 		bot.send_message(
@@ -937,7 +1005,7 @@ def show_inicio_peso(update, context):
 			else:
 				fecha_inicio = fecha_inicio.strftime("%d-%b-%Y")
 
-			text="📌 ACTUALMENTE TIENES UN <b>OBJETIVO DE "+tipo+"</b>.\n\n👉 <b>Último registro de "+tipo+":</b> "+str(peso)+medida+"\nTu objetivo: "+str(peso_objetivo)+medida
+			text="📌 ACTUALMENTE TIENES UN <b>OBJETIVO DE "+tipo.upper()+"</b>.\n\n👉 <b>Último registro de "+tipo+":</b> "+str(peso)+medida+"\n<b>👉 Tu objetivo:</b> "+str(peso_objetivo)+medida
 			text=text+"\n👉 <b>Te queda:</b> "+str(diferencia_peso)+medida
 			text=text+"\n👉 <b>Fecha inicio:</b> "+fecha_inicio+"\n👉 <b>Fecha fin:</b> "+fecha_fin
 
@@ -950,15 +1018,7 @@ def show_inicio_peso(update, context):
 				text=text,
 				parse_mode='HTML'
 			)
-
-		cur.execute("SELECT imc FROM Peso WHERE id_usuario='"+username_user+"' AND imc IS NOT NULL")
-		resultado = cur.fetchall()
-
-		if resultado:
-			keyboard.append([InlineKeyboardButton("Valoración del IMC 🗨", callback_data='inicio_peso_valoracion')])
-			keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
-		else:
-			keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
+		keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 
 		cur.close()
 		db.close()
@@ -1223,7 +1283,7 @@ def check_anotar_peso(update, context):
 						text="Has registrado tu peso de hoy con éxito ✔"
 					)
 					update.message.reply_text(
-						text="¡Es momento de registrar tu altura! Con tu altura podré calcular tu IMC y podré valorarlo desde el menú 👣 <b>Inicio > Mi objetivo de peso</b>",
+						text="¡Es momento de registrar tu altura! Con tu altura podré calcular tu IMC y podré valorarlo desde el menú 👣 <b>Inicio > Mi ficha personal</b>",
 						parse_mode='HTML'
 					)
 					update.message.reply_text(
@@ -1286,7 +1346,7 @@ def check_anotar_peso(update, context):
 						text="He modificado tu peso de hoy correctamente ✔"
 					)
 					update.message.reply_text(
-						text="¿Quieres registrar tu altura? Con tu altura podré calcular tu IMC y podré valorarlo desde el menú 👣 <b>Inicio > Mi objetivo de peso</b>",
+						text="¿Quieres registrar tu altura? Con tu altura podré calcular tu IMC y podré valorarlo desde el menú 👣 <b>Inicio > Mi ficha personal</b>",
 						parse_mode='HTML'
 					)
 					update.message.reply_text(
@@ -2442,7 +2502,7 @@ def objetivo_grasa_tiempo(update, context):
 	cur.close()
 	db.close()
 
-	text = "RESUMEN DEL OBJETIVO:\n\n<b>Porcentaje de grasa objetivo:</b>  "+str(peso)+"kg\n<b>Diferencia de porcentaje:</b>  "+diferencia+"%\n<b>Fecha fin:</b>  "+fecha
+	text = "RESUMEN DEL OBJETIVO:\n\n<b>Porcentaje de grasa objetivo:</b>  "+str(peso)+"%\n<b>Diferencia de porcentaje:</b>  "+diferencia+"%\n<b>Fecha fin:</b>  "+fecha
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		text=text,
@@ -2638,7 +2698,7 @@ def objetivo_musculo_tiempo(update, context):
 	cur.close()
 	db.close()
 
-	text = "RESUMEN DEL OBJETIVO:\n\n<b>Porcentaje de músculo objetivo:</b> "+str(peso)+"kg\n<b>Diferencia de porcentaje:</b> "+diferencia+"%\n<b>Fecha fin:</b> "+fecha
+	text = "RESUMEN DEL OBJETIVO:\n\n<b>Porcentaje de músculo objetivo:</b> "+str(peso)+"%\n<b>Diferencia de porcentaje:</b> "+diferencia+"%\n<b>Fecha fin:</b> "+fecha
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		text=text,
@@ -3860,64 +3920,6 @@ def evolucion_imc_rango(update, context):
 			update.message.reply_text(
 				text="No has introducido dos fechas. Recuerda usar el formato dd-mm-yyyy."
 			)
-
-def show_inicio_peso_valoracion(update, context):
-	global current_state
-	query = update.callback_query
-	bot = context.bot
-
-	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
-	db.begin()
-
-	bot.send_message(
-		chat_id = query.message.chat_id,
-		text="⏳ Generando informe de tu IMC... "
-	)
-	time.sleep(.8)
-	# IMC más reciente
-	username_user = query.from_user.username
-	cur = db.cursor()
-	cur.execute("SELECT imc FROM Peso WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username_user+"' AND imc IS NOT NULL)")
-	resultado = cur.fetchall()
-	imc = resultado[0][0]
-
-	image_path = "/home/jumacasni/Documentos/ImagymBot/imagenes/IMC.jpg"
-
-	keyboard = [
-		[InlineKeyboardButton("Volver a Peso 🔙", callback_data='back_inicio_peso')],
-		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
-	]
-	reply_markup = InlineKeyboardMarkup(keyboard)
-
-	if imc < 18.5:
-		text = "Tu IMC es "+str(imc)+"\nTienes una delgadez muy severa. Quizá deberías acudir a un médico o nutricionista."
-	elif imc >= 18.5 and imc < 25:
-		text = "Tu IMC es "+str(imc)+"\n¡Estás en el peso perfecto! Sigue así."
-	elif imc >= 25 and imc < 30:
-		text = "Tu IMC es "+str(imc)+"\nTienes un peso un poco por encima de lo normal. Conmigo puedes trabajar para llegar al peso perfecto. ¡Ánimo!"
-	elif imc >= 30 and imc < 35:
-		text = "Tu IMC es "+str(imc)+"\nTienes una obesidad moderada. Haciendo ejercicio y con una dieta saludable podemos hacer grandes cosas y mejorar ese peso. ¡Ánimo!"
-	elif imc >= 35 and imc < 40:
-		text = "Tu IMC es "+str(imc)+"\nTienes obesidad severa. Puedo ayudarte a mejorar tu IMC, aunque no estaría mal que consultaras tu estado de salud a un médico o nutricionista."
-	else:
-		text = "Tu IMC es "+str(imc)+"\nTienes obesidad mórbida. Deberías acudir a un médico o nutricionista."
-
-	photo_imc = open(image_path, 'rb')
-	bot.send_photo(
-		chat_id = query.message.chat_id,
-		photo = photo_imc,
-		text = "Esta imagen muestra una tabla con los valores del IMC."
-	)
-	time.sleep(.8)
-	bot.send_message(
-		chat_id = query.message.chat_id,
-		message_id = query.message.message_id,
-		text=text,
-		reply_markup=reply_markup
-	)
-
-	current_state = "INICIO_PESO_VALORACION"
-	return INICIO_PESO_VALORACION
 
 ############# MI OBJETIVO DE ACTIVIDADES CARDIO #############
 def show_inicio_cardio(update, context):
@@ -5366,7 +5368,7 @@ def show_inicio_retos(update, context):
 		resultado = cur.fetchall()
 
 		if resultado:
-			text=text+"\n\n✅ ¡Hoy ya has anotado tu progreso! Has hecho <b>"+repeticiones+" "+ejercicio.lower()+"</b>"
+			text=text+"\n\n✅ ¡Hoy ya has anotado tu progreso! Has hecho <b>"+repeticiones+" "+ejercicio.lower()+"</b>"+"\n<b>Ejercicio:</b> /"+str(id_ejercicio)
 			# Seleccionar el próximo día del reto
 			cur.execute("SELECT dia,repeticiones FROM Calendario WHERE id_reto="+str(id_reto)+" AND dia=(SELECT MIN(dia) FROM Calendario WHERE id_reto="+str(id_reto)+" AND dia>"+str(dia_reto)+" AND repeticiones is NOT NULL);")
 			resultado = cur.fetchall()
@@ -5390,7 +5392,7 @@ def show_inicio_retos(update, context):
 				text=text+"\n\n✅ ¡Hoy toca descansar!"
 
 			else:
-				text=text+"\n<b>👉 Hoy debes hacer </b>"+repeticiones+" "+ejercicio.lower()
+				text=text+"\n<b>👉 Hoy debes hacer </b>"+repeticiones+" "+ejercicio.lower()+"\n<b>👉 Ejercicio:</b> /"+str(id_ejercicio)
 
 
 		cur.execute("SELECT COUNT(*) FROM Realiza_reto WHERE id_reto="+str(id_reto)+" AND estado='R';")
@@ -5436,12 +5438,6 @@ def show_inicio_retos(update, context):
 			chat_id = query.message.chat_id,
 			text="📌 Actualmente no estás apuntado a ningún reto"
 		)
-
-	# if retos_futuros:
-	# 	bot.send_message(
-	# 		chat_id = query.message.chat_id,
-	# 		text="📌 Hay retos disponibles. ¡Echa un vistazo!"
-	# 	)
 
 	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 	reply_markup = InlineKeyboardMarkup(keyboard)
@@ -5575,6 +5571,10 @@ def ver_reto(update, context):
 	cur.execute("SELECT * FROM Realiza_reto INNER JOIN Retos ON Realiza_reto.id_reto = Retos.id_reto and Realiza_reto.id_usuario='"+username_user+"' and Realiza_reto.id_reto="+id_reto+" and Retos.fecha_inicio > CURDATE()")
 	esta_apuntado = cur.fetchall()
 
+	cur.execute("SELECT id_ejercicio FROM Retos WHERE id_reto="+id_reto+";")
+	id_ejercicio = cur.fetchall()
+	id_ejercicio = id_ejercicio[0][0]
+
 	# Fecha de inicio del reto
 	cur.execute("SELECT fecha_inicio,fecha_fin FROM Retos where id_reto="+id_reto+";")
 	resultado = cur.fetchall();
@@ -5588,7 +5588,7 @@ def ver_reto(update, context):
 	resultado = cur.fetchall();
 	num_usuarios_apuntados = resultado[0][0]
 	if not esta_apuntado:
-		text="Aquí tienes el calendario de este reto.\n\n<b>Fecha de inicio:</b> "+fecha_inicio+"\n<b>Fecha fin:</b> "+fecha_fin
+		text="Aquí tienes el calendario de este reto.\n\n<b>Fecha de inicio:</b> "+fecha_inicio+"\n<b>Fecha fin:</b> "+fecha_fin+"\n<b>Ejercicio que hay que hacer:</b> /"+str(id_ejercicio)
 		if num_usuarios_apuntados == 1:
 			text = text+"\n\nHay "+str(num_usuarios_apuntados)+" usuario apuntado a este reto. ¡Anímate!"
 		elif num_usuarios_apuntados > 1:
@@ -5604,7 +5604,7 @@ def ver_reto(update, context):
 		]
 		reply_markup = InlineKeyboardMarkup(keyboard)
 
-		text=text+"\n\nCompleta este reto y gana una insignia que podrás lucir en la página web 🎖"
+		text=text+"\n\nCompleta todos los días de este reto y gana una insignia que podrás lucir en la página web 🎖\n\n"
 		bot.send_message(
 			chat_id = query.message.chat_id,
 			text=text,
@@ -5613,7 +5613,7 @@ def ver_reto(update, context):
 		)
 
 	else:
-		text="<b>ESTÁS APUNTADO A ESTE RETO</b>\n\n<b>Fecha de inicio:</b> "+fecha_inicio+"\n<b>Fecha fin:</b> "+fecha_fin
+		text="<b>ESTÁS APUNTADO A ESTE RETO</b>\n\n<b>Fecha de inicio:</b> "+fecha_inicio+"\n<b>Fecha fin:</b> "+fecha_fin+"\n<b>Ejercicio que hay que hacer:</b> /"+str(id_ejercicio)
 		keyboard = [
 			[InlineKeyboardButton("Desapuntarse al reto ❌", callback_data="inicio_retos_ver_apuntarse_"+id_reto)],
 			[InlineKeyboardButton("Volver a Ver próximos retos 🔙", callback_data="back_inicio_retos_ver")],
@@ -5656,10 +5656,11 @@ def ver_reto_apuntarse(update, context):
 	cur = db.cursor()
 
 	# Comprobar si el usuario está apuntado a un reto que coincide en la fecha del reto actual
-	cur.execute("SELECT fecha_inicio, fecha_fin FROM Retos WHERE id_reto="+str(id_reto))
+	cur.execute("SELECT fecha_inicio,fecha_fin,id_ejercicio FROM Retos WHERE id_reto="+str(id_reto))
 	resultado = cur.fetchall()
 	start_day_reto = resultado[0][0]
 	end_day_reto = resultado[0][1]
+	id_ejercicio = resultado[0][2]
 	fecha_inicio = start_day_reto.strftime('%d-%B-%Y')
 	fecha_fin = end_day_reto.strftime('%d-%B-%Y')
 	start_day_reto = start_day_reto.strftime("%Y-%m-%d")
@@ -5691,7 +5692,7 @@ def ver_reto_apuntarse(update, context):
 		resultado = cur.fetchall();
 		num_usuarios_apuntados = resultado[0][0]
 		text="<b>NO ESTÁS APUNTADO A ESTE RETO</b>"
-		text=text+"\n\nAquí tienes el calendario de este reto.\n\n<b>Fecha de inicio:</b> "+fecha_inicio+"\n<b>Fecha fin:</b> "+fecha_fin
+		text=text+"\n\nAquí tienes el calendario de este reto.\n\n<b>Fecha de inicio:</b> "+fecha_inicio+"\n<b>Fecha fin:</b> "+fecha_fin+"\n<b>Ejercicio que hay que hacer:</b> /"+str(id_ejercicio)
 		if num_usuarios_apuntados == 1:
 			text = text+"\n\nHay "+str(num_usuarios_apuntados)+" usuario apuntado a este reto. ¡Anímate!"
 		else:
@@ -5709,7 +5710,7 @@ def ver_reto_apuntarse(update, context):
 			db.commit()
 
 			text="<b>ESTÁS APUNTADO AL RETO</b>"
-			text=text+"\n\nTe deseo mucha suerte."
+			text=text+"\n\nTe deseo mucha suerte."+"\n\n<b>Ejercicio que hay que hacer:</b> /"+str(id_ejercicio)
 
 			cur = db.cursor()
 			cur.execute("SELECT fecha_inicio FROM Retos WHERE id_reto="+id_reto)
@@ -8790,6 +8791,18 @@ def ver_ejercicio(update, context):
 			text="<b>⏳ Cargando imagen...</b>",
 			parse_mode='HTML'
 		)
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
+		db.begin()
+		cur = db.cursor()
+		cur.execute("SELECT nombre FROM Ejercicios WHERE id_ejercicio="+id_ejercicio+";")
+		resultado = cur.fetchall()
+		nombre = resultado[0][0]
+		cur.close()
+		db.close()
+		update.message.reply_text(
+			text="<b>👇 "+nombre+"</b>",
+			parse_mode='HTML'
+		)
 		pic = open(image_path, 'rb')
 		update.message.reply_photo(
 			photo = pic
@@ -8812,7 +8825,22 @@ def inicio_ficha(update, context):
 	# Obtener datos
 	username_user = update.message.from_user.username
 
+	# IMC más reciente
 	cur = db.cursor()
+	cur.execute("SELECT imc FROM Peso WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username_user+"' AND imc IS NOT NULL)")
+	imc = cur.fetchall()
+	text="Pulsa un botón para cambiar la información"
+
+	if imc:
+		imc = imc[0][0]
+		text=text+"\n\n<b>👉Tu IMC actual:</b> "+str(imc)
+
+	update.message.reply_text(
+		chat_id = query.message.chat_id,
+		text=text,
+		parse_mode='HTML'
+	)
+
 	cur.execute("SELECT altura, fecha_nacimiento, genero, email FROM Usuarios where id_usuario='"+username_user+"';")
 	resultado = cur.fetchall()
 
@@ -8845,29 +8873,39 @@ def inicio_ficha(update, context):
 		email = "✏"
 
 	# Peso más reciente
-	cur.execute("SELECT peso FROM Peso WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username_user+"' AND peso IS NOT NULL)")
+	cur.execute("SELECT peso,fecha FROM Peso WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username_user+"' AND peso IS NOT NULL)")
 	resultado = cur.fetchall()
 
 	if not resultado:
 		peso = " ✏"
+		fecha = ""
 	else:
 		if resultado[0][0] is None or not resultado[0][0]:
 			peso = " ✏"
+			fecha = ""
 		else:
-			peso = resultado[0][0]
+			peso = str(resultado[0][0])+"kg 👉 "
+			fecha = resultado[0][1]
+			if fecha == date.today():
+				fecha = "Registrado hoy"
+			else:
+				fecha = "Registrado el día "+fecha.strftime("%d-%B-%Y")
 
 	cur.close()
 	db.close()
 
-	time.sleep(.8)
 	keyboard = [
-		[InlineKeyboardButton("Peso: "+str(peso)+"kg", callback_data='inicio_ficha_peso')],
+		[InlineKeyboardButton("Peso: "+peso+fecha, callback_data='inicio_ficha_peso')],
 		[InlineKeyboardButton("Altura: "+altura, callback_data='inicio_ficha_altura')],
 		[InlineKeyboardButton("Fecha nacimiento: "+fecha_nacimiento, callback_data='inicio_ficha_nacimiento')],
 		[InlineKeyboardButton("Género: "+genero, callback_data='inicio_ficha_genero')],
 		[InlineKeyboardButton("Correo electrónico: "+email, callback_data='inicio_ficha_email')],
-		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
 	]
+
+	if imc:
+		keyboard.append([InlineKeyboardButton("Valoración del IMC 🗨", callback_data='inicio_ficha_valoracion')])
+
+	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 
 	update.message.reply_text(
 		text="Pulsa un botón para cambiar la información"
@@ -8894,7 +8932,7 @@ def inicio_peso(update, context):
 	# Peso más reciente
 	username_user = update.message.from_user.username
 	cur = db.cursor()
-	cur.execute("SELECT peso,grasa,musculo,fecha,hora,imc FROM Peso WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username_user+"')")
+	cur.execute("SELECT peso,grasa,musculo,fecha,hora FROM Peso WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username_user+"')")
 	resultado = cur.fetchall()
 
 	time.sleep(.8)
@@ -8911,7 +8949,6 @@ def inicio_peso(update, context):
 			peso = resultado[0][0]
 			grasa = resultado[0][1]
 			musculo = resultado[0][2]
-			imc = resultado[0][5]
 			fecha = resultado[0][3]
 
 			if fecha == date.today():
@@ -8934,9 +8971,6 @@ def inicio_peso(update, context):
 				text=text+"\nMúsculo: "+str(musculo)+"%"
 			else:
 				text=text+"\nMúsculo: sin datos"
-
-			if imc is not None:
-				text=text+"\nIMC: "+str(imc)
 
 			time.sleep(.8)
 			update.message.reply_text(
@@ -8993,14 +9027,7 @@ def inicio_peso(update, context):
 					parse_mode='HTML'
 				)
 
-	cur.execute("SELECT imc FROM Peso WHERE id_usuario='"+username_user+"' AND imc IS NOT NULL")
-	resultado = cur.fetchall()
-
-	if resultado:
-		keyboard.append([InlineKeyboardButton("Valoración del IMC 🗨", callback_data='inicio_peso_valoracion')])
-		keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
-	else:
-		keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
+	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 
 	cur.close()
 	db.close()
@@ -9144,6 +9171,12 @@ def actualizar_ejercicios():
 		if not handler_ejercicio in conv_handler.states[INICIO_RUTINAS_ANOTAR_RUTINA]:
 			conv_handler.states[INICIO_RUTINAS_ANOTAR_RUTINA].append(handler_ejercicio)
 
+		if not handler_ejercicio in conv_handler.states[INICIO_RETOS_VER_RETO]:
+			conv_handler.states[INICIO_RETOS_VER_RETO].append(handler_ejercicio)
+
+		if not handler_ejercicio in conv_handler.states[INICIO_RETOS]:
+			conv_handler.states[INICIO_RETOS].append(handler_ejercicio)
+
 def error(update, context):
 	"""Log Errors caused by Updates."""
 
@@ -9201,8 +9234,15 @@ def main():
 						CallbackQueryHandler(modify_nacimiento, pattern='inicio_ficha_nacimiento'),
 						CallbackQueryHandler(modify_genero, pattern='inicio_ficha_genero'),
 						CallbackQueryHandler(modify_email, pattern='inicio_ficha_email'),
+						CallbackQueryHandler(show_inicio_ficha_valoracion, pattern='inicio_ficha_valoracion'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
+
+			INICIO_FICHA_VALORACION: [
+					CallbackQueryHandler(show_inicio_ficha, pattern='back_inicio_ficha'),
+					CallbackQueryHandler(show_inicio, pattern='back_inicio'),
+					MessageHandler(Filters.text & (~Filters.command), any_message)
+					],
 
 			INICIO_FICHA_PESO: [
 								MessageHandler(Filters.text & (~Filters.command), check_anotar_peso),
@@ -9239,7 +9279,6 @@ def main():
 						CallbackQueryHandler(show_inicio_peso_establecer, pattern='inicio_peso_establecer'),
 						CallbackQueryHandler(show_inicio_peso_eliminar, pattern='inicio_peso_eliminar'),
 						CallbackQueryHandler(show_inicio_peso_evolucion, pattern='inicio_peso_evolucion'),
-						CallbackQueryHandler(show_inicio_peso_valoracion, pattern='inicio_peso_valoracion'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
@@ -9376,12 +9415,6 @@ def main():
 										CommandHandler("rango", evolucion_imc_rango),
 										MessageHandler(Filters.text & (~Filters.command), any_message)
 										],
-
-			INICIO_PESO_VALORACION: [
-								CallbackQueryHandler(show_inicio_peso, pattern='back_inicio_peso'),
-								CallbackQueryHandler(show_inicio, pattern='back_inicio'),
-								MessageHandler(Filters.text & (~Filters.command), any_message)
-								],
 
 			INICIO_CARDIO: [
 						MessageHandler(Filters.text & (~Filters.command), any_message),
