@@ -57,7 +57,8 @@ INICIO_RETOS_DESCALIFICAR, INICIO_RETOS_DESCALIFICAR_CONFIRMAR, INICIO_RETOS_HIS
 INICIO_RUTINAS, INICIO_EJERCICIO, INICIO_SOPORTE, INICIO_EJERCICIO_REGISTRAR, INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD,\
 INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR, INICIO_EJERCICIO_RANKING, INICIO_EJERCICIO_DESCALIFICAR_CONFIRMAR,\
 INICIO_EJERCICIO_ELIMINAR_CONFIRMAR, INICIO_EJERCICIO_HISTORIAL, INICIO_EJERCICIO_HISTORIAL_CLASIFICACION,\
-INICIO_RUTINAS_VER, INICIO_RUTINAS_VER_RUTINA, INICIO_RUTINAS_ANOTAR, INICIO_RUTINAS_ANOTAR_RUTINA, INICIO_RUTINAS_CONSULTAR = range(67)
+INICIO_RUTINAS_VER, INICIO_RUTINAS_VER_RUTINA, INICIO_RUTINAS_ANOTAR, INICIO_RUTINAS_ANOTAR_RUTINA, INICIO_RUTINAS_CONSULTAR,\
+INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO, INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO = range(69)
 
 db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 
@@ -4439,6 +4440,24 @@ def registrar_cardio(update, context):
 									text=text,
 									parse_mode='HTML'
 								)
+					keyboard = [
+						[InlineKeyboardButton("No quiero registrar el cardio ❌", callback_data='registrar_cardio_no')]
+					]
+
+					reply_markup = InlineKeyboardMarkup(keyboard)
+					update.message.reply_text(
+						text="Envíame una foto de <b>"+nombre+"</b> en la que se pueda ver que es correcto lo que vas a añadir a tu ejercicio del mes",
+						reply_markup = reply_markup,
+						parse_mode='HTML'
+					)
+					if current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD":
+						current_state = "INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO"
+						return INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO
+
+					elif current_state == "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD":
+						current_state = "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO"
+						return INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO
+
 
 				reply_markup = InlineKeyboardMarkup(keyboard)
 				update.message.reply_text(
@@ -4490,7 +4509,7 @@ def show_inicio_cardio_ver(update,context):
 	cur = db.cursor()
 
 	# Todas las actividades cardio del último día que hizo cardio
-	cur.execute("SELECT id_actividad_cardio,TIME(fecha),DATE(fecha),tiempo,distancia,nivel,calorias FROM Registra_cardio WHERE id_usuario='"+username_user+"' AND DATE(fecha)=(SELECT MAX(DATE(fecha)) FROM Registra_cardio WHERE id_usuario='"+username_user+"');")
+	cur.execute("SELECT id_actividad_cardio,TIME(fecha),DATE(fecha),tiempo,distancia,nivel,calorias FROM Registra_cardio WHERE id_usuario='"+username_user+"' AND DATE(fecha)=(SELECT MAX(DATE(fecha)) FROM Registra_cardio WHERE id_usuario='"+username_user+"' AND aprobada!='N';")
 	resultado = cur.fetchall()
 
 	fecha = resultado[0][2]
@@ -4578,7 +4597,7 @@ def registrar_cardio_si(update, context):
 			else:
 				medida="tiempo"
 
-			cur.execute("SELECT SUM("+medida+") FROM Registra_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+" AND id_usuario='"+username_user+"' AND DATE(fecha)>='"+str(fecha_inicio)+"' AND DATE(fecha)<='"+str(fecha_fin)+"';")
+			cur.execute("SELECT SUM("+medida+") FROM Registra_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+" AND id_usuario='"+username_user+"' AND DATE(fecha)>='"+str(fecha_inicio)+"' AND DATE(fecha)<='"+str(fecha_fin)+"' AND aprobada='S';")
 			resultado = cur.fetchall()
 			contador = resultado[0][0]
 			if contador is None:
@@ -4613,13 +4632,13 @@ def registrar_cardio_si(update, context):
 
 	time.sleep(.8)
 
-	if current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR":
+	if current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR" or current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO":
 		current_state = "INICIO_CARDIO_REGISTRAR"
 		show_inicio_cardio_registrar(update, context)
 
 		return INICIO_CARDIO_REGISTRAR
 
-	elif current_state == "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR":
+	elif current_state == "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR" or current_state == "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO":
 		current_state = "INICIO_EJERCICIO"
 		show_inicio_ejercicio(update, context)
 
@@ -4653,13 +4672,13 @@ def registrar_cardio_no(update, context):
 
 	time.sleep(.8)
 
-	if current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR":
+	if current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR" or current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO":
 		current_state = "INICIO_CARDIO_REGISTRAR"
 		show_inicio_cardio_registrar(update, context)
 
 		return INICIO_CARDIO_REGISTRAR
 
-	elif current_state == "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR":
+	elif current_state == "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR" or current_state == "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO":
 		current_state = "INICIO_EJERCICIO"
 		show_inicio_ejercicio(update, context)
 
@@ -4763,7 +4782,7 @@ def show_inicio_cardio_establecer(update, context):
 	bot = context.bot
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="<b>⏳ Cargando Inicio > Actividades cardio > Establecer objetivo...<b>",
+		text="<b>⏳ Cargando Inicio > Actividades cardio > Establecer objetivo...</b>",
 		parse_mode='HTML'
 	)
 
@@ -5265,6 +5284,42 @@ def objetivo_cardio_eliminar_no(update, context):
 
 	current_state = "INICIO_CARDIO"
 	return INICIO_CARDIO
+
+def check_photo(update, context):
+	username = update.message.from_user.username
+	array_photos = update.message.photo
+	# Se coge la foto con mayor calidad
+	file = context.bot.getFile(array_photos[-1].file_id)
+
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
+	db.begin()
+	cur = db.cursor()
+
+	# Seleccionar la actividad cardio más reciente
+	cur.execute("SELECT id_actividad_cardio,fecha FROM Registra_cardio WHERE id_usuario='"+username+"' AND fecha=(SELECT MAX(c2.fecha) FROM Registra_cardio c2 WHERE id_usuario='"+username+"');")
+	resultado = cur.fetchall()
+	id_actividad_cardio=resultado[0][0]
+	fecha=resultado[0][1]
+	# Descargar imagen
+	name_image = str(id_actividad_cardio)+"_"+fecha.strftime('%d-%m-%Y-%H:%M:%S')+"_"+username
+
+	ruta = "/home/jumacasni/Documentos/ImagymBot/comprobar_cardio/"+name_image
+	file.download(ruta)
+	cur.execute("UPDATE Registra_cardio SET ruta='"+ruta+"', aprobada='N' WHERE id_usuario='"+username+"' AND fecha='"+str(fecha)+"' AND id_actividad_cardio="+str(id_actividad_cardio)+";")
+	db.commit()
+
+	cur.close()
+	db.close()
+
+	keyboard = [
+		[InlineKeyboardButton("Si ✔", callback_data='registrar_cardio_si')],
+		[InlineKeyboardButton("No ❌", callback_data='registrar_cardio_no')]
+	]
+	reply_markup = InlineKeyboardMarkup(keyboard)
+	update.message.reply_text(
+		text="¿Confirmas este registro?",
+		reply_markup = reply_markup
+	)
 
 ############# RETOS #############
 def show_inicio_retos(update, context):
@@ -6991,7 +7046,7 @@ def show_inicio_ejercicio(update, context):
 			medida="tiempo"
 
 		text=text+"\n<b>👉Objetivo:</b> "+objetivo.split(' ', 1)[0]+" "+tipo_objetivo
-		cur.execute("SELECT SUM("+medida+") FROM Registra_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+" AND id_usuario='"+username_user+"' AND DATE(fecha)>='"+str(fecha_inicio)+"' AND DATE(fecha)<='"+str(fecha_fin)+"';")
+		cur.execute("SELECT SUM("+medida+") FROM Registra_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+" AND id_usuario='"+username_user+"' AND DATE(fecha)>='"+str(fecha_inicio)+"' AND DATE(fecha)<='"+str(fecha_fin)+"' AND aprobada='S';")
 		resultado = cur.fetchall()
 		contador = resultado[0][0]
 		if contador is None:
@@ -7689,7 +7744,7 @@ def historial_ejercicio(update, context):
 	for i in range(len(resultado)):
 		usuario = resultado[i][0]
 		puntuacion = round(float(resultado[i][1]),1)
-		cur.execute("SELECT SUM("+medida+") FROM Registra_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+" AND id_usuario='"+usuario+"' AND DATE(fecha)>='"+str(fecha_inicio)+"' AND DATE(fecha)<='"+str(fecha_fin)+"';")
+		cur.execute("SELECT SUM("+medida+") FROM Registra_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+" AND id_usuario='"+usuario+"' AND DATE(fecha)>='"+str(fecha_inicio)+"' AND DATE(fecha)<='"+str(fecha_fin)+"' AND aprobada='S';")
 		contador = cur.fetchall()
 		contador = contador[0][0]
 		if contador is None:
@@ -7712,7 +7767,7 @@ def historial_ejercicio(update, context):
 		cur.execute("SELECT puntuacion FROM Se_apunta WHERE estado='R' AND id_usuario='"+username_user+"'")
 		resultado = cur.fetchall();
 		puntuacion_usuario = resultado[0][0]
-		cur.execute("SELECT SUM("+medida+") FROM Registra_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+" AND id_usuario='"+username_user+"' AND DATE(fecha)>='"+str(fecha_inicio)+"' AND DATE(fecha)<='"+str(fecha_fin)+"';")
+		cur.execute("SELECT SUM("+medida+") FROM Registra_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+" AND id_usuario='"+username_user+"' AND DATE(fecha)>='"+str(fecha_inicio)+"' AND DATE(fecha)<='"+str(fecha_fin)+"' AND aprobada='S';")
 		contador = cur.fetchall()
 		contador = contador[0][0]
 		if contador is None:
@@ -9188,7 +9243,7 @@ def error(update, context):
 			text="¡Lo siento! No te he entendido. Puedes reiniciarme usando /start"
 		)
 	except:
-		None
+		pass
 
 	try:
 		query = update.callback_query
@@ -9198,7 +9253,7 @@ def error(update, context):
 			text="¡Lo siento! Algo ha salido mal. Puedes reiniciarme usando /start"
 		)
 	except:
-		None
+		pass
 	logger.warning('Update "%s" caused error "%s"', update, context.error)
 
 def main():
@@ -9446,6 +9501,14 @@ def main():
 														MessageHandler(Filters.text & (~Filters.command), any_message),
 														],
 
+			INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO: [
+														MessageHandler(Filters.photo, check_photo),
+														CallbackQueryHandler(registrar_cardio_si, pattern='registrar_cardio_si'),
+														CallbackQueryHandler(registrar_cardio_no, pattern='registrar_cardio_no'),
+														MessageHandler(Filters.text & (~Filters.command), any_message),
+														],
+
+
 			INICIO_CARDIO_VER: [
 							CallbackQueryHandler(show_inicio_cardio, pattern='back_inicio_cardio'),
 							CallbackQueryHandler(show_inicio, pattern='back_inicio'),
@@ -9582,6 +9645,13 @@ def main():
 									],
 
 			INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR: [
+														CallbackQueryHandler(registrar_cardio_si, pattern='registrar_cardio_si'),
+														CallbackQueryHandler(registrar_cardio_no, pattern='registrar_cardio_no'),
+														MessageHandler(Filters.text & (~Filters.command), any_message),
+														],
+
+			INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO: [
+														MessageHandler(Filters.photo, check_photo),
 														CallbackQueryHandler(registrar_cardio_si, pattern='registrar_cardio_si'),
 														CallbackQueryHandler(registrar_cardio_no, pattern='registrar_cardio_no'),
 														MessageHandler(Filters.text & (~Filters.command), any_message),
