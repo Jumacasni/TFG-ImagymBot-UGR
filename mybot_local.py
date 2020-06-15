@@ -6998,7 +6998,10 @@ def show_inicio_ejercicio(update, context):
 			contador = 0
 		text=text+"\n<b>👉 Llevas:</b> "+str(contador)+" "+tipo_objetivo
 		text=text+"\n<b>👉 Puntuación:</b> "+str(round(puntuacion,1))+" puntos"
-		text=text+"\n\nUna vez alcanzado el objetivo, los puntos que acumules de más se multiplicarán de acuerdo a tu IMC."
+		text=text+"\n\nUna vez alcanzado el objetivo, los puntos que acumules de más se multiplicarán de acuerdo a tu IMC:\n"
+		text=text+"\n✖1.1 si tu IMC es <b>menor que 18.5</b> ó <b>mayor que 25.0</b>"
+		text=text+"\n✖1.25 si tu IMC está <b>entre 18.5 y 20.0</b> ó <b>entre 22.5 y 25.0</b>"
+		text=text+"\n✖1.35 si tu IMC está <b>entre 20.0 y 22.5</b>"
 
 		bot.send_message(
 			chat_id = query.message.chat_id,

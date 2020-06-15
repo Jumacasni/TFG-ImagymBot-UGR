@@ -5,7 +5,7 @@
 # This program is dedicated to the public domain under the CC0 license.
 
 # para el servidor
-# db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+# db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 
 # --- Start Configuration dependencies
 import os
@@ -47,7 +47,7 @@ INICIO_PESO_ANOTAR_MUSCULO, INICIO_PESO_ESTABLECER, INICIO_PESO_ESTABLECER_PESO,
 INICIO_PESO_ESTABLECER_GRASA, INICIO_PESO_ESTABLECER_GRASA_TIEMPO,\
 INICIO_PESO_ESTABLECER_MUSCULO, INICIO_PESO_ESTABLECER_MUSCULO_TIEMPO,\
 INICIO_PESO_ESTABLECER_PESO_TIEMPO_CONFIRMAR, INICIO_PESO_ELIMINAR, INICIO_PESO_EVOLUCION,\
-INICIO_PESO_EVOLUCION_PESO, INICIO_PESO_VALORACION, INICIO_PESO_EVOLUCION_GRASA, INICIO_PESO_EVOLUCION_MUSCULO,\
+INICIO_PESO_EVOLUCION_PESO, INICIO_FICHA_VALORACION, INICIO_PESO_EVOLUCION_GRASA, INICIO_PESO_EVOLUCION_MUSCULO,\
 INICIO_PESO_EVOLUCION_IMC, INICIO_CARDIO, INICIO_CARDIO_REGISTRAR, INICIO_CARDIO_REGISTRAR_ACTIVIDAD,\
 INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR, INICIO_CARDIO_VER, INICIO_CARDIO_ESTABLECER, INICIO_CARDIO_ESTABLECER_ACTIVIDAD,\
 INICIO_CARDIO_ESTABLECER_ACTIVIDAD_CONFIRMAR, INICIO_CARDIO_ELIMINAR, INICIO_FICHA_PESO, INICIO_RETOS,\
@@ -59,7 +59,7 @@ INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR, INICIO_EJERCICIO_RANKING, INICIO
 INICIO_EJERCICIO_ELIMINAR_CONFIRMAR, INICIO_EJERCICIO_HISTORIAL, INICIO_EJERCICIO_HISTORIAL_CLASIFICACION,\
 INICIO_RUTINAS_VER, INICIO_RUTINAS_VER_RUTINA, INICIO_RUTINAS_ANOTAR, INICIO_RUTINAS_ANOTAR_RUTINA, INICIO_RUTINAS_CONSULTAR = range(67)
 
-db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 
 global current_state, conv_handler, updater
 
@@ -75,7 +75,7 @@ def start(update, context):
 			text="¡Bienvenido/a a Imagym! Parece que no tienes un usuario/alias de Telegram. Ve a ajustes, ponte un nombre de usuario y podremos empezar!!"
 		)
 	else:
-		db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 		db.begin()
 		cur = db.cursor()
 		cur.execute("SELECT id_usuario FROM Usuarios where id_usuario='"+username_user+"';")
@@ -113,7 +113,7 @@ def mandar_mensaje(update, context):
 	n_params = context.args
 	username = update.message.from_user.username
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	cur = db.cursor()
@@ -157,7 +157,7 @@ def any_message(update, context):
 			# Comprobar si la clave coincide con algún gimnasio
 			user_msg = user_msg_split[0]
 
-			db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+			db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 			db.begin()
 			cur = db.cursor()
 			cur.execute("SELECT id_gym,nombre FROM Gimnasios where BINARY clave_clientes='"+user_msg+"';")
@@ -276,21 +276,37 @@ def usuario_usa_comando_anterior(update, context):
 def show_inicio_ficha(update, context):
 	global current_state
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
+	cur = db.cursor()
 
+	# Obtener datos
 	query = update.callback_query
+	username_user = query.from_user.username
 	bot = context.bot
+
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		text="<b>⏳ Cargando Inicio > Mi ficha personal...</b>",
 		parse_mode='HTML'
 	)
+	time.sleep(.8)
 
-	# Obtener datos
-	username_user = query.from_user.username
+	# IMC más reciente
+	cur.execute("SELECT imc FROM Peso WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username_user+"' AND imc IS NOT NULL)")
+	imc = cur.fetchall()
+	text="Pulsa un botón para cambiar la información"
 
-	cur = db.cursor()
+	if imc:
+		imc = imc[0][0]
+		text=text+"\n\n<b>👉Tu IMC actual:</b> "+str(imc)
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text=text,
+		parse_mode='HTML'
+	)
+
 	cur.execute("SELECT altura, fecha_nacimiento, genero, email FROM Usuarios where id_usuario='"+username_user+"';")
 	resultado = cur.fetchall()
 
@@ -344,20 +360,18 @@ def show_inicio_ficha(update, context):
 	cur.close()
 	db.close()
 
-	time.sleep(.8)
 	keyboard = [
 		[InlineKeyboardButton("Peso: "+peso+fecha, callback_data='inicio_ficha_peso')],
 		[InlineKeyboardButton("Altura: "+altura, callback_data='inicio_ficha_altura')],
 		[InlineKeyboardButton("Fecha nacimiento: "+fecha_nacimiento, callback_data='inicio_ficha_nacimiento')],
 		[InlineKeyboardButton("Género: "+genero, callback_data='inicio_ficha_genero')],
-		[InlineKeyboardButton("Correo electrónico: "+email, callback_data='inicio_ficha_email')],
-		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
+		[InlineKeyboardButton("Correo electrónico: "+email, callback_data='inicio_ficha_email')]
 	]
 
-	bot.send_message(
-		chat_id = query.message.chat_id,
-		text="Pulsa un botón para cambiar la información"
-	)
+	if imc:
+		keyboard.append([InlineKeyboardButton("Valoración del IMC 🗨", callback_data='inicio_ficha_valoracion')])
+
+	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 
 	reply_markup = InlineKeyboardMarkup(keyboard)
 	bot.send_message(
@@ -377,7 +391,7 @@ def modify_altura(update, context):
 	bot = context.bot
 	username_user = query.from_user.username
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	# Comprobar si ya hay datos registrados de hoy
@@ -415,7 +429,7 @@ def check_altura(update, context):
 	user_msg = update.message.text
 	username = update.message.from_user.username
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -454,7 +468,7 @@ def check_altura(update, context):
 					reply_markup=reply_markup
 				)
 			else:
-				db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+				db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 				db.begin()
 
 				cur = db.cursor()
@@ -480,7 +494,7 @@ def check_altura(update, context):
 
 				if current_state == "INICIO_PESO_ANOTAR_PESO_ALTURA":
 					update.message.reply_text(
-						text="¡Genial! Puedes comprobar tu IMC desde <b>👣 Inicio > Mi objetivo de peso</b>",
+						text="¡Genial! Puedes comprobar tu IMC desde <b>👣 Inicio > Mi ficha personal</b>",
 						parse_mode='HTML'
 					)
 
@@ -491,7 +505,7 @@ def check_altura(update, context):
 
 				elif current_state == "INICIO_FICHA_PESO_ALTURA":
 					update.message.reply_text(
-						text="¡Genial! Puedes comprobar tu IMC desde <b>👣 Inicio > Mi objetivo de peso</b>",
+						text="¡Genial! Puedes comprobar tu IMC desde <b>👣 Inicio > Mi ficha personal</b>",
 						parse_mode='HTML'
 					)
 
@@ -521,7 +535,7 @@ def modify_nacimiento(update, context):
 	bot = context.bot
 	username_user = query.from_user.username
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -555,7 +569,7 @@ def check_nacimiento(update, context):
 	user_msg = update.message.text
 	username = update.message.from_user.username
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	# Comprobar si ya hay datos registrados de hoy
@@ -587,7 +601,7 @@ def check_nacimiento(update, context):
 			birthday_date = datetime.strptime(user_msg, '%d-%m-%Y')
 			birthday_sql_format = user_msg[6:10] +'-'+ user_msg[3:5] +'-'+ user_msg[0:2] # Formato YYYY-mm-dd
 
-			db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+			db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 			db.begin()
 
 			cur = db.cursor()
@@ -619,7 +633,7 @@ def modify_genero(update, context):
 	bot = context.bot
 	username_user = query.from_user.username
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -661,7 +675,7 @@ def check_genero_hombre(update, context):
 
 	username = query.from_user.username
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	cur = db.cursor()
@@ -689,7 +703,7 @@ def check_genero_mujer(update, context):
 
 	username = query.from_user.username
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	cur = db.cursor()
@@ -717,7 +731,7 @@ def check_genero_otro(update, context):
 
 	username = query.from_user.username
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	cur = db.cursor()
@@ -745,7 +759,7 @@ def check_genero_sin(update, context):
 
 	username = query.from_user.username
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	cur = db.cursor()
@@ -772,7 +786,7 @@ def modify_email(update, context):
 	bot = context.bot
 	username_user = query.from_user.username
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -807,7 +821,7 @@ def check_email(update, context):
 	user_msg = update.message.text
 	username = update.message.from_user.username
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	cur = db.cursor()
@@ -826,11 +840,69 @@ def check_email(update, context):
 	current_state = "INICIO_FICHA"
 	return INICIO_FICHA
 
+def show_inicio_ficha_valoracion(update, context):
+	global current_state
+	query = update.callback_query
+	bot = context.bot
+
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
+	db.begin()
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="⏳ Generando informe de tu IMC... "
+	)
+	time.sleep(.8)
+	# IMC más reciente
+	username_user = query.from_user.username
+	cur = db.cursor()
+	cur.execute("SELECT imc FROM Peso WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username_user+"' AND imc IS NOT NULL)")
+	resultado = cur.fetchall()
+	imc = resultado[0][0]
+
+	image_path = "/home/jumacasni/Documentos/ImagymBot/imagenes/IMC.jpg"
+
+	keyboard = [
+		[InlineKeyboardButton("Volver a Mi ficha personal 🔙", callback_data='back_inicio_ficha')],
+		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
+	]
+	reply_markup = InlineKeyboardMarkup(keyboard)
+
+	if imc < 18.5:
+		text = "Tu IMC es "+str(imc)+"\nTienes una delgadez muy severa. Quizá deberías acudir a un médico o nutricionista."
+	elif imc >= 18.5 and imc < 25:
+		text = "Tu IMC es "+str(imc)+"\n¡Estás en el peso perfecto! Sigue así."
+	elif imc >= 25 and imc < 30:
+		text = "Tu IMC es "+str(imc)+"\nTienes un peso un poco por encima de lo normal. Conmigo puedes trabajar para llegar al peso perfecto. ¡Ánimo!"
+	elif imc >= 30 and imc < 35:
+		text = "Tu IMC es "+str(imc)+"\nTienes una obesidad moderada. Haciendo ejercicio y con una dieta saludable podemos hacer grandes cosas y mejorar ese peso. ¡Ánimo!"
+	elif imc >= 35 and imc < 40:
+		text = "Tu IMC es "+str(imc)+"\nTienes obesidad severa. Puedo ayudarte a mejorar tu IMC, aunque no estaría mal que consultaras tu estado de salud a un médico o nutricionista."
+	else:
+		text = "Tu IMC es "+str(imc)+"\nTienes obesidad mórbida. Deberías acudir a un médico o nutricionista."
+
+	photo_imc = open(image_path, 'rb')
+	bot.send_photo(
+		chat_id = query.message.chat_id,
+		photo = photo_imc,
+		text = "Esta imagen muestra una tabla con los valores del IMC."
+	)
+	time.sleep(.8)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		message_id = query.message.message_id,
+		text=text,
+		reply_markup=reply_markup
+	)
+
+	current_state = "INICIO_FICHA_VALORACION"
+	return INICIO_FICHA_VALORACION
+
 ############# MI OBJETIVO DE PESO #############
 def show_inicio_peso(update, context):
 	global current_state
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -846,7 +918,7 @@ def show_inicio_peso(update, context):
 	time.sleep(.8)
 
 	# Peso más reciente
-	cur.execute("SELECT peso,grasa,musculo,fecha,hora,imc FROM Peso WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username_user+"')")
+	cur.execute("SELECT peso,grasa,musculo,fecha,hora FROM Peso WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username_user+"')")
 	resultado = cur.fetchall()
 
 
@@ -865,7 +937,6 @@ def show_inicio_peso(update, context):
 		peso = resultado[0][0]
 		grasa = resultado[0][1]
 		musculo = resultado[0][2]
-		imc = resultado[0][5]
 		fecha = resultado[0][3]
 
 		if fecha == date.today():
@@ -888,9 +959,6 @@ def show_inicio_peso(update, context):
 			text=text+"\n<b>👉 Músculo:</b> "+str(musculo)+"%"
 		else:
 			text=text+"\n<b>👉 Músculo:</b> sin datos"
-
-		if imc is not None:
-			text=text+"\n<b>👉 IMC:</b> "+str(imc)
 
 		time.sleep(.8)
 		bot.send_message(
@@ -937,7 +1005,7 @@ def show_inicio_peso(update, context):
 			else:
 				fecha_inicio = fecha_inicio.strftime("%d-%b-%Y")
 
-			text="📌 ACTUALMENTE TIENES UN <b>OBJETIVO DE "+tipo+"</b>.\n\n👉 <b>Último registro de "+tipo+":</b> "+str(peso)+medida+"\nTu objetivo: "+str(peso_objetivo)+medida
+			text="📌 ACTUALMENTE TIENES UN <b>OBJETIVO DE "+tipo.upper()+"</b>.\n\n👉 <b>Último registro de "+tipo+":</b> "+str(peso)+medida+"\n<b>👉 Tu objetivo:</b> "+str(peso_objetivo)+medida
 			text=text+"\n👉 <b>Te queda:</b> "+str(diferencia_peso)+medida
 			text=text+"\n👉 <b>Fecha inicio:</b> "+fecha_inicio+"\n👉 <b>Fecha fin:</b> "+fecha_fin
 
@@ -950,15 +1018,7 @@ def show_inicio_peso(update, context):
 				text=text,
 				parse_mode='HTML'
 			)
-
-		cur.execute("SELECT imc FROM Peso WHERE id_usuario='"+username_user+"' AND imc IS NOT NULL")
-		resultado = cur.fetchall()
-
-		if resultado:
-			keyboard.append([InlineKeyboardButton("Valoración del IMC 🗨", callback_data='inicio_peso_valoracion')])
-			keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
-		else:
-			keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
+		keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 
 		cur.close()
 		db.close()
@@ -978,7 +1038,7 @@ def show_inicio_peso(update, context):
 def show_inicio_peso_anotar(update, context):
 	global current_state
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -1086,7 +1146,7 @@ def anotar_peso(update, context):
 	query = update.callback_query
 	bot = context.bot
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	username_user = query.from_user.username
@@ -1153,7 +1213,7 @@ def check_anotar_peso(update, context):
 	user_msg = update.message.text
 	username = update.message.from_user.username
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	# Comprobar si ya hay datos registrados de hoy
@@ -1194,7 +1254,7 @@ def check_anotar_peso(update, context):
 				reply_markup=reply_markup
 			)
 		else:
-			db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+			db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 			db.begin()
 
 			cur = db.cursor()
@@ -1223,7 +1283,7 @@ def check_anotar_peso(update, context):
 						text="Has registrado tu peso de hoy con éxito ✔"
 					)
 					update.message.reply_text(
-						text="¡Es momento de registrar tu altura! Con tu altura podré calcular tu IMC y podré valorarlo desde el menú 👣 <b>Inicio > Mi objetivo de peso</b>",
+						text="¡Es momento de registrar tu altura! Con tu altura podré calcular tu IMC y podré valorarlo desde el menú 👣 <b>Inicio > Mi ficha personal</b>",
 						parse_mode='HTML'
 					)
 					update.message.reply_text(
@@ -1286,7 +1346,7 @@ def check_anotar_peso(update, context):
 						text="He modificado tu peso de hoy correctamente ✔"
 					)
 					update.message.reply_text(
-						text="¿Quieres registrar tu altura? Con tu altura podré calcular tu IMC y podré valorarlo desde el menú 👣 <b>Inicio > Mi objetivo de peso</b>",
+						text="¿Quieres registrar tu altura? Con tu altura podré calcular tu IMC y podré valorarlo desde el menú 👣 <b>Inicio > Mi ficha personal</b>",
 						parse_mode='HTML'
 					)
 					update.message.reply_text(
@@ -1482,7 +1542,7 @@ def check_anotar_peso(update, context):
 def anotar_grasa(update, context):
 	global current_state
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	query = update.callback_query
@@ -1526,7 +1586,7 @@ def check_anotar_grasa(update, context):
 	user_msg = update.message.text
 	username = update.message.from_user.username
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	# Comprobar si ya hay datos registrados de hoy
@@ -1555,7 +1615,7 @@ def check_anotar_grasa(update, context):
 				reply_markup=reply_markup
 			)
 		else:
-			db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+			db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 			db.begin()
 
 			cur = db.cursor()
@@ -1734,7 +1794,7 @@ def check_anotar_grasa(update, context):
 def anotar_musculo(update, context):
 	global current_state
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	query = update.callback_query
@@ -1778,7 +1838,7 @@ def check_anotar_musculo(update, context):
 	user_msg = update.message.text
 	username = update.message.from_user.username
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	# Comprobar si ya hay datos registrados de hoy
@@ -1807,7 +1867,7 @@ def check_anotar_musculo(update, context):
 				reply_markup=reply_markup
 			)
 		else:
-			db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+			db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 			db.begin()
 
 			cur = db.cursor()
@@ -1986,7 +2046,7 @@ def check_anotar_musculo(update, context):
 def show_inicio_peso_establecer(update, context):
 	global current_state
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -2072,7 +2132,7 @@ def show_inicio_peso_establecer(update, context):
 def objetivo_peso(update, context):
 	global current_state
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -2129,7 +2189,7 @@ def check_objetivo_peso(update, context):
 				reply_markup=reply_markup
 			)
 		else:
-			db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+			db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 			db.begin()
 
 			# Peso más reciente
@@ -2206,7 +2266,7 @@ def objetivo_peso_tiempo(update, context):
 	plazo = query.data
 	plazo = plazo[-1:]
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -2268,7 +2328,7 @@ def objetivo_peso_tiempo(update, context):
 def objetivo_grasa(update, context):
 	global current_state
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -2325,7 +2385,7 @@ def check_objetivo_grasa(update, context):
 				reply_markup=reply_markup
 			)
 		else:
-			db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+			db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 			db.begin()
 
 			# Peso más reciente
@@ -2403,7 +2463,7 @@ def objetivo_grasa_tiempo(update, context):
 	plazo = query.data
 	plazo = plazo[-1:]
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -2442,7 +2502,7 @@ def objetivo_grasa_tiempo(update, context):
 	cur.close()
 	db.close()
 
-	text = "RESUMEN DEL OBJETIVO:\n\n<b>Porcentaje de grasa objetivo:</b>  "+str(peso)+"kg\n<b>Diferencia de porcentaje:</b>  "+diferencia+"%\n<b>Fecha fin:</b>  "+fecha
+	text = "RESUMEN DEL OBJETIVO:\n\n<b>Porcentaje de grasa objetivo:</b>  "+str(peso)+"%\n<b>Diferencia de porcentaje:</b>  "+diferencia+"%\n<b>Fecha fin:</b>  "+fecha
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		text=text,
@@ -2465,7 +2525,7 @@ def objetivo_grasa_tiempo(update, context):
 def objetivo_musculo(update, context):
 	global current_state
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -2522,7 +2582,7 @@ def check_objetivo_musculo(update, context):
 				reply_markup=reply_markup
 			)
 		else:
-			db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+			db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 			db.begin()
 
 			# Peso más reciente
@@ -2599,7 +2659,7 @@ def objetivo_musculo_tiempo(update, context):
 	plazo = query.data
 	plazo = plazo[-1:]
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -2638,7 +2698,7 @@ def objetivo_musculo_tiempo(update, context):
 	cur.close()
 	db.close()
 
-	text = "RESUMEN DEL OBJETIVO:\n\n<b>Porcentaje de músculo objetivo:</b> "+str(peso)+"kg\n<b>Diferencia de porcentaje:</b> "+diferencia+"%\n<b>Fecha fin:</b> "+fecha
+	text = "RESUMEN DEL OBJETIVO:\n\n<b>Porcentaje de músculo objetivo:</b> "+str(peso)+"%\n<b>Diferencia de porcentaje:</b> "+diferencia+"%\n<b>Fecha fin:</b> "+fecha
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		text=text,
@@ -2682,7 +2742,7 @@ def objetivo_peso_tiempo_no(update, context):
 	bot = context.bot
 	username = query.from_user.username
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -2730,7 +2790,7 @@ def objetivo_peso_eliminar_si(update, context):
 	bot = context.bot
 	username = query.from_user.username
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -2771,7 +2831,7 @@ def objetivo_peso_eliminar_no(update, context):
 def show_inicio_peso_evolucion(update, context):
 	global current_state
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -2834,7 +2894,7 @@ def evolucion_peso(update, context):
 	)
 	time.sleep(.8)
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 	cur = db.cursor()
@@ -2844,10 +2904,10 @@ def evolucion_peso(update, context):
 	current_time = cur.fetchall()
 
 	image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-	image_path_plot = "/home/castinievas/ImagymBot/evolucion/peso/"+image_name_plot
+	image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/peso/"+image_name_plot
 
 	# image_name_bar = current_user+"_"+current_date[0][0]+"_"+current_time[0][0]+"_bar.png"
-	# image_path_bar = "/home/castinievas/ingenieria_informatica/curso1920/TFG/graphs/"+image_name_bar
+	# image_path_bar = "/home/jumacasni/Documentos/ingenieria_informatica/curso1920/TFG/graphs/"+image_name_bar
 
 	cur.execute("SELECT fecha,peso FROM Peso WHERE id_usuario='"+username+"' ORDER BY DATE(fecha) ASC;")
 	user_date_weight = cur.fetchall()
@@ -2943,7 +3003,7 @@ def evolucion_peso_rango(update, context):
 				fecha_date = datetime.strptime(fecha_string, '%d-%m-%Y')
 				fecha1 = fecha_string[6:10] +'-'+ fecha_string[3:5] +'-'+ fecha_string[0:2] # Formato YYYY-mm-dd
 
-				db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+				db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 				db.begin()
 				# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 				cur = db.cursor()
@@ -2953,7 +3013,7 @@ def evolucion_peso_rango(update, context):
 				current_time = cur.fetchall()
 
 				image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-				image_path_plot = "/home/castinievas/ImagymBot/evolucion/peso/"+image_name_plot
+				image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/peso/"+image_name_plot
 
 				cur.execute("SELECT fecha,peso FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' ORDER BY DATE(fecha) ASC;")
 				user_date_weight = cur.fetchall()
@@ -3027,7 +3087,7 @@ def evolucion_peso_rango(update, context):
 					)
 					time.sleep(.8)
 
-					db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+					db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 					db.begin()
 					# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 					cur = db.cursor()
@@ -3037,7 +3097,7 @@ def evolucion_peso_rango(update, context):
 					current_time = cur.fetchall()
 
 					image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-					image_path_plot = "/home/castinievas/ImagymBot/evolucion/peso/"+image_name_plot
+					image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/peso/"+image_name_plot
 
 					cur.execute("SELECT fecha,peso FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' and fecha<='"+fecha2+"' ORDER BY DATE(fecha) ASC;")
 					user_date_weight = cur.fetchall()
@@ -3096,7 +3156,7 @@ def evolucion_grasa(update, context):
 	)
 	time.sleep(.8)
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 	cur = db.cursor()
@@ -3106,7 +3166,7 @@ def evolucion_grasa(update, context):
 	current_time = cur.fetchall()
 
 	image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-	image_path_plot = "/home/castinievas/ImagymBot/evolucion/grasa/"+image_name_plot
+	image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/grasa/"+image_name_plot
 
 	cur.execute("SELECT fecha,grasa FROM Peso WHERE id_usuario='"+username+"' ORDER BY DATE(fecha) ASC;")
 	user_date_weight = cur.fetchall()
@@ -3202,7 +3262,7 @@ def evolucion_grasa_rango(update, context):
 				fecha_date = datetime.strptime(fecha_string, '%d-%m-%Y')
 				fecha1 = fecha_string[6:10] +'-'+ fecha_string[3:5] +'-'+ fecha_string[0:2] # Formato YYYY-mm-dd
 
-				db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+				db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 				db.begin()
 				# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 				cur = db.cursor()
@@ -3212,7 +3272,7 @@ def evolucion_grasa_rango(update, context):
 				current_time = cur.fetchall()
 
 				image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-				image_path_plot = "/home/castinievas/ImagymBot/evolucion/grasa/"+image_name_plot
+				image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/grasa/"+image_name_plot
 
 				cur.execute("SELECT fecha,grasa FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' ORDER BY DATE(fecha) ASC;")
 				user_date_weight = cur.fetchall()
@@ -3286,7 +3346,7 @@ def evolucion_grasa_rango(update, context):
 					)
 					time.sleep(.8)
 
-					db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+					db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 					db.begin()
 					# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 					cur = db.cursor()
@@ -3296,7 +3356,7 @@ def evolucion_grasa_rango(update, context):
 					current_time = cur.fetchall()
 
 					image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-					image_path_plot = "/home/castinievas/ImagymBot/evolucion/peso/"+image_name_plot
+					image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/peso/"+image_name_plot
 
 					cur.execute("SELECT fecha,peso FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' and fecha<='"+fecha2+"' ORDER BY DATE(fecha) ASC;")
 					user_date_weight = cur.fetchall()
@@ -3355,7 +3415,7 @@ def evolucion_musculo(update, context):
 	)
 	time.sleep(.8)
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 	cur = db.cursor()
@@ -3365,7 +3425,7 @@ def evolucion_musculo(update, context):
 	current_time = cur.fetchall()
 
 	image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-	image_path_plot = "/home/castinievas/ImagymBot/evolucion/musculo/"+image_name_plot
+	image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/musculo/"+image_name_plot
 
 	cur.execute("SELECT fecha,musculo FROM Peso WHERE id_usuario='"+username+"' ORDER BY DATE(fecha) ASC;")
 	user_date_weight = cur.fetchall()
@@ -3461,7 +3521,7 @@ def evolucion_musculo_rango(update, context):
 				fecha_date = datetime.strptime(fecha_string, '%d-%m-%Y')
 				fecha1 = fecha_string[6:10] +'-'+ fecha_string[3:5] +'-'+ fecha_string[0:2] # Formato YYYY-mm-dd
 
-				db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+				db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 				db.begin()
 				# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 				cur = db.cursor()
@@ -3471,7 +3531,7 @@ def evolucion_musculo_rango(update, context):
 				current_time = cur.fetchall()
 
 				image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-				image_path_plot = "/home/castinievas/ImagymBot/evolucion/IMC/"+image_name_plot
+				image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/IMC/"+image_name_plot
 
 				cur.execute("SELECT fecha,IMC FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' ORDER BY DATE(fecha) ASC;")
 				user_date_weight = cur.fetchall()
@@ -3545,7 +3605,7 @@ def evolucion_musculo_rango(update, context):
 					)
 					time.sleep(.8)
 
-					db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+					db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 					db.begin()
 					# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 					cur = db.cursor()
@@ -3555,7 +3615,7 @@ def evolucion_musculo_rango(update, context):
 					current_time = cur.fetchall()
 
 					image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-					image_path_plot = "/home/castinievas/ImagymBot/evolucion/IMC/"+image_name_plot
+					image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/IMC/"+image_name_plot
 
 					cur.execute("SELECT fecha,IMC FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' and fecha<='"+fecha2+"' ORDER BY DATE(fecha) ASC;")
 					user_date_weight = cur.fetchall()
@@ -3614,7 +3674,7 @@ def evolucion_imc(update, context):
 	)
 	time.sleep(.8)
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 	cur = db.cursor()
@@ -3624,7 +3684,7 @@ def evolucion_imc(update, context):
 	current_time = cur.fetchall()
 
 	image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-	image_path_plot = "/home/castinievas/ImagymBot/evolucion/IMC/"+image_name_plot
+	image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/IMC/"+image_name_plot
 
 	cur.execute("SELECT fecha,IMC FROM Peso WHERE id_usuario='"+username+"' ORDER BY DATE(fecha) ASC;")
 	user_date_weight = cur.fetchall()
@@ -3720,7 +3780,7 @@ def evolucion_imc_rango(update, context):
 				fecha_date = datetime.strptime(fecha_string, '%d-%m-%Y')
 				fecha1 = fecha_string[6:10] +'-'+ fecha_string[3:5] +'-'+ fecha_string[0:2] # Formato YYYY-mm-dd
 
-				db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+				db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 				db.begin()
 				# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 				cur = db.cursor()
@@ -3730,7 +3790,7 @@ def evolucion_imc_rango(update, context):
 				current_time = cur.fetchall()
 
 				image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-				image_path_plot = "/home/castinievas/ImagymBot/evolucion/musculo/"+image_name_plot
+				image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/musculo/"+image_name_plot
 
 				cur.execute("SELECT fecha,musculo FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' ORDER BY DATE(fecha) ASC;")
 				user_date_weight = cur.fetchall()
@@ -3804,7 +3864,7 @@ def evolucion_imc_rango(update, context):
 					)
 					time.sleep(.8)
 
-					db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+					db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 					db.begin()
 					# El nombre de la imagen será del formato: username_currentdate_currenttime_[plot/bar].png
 					cur = db.cursor()
@@ -3814,7 +3874,7 @@ def evolucion_imc_rango(update, context):
 					current_time = cur.fetchall()
 
 					image_name_plot = username+"_"+str(current_date[0][0])+"_"+str(current_time[0][0])+"_plot.png"
-					image_path_plot = "/home/castinievas/ImagymBot/evolucion/musculo/"+image_name_plot
+					image_path_plot = "/home/jumacasni/Documentos/ImagymBot/evolucion/musculo/"+image_name_plot
 
 					cur.execute("SELECT fecha,musculo FROM Peso WHERE id_usuario='"+username+"' and fecha>='"+fecha1+"' and fecha<='"+fecha2+"' ORDER BY DATE(fecha) ASC;")
 					user_date_weight = cur.fetchall()
@@ -3861,69 +3921,11 @@ def evolucion_imc_rango(update, context):
 				text="No has introducido dos fechas. Recuerda usar el formato dd-mm-yyyy."
 			)
 
-def show_inicio_peso_valoracion(update, context):
-	global current_state
-	query = update.callback_query
-	bot = context.bot
-
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
-	db.begin()
-
-	bot.send_message(
-		chat_id = query.message.chat_id,
-		text="⏳ Generando informe de tu IMC... "
-	)
-	time.sleep(.8)
-	# IMC más reciente
-	username_user = query.from_user.username
-	cur = db.cursor()
-	cur.execute("SELECT imc FROM Peso WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username_user+"' AND imc IS NOT NULL)")
-	resultado = cur.fetchall()
-	imc = resultado[0][0]
-
-	image_path = "/home/castinievas/ImagymBot/imagenes/IMC.jpg"
-
-	keyboard = [
-		[InlineKeyboardButton("Volver a Peso 🔙", callback_data='back_inicio_peso')],
-		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
-	]
-	reply_markup = InlineKeyboardMarkup(keyboard)
-
-	if imc < 18.5:
-		text = "Tu IMC es "+str(imc)+"\nTienes una delgadez muy severa. Quizá deberías acudir a un médico o nutricionista."
-	elif imc >= 18.5 and imc < 25:
-		text = "Tu IMC es "+str(imc)+"\n¡Estás en el peso perfecto! Sigue así."
-	elif imc >= 25 and imc < 30:
-		text = "Tu IMC es "+str(imc)+"\nTienes un peso un poco por encima de lo normal. Conmigo puedes trabajar para llegar al peso perfecto. ¡Ánimo!"
-	elif imc >= 30 and imc < 35:
-		text = "Tu IMC es "+str(imc)+"\nTienes una obesidad moderada. Haciendo ejercicio y con una dieta saludable podemos hacer grandes cosas y mejorar ese peso. ¡Ánimo!"
-	elif imc >= 35 and imc < 40:
-		text = "Tu IMC es "+str(imc)+"\nTienes obesidad severa. Puedo ayudarte a mejorar tu IMC, aunque no estaría mal que consultaras tu estado de salud a un médico o nutricionista."
-	else:
-		text = "Tu IMC es "+str(imc)+"\nTienes obesidad mórbida. Deberías acudir a un médico o nutricionista."
-
-	photo_imc = open(image_path, 'rb')
-	bot.send_photo(
-		chat_id = query.message.chat_id,
-		photo = photo_imc,
-		text = "Esta imagen muestra una tabla con los valores del IMC."
-	)
-	time.sleep(.8)
-	bot.send_message(
-		chat_id = query.message.chat_id,
-		message_id = query.message.message_id,
-		text=text,
-		reply_markup=reply_markup
-	)
-
-	current_state = "INICIO_PESO_VALORACION"
-	return INICIO_PESO_VALORACION
-
 ############# MI OBJETIVO DE ACTIVIDADES CARDIO #############
 def show_inicio_cardio(update, context):
 	global current_state
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -4083,7 +4085,7 @@ def show_inicio_cardio(update, context):
 def show_inicio_cardio_registrar(update, context):
 	global current_state
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -4193,7 +4195,7 @@ def show_inicio_cardio_registrar_actividad(update, context):
 	data = update.callback_query.data
 	id_actividad_cardio = data.split('_', 4)[4]
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT nombre FROM Actividad_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+";")
@@ -4250,7 +4252,7 @@ def registrar_cardio(update, context):
 
 	n_params = context.args
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -4483,7 +4485,7 @@ def show_inicio_cardio_ver(update,context):
 	bot = context.bot
 	username_user = query.from_user.username
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -4549,7 +4551,7 @@ def registrar_cardio_si(update, context):
 		text="Has registrado la actividad cardio con éxito ✔",
 	)
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	# Seleccionar la actividad de cardio más reciente
@@ -4630,7 +4632,7 @@ def registrar_cardio_no(update, context):
 	bot = context.bot
 	username = query.from_user.username
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -4701,7 +4703,7 @@ def ver_cardio_rango(update, context):
 
 					return
 
-				db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+				db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 				db.begin()
 				cur = db.cursor()
 
@@ -4754,7 +4756,7 @@ def ver_cardio_rango(update, context):
 def show_inicio_cardio_establecer(update, context):
 	global current_state
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -4832,7 +4834,7 @@ def show_inicio_cardio_establecer_actividad(update, context):
 	data = update.callback_query.data
 	id_actividad_cardio = data.split('_', 4)[4]
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT id_actividad_cardio,nombre FROM Actividad_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+";")
@@ -4892,7 +4894,7 @@ def establecer_cardio_minutos(update, context):
 
 	n_params = context.args
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -4977,7 +4979,7 @@ def establecer_cardio_distancia(update, context):
 
 	n_params = context.args
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -5061,7 +5063,7 @@ def establecer_cardio_calorias(update, context):
 
 	n_params = context.args
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -5168,7 +5170,7 @@ def establecer_cardio_no(update, context):
 	bot = context.bot
 	username = query.from_user.username
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -5221,7 +5223,7 @@ def objetivo_cardio_eliminar_si(update, context):
 	bot = context.bot
 	username = query.from_user.username
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -5266,7 +5268,7 @@ def objetivo_cardio_eliminar_no(update, context):
 
 ############# RETOS #############
 def show_inicio_retos(update, context):
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	global current_state
 
@@ -5366,7 +5368,7 @@ def show_inicio_retos(update, context):
 		resultado = cur.fetchall()
 
 		if resultado:
-			text=text+"\n\n✅ ¡Hoy ya has anotado tu progreso! Has hecho <b>"+repeticiones+" "+ejercicio.lower()+"</b>"
+			text=text+"\n\n✅ ¡Hoy ya has anotado tu progreso! Has hecho <b>"+repeticiones+" "+ejercicio.lower()+"</b>"+"\n<b>Ejercicio:</b> /"+str(id_ejercicio)
 			# Seleccionar el próximo día del reto
 			cur.execute("SELECT dia,repeticiones FROM Calendario WHERE id_reto="+str(id_reto)+" AND dia=(SELECT MIN(dia) FROM Calendario WHERE id_reto="+str(id_reto)+" AND dia>"+str(dia_reto)+" AND repeticiones is NOT NULL);")
 			resultado = cur.fetchall()
@@ -5390,7 +5392,7 @@ def show_inicio_retos(update, context):
 				text=text+"\n\n✅ ¡Hoy toca descansar!"
 
 			else:
-				text=text+"\n<b>👉 Hoy debes hacer </b>"+repeticiones+" "+ejercicio.lower()
+				text=text+"\n<b>👉 Hoy debes hacer </b>"+repeticiones+" "+ejercicio.lower()+"\n<b>👉 Ejercicio:</b> /"+str(id_ejercicio)
 
 
 		cur.execute("SELECT COUNT(*) FROM Realiza_reto WHERE id_reto="+str(id_reto)+" AND estado='R';")
@@ -5437,12 +5439,6 @@ def show_inicio_retos(update, context):
 			text="📌 Actualmente no estás apuntado a ningún reto"
 		)
 
-	# if retos_futuros:
-	# 	bot.send_message(
-	# 		chat_id = query.message.chat_id,
-	# 		text="📌 Hay retos disponibles. ¡Echa un vistazo!"
-	# 	)
-
 	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 	reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -5460,7 +5456,7 @@ def show_inicio_retos(update, context):
 	return INICIO_RETOS
 
 def show_inicio_retos_ver(update, context):
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	global current_state, conv_handler
 	query = update.callback_query
@@ -5491,7 +5487,7 @@ def show_inicio_retos_ver(update, context):
 	callback_query_list = []
 
 	for id_reto in resultado:
-		db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 		db.begin()
 		cur = db.cursor()
 
@@ -5527,7 +5523,7 @@ def show_inicio_retos_ver(update, context):
 		if not callback_query_retos_ver_apuntarse in conv_handler.states[INICIO_RETOS_VER_RETO]:
 			conv_handler.states[INICIO_RETOS_VER_RETO].append(callback_query_retos_ver_apuntarse)
 
-		table_reto_path = "/home/castinievas/ImagymBot/retos/"+str(id_reto[0])+".png"
+		table_reto_path = "/home/jumacasni/Documentos/ImagymBot/retos/"+str(id_reto[0])+".png"
 		if not path.exists(table_reto_path):
 			createTable(id_reto[0], name_button)
 
@@ -5546,7 +5542,7 @@ def show_inicio_retos_ver(update, context):
 
 def ver_reto(update, context):
 	global current_state
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -5556,7 +5552,7 @@ def ver_reto(update, context):
 	id_reto_callback = query.data
 	id_reto = id_reto_callback.split('_',4)
 	id_reto = id_reto[3]
-	table_reto_path = "/home/castinievas/ImagymBot/retos/"+id_reto+".png"
+	table_reto_path = "/home/jumacasni/Documentos/ImagymBot/retos/"+id_reto+".png"
 
 	pic = open(table_reto_path, 'rb')
 
@@ -5575,6 +5571,10 @@ def ver_reto(update, context):
 	cur.execute("SELECT * FROM Realiza_reto INNER JOIN Retos ON Realiza_reto.id_reto = Retos.id_reto and Realiza_reto.id_usuario='"+username_user+"' and Realiza_reto.id_reto="+id_reto+" and Retos.fecha_inicio > CURDATE()")
 	esta_apuntado = cur.fetchall()
 
+	cur.execute("SELECT id_ejercicio FROM Retos WHERE id_reto="+id_reto+";")
+	id_ejercicio = cur.fetchall()
+	id_ejercicio = id_ejercicio[0][0]
+
 	# Fecha de inicio del reto
 	cur.execute("SELECT fecha_inicio,fecha_fin FROM Retos where id_reto="+id_reto+";")
 	resultado = cur.fetchall();
@@ -5588,7 +5588,7 @@ def ver_reto(update, context):
 	resultado = cur.fetchall();
 	num_usuarios_apuntados = resultado[0][0]
 	if not esta_apuntado:
-		text="Aquí tienes el calendario de este reto.\n\n<b>Fecha de inicio:</b> "+fecha_inicio+"\n<b>Fecha fin:</b> "+fecha_fin
+		text="Aquí tienes el calendario de este reto.\n\n<b>Fecha de inicio:</b> "+fecha_inicio+"\n<b>Fecha fin:</b> "+fecha_fin+"\n<b>Ejercicio que hay que hacer:</b> /"+str(id_ejercicio)
 		if num_usuarios_apuntados == 1:
 			text = text+"\n\nHay "+str(num_usuarios_apuntados)+" usuario apuntado a este reto. ¡Anímate!"
 		elif num_usuarios_apuntados > 1:
@@ -5604,7 +5604,7 @@ def ver_reto(update, context):
 		]
 		reply_markup = InlineKeyboardMarkup(keyboard)
 
-		text=text+"\n\nCompleta este reto y gana una insignia que podrás lucir en la página web 🎖"
+		text=text+"\n\nCompleta todos los días de este reto y gana una insignia que podrás lucir en la página web 🎖\n\n"
 		bot.send_message(
 			chat_id = query.message.chat_id,
 			text=text,
@@ -5613,7 +5613,7 @@ def ver_reto(update, context):
 		)
 
 	else:
-		text="<b>ESTÁS APUNTADO A ESTE RETO</b>\n\n<b>Fecha de inicio:</b> "+fecha_inicio+"\n<b>Fecha fin:</b> "+fecha_fin
+		text="<b>ESTÁS APUNTADO A ESTE RETO</b>\n\n<b>Fecha de inicio:</b> "+fecha_inicio+"\n<b>Fecha fin:</b> "+fecha_fin+"\n<b>Ejercicio que hay que hacer:</b> /"+str(id_ejercicio)
 		keyboard = [
 			[InlineKeyboardButton("Desapuntarse al reto ❌", callback_data="inicio_retos_ver_apuntarse_"+id_reto)],
 			[InlineKeyboardButton("Volver a Ver próximos retos 🔙", callback_data="back_inicio_retos_ver")],
@@ -5651,15 +5651,16 @@ def ver_reto_apuntarse(update, context):
 	id_reto = id_reto_callback.split('_',5)
 	id_reto = id_reto[4]
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
 	# Comprobar si el usuario está apuntado a un reto que coincide en la fecha del reto actual
-	cur.execute("SELECT fecha_inicio, fecha_fin FROM Retos WHERE id_reto="+str(id_reto))
+	cur.execute("SELECT fecha_inicio,fecha_fin,id_ejercicio FROM Retos WHERE id_reto="+str(id_reto))
 	resultado = cur.fetchall()
 	start_day_reto = resultado[0][0]
 	end_day_reto = resultado[0][1]
+	id_ejercicio = resultado[0][2]
 	fecha_inicio = start_day_reto.strftime('%d-%B-%Y')
 	fecha_fin = end_day_reto.strftime('%d-%B-%Y')
 	start_day_reto = start_day_reto.strftime("%Y-%m-%d")
@@ -5691,7 +5692,7 @@ def ver_reto_apuntarse(update, context):
 		resultado = cur.fetchall();
 		num_usuarios_apuntados = resultado[0][0]
 		text="<b>NO ESTÁS APUNTADO A ESTE RETO</b>"
-		text=text+"\n\nAquí tienes el calendario de este reto.\n\n<b>Fecha de inicio:</b> "+fecha_inicio+"\n<b>Fecha fin:</b> "+fecha_fin
+		text=text+"\n\nAquí tienes el calendario de este reto.\n\n<b>Fecha de inicio:</b> "+fecha_inicio+"\n<b>Fecha fin:</b> "+fecha_fin+"\n<b>Ejercicio que hay que hacer:</b> /"+str(id_ejercicio)
 		if num_usuarios_apuntados == 1:
 			text = text+"\n\nHay "+str(num_usuarios_apuntados)+" usuario apuntado a este reto. ¡Anímate!"
 		else:
@@ -5709,7 +5710,7 @@ def ver_reto_apuntarse(update, context):
 			db.commit()
 
 			text="<b>ESTÁS APUNTADO AL RETO</b>"
-			text=text+"\n\nTe deseo mucha suerte."
+			text=text+"\n\nTe deseo mucha suerte."+"\n\n<b>Ejercicio que hay que hacer:</b> /"+str(id_ejercicio)
 
 			cur = db.cursor()
 			cur.execute("SELECT fecha_inicio FROM Retos WHERE id_reto="+id_reto)
@@ -5752,7 +5753,7 @@ def primer_dia_reto(context):
 	username_user = query.from_user.username
 	id_reto = job.context[2]
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -5817,7 +5818,7 @@ def recordar_reto(context):
 	username_user = query.from_user.username
 	id_reto = job.context[2]
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -5874,7 +5875,7 @@ def descalificar_reto(context):
 	username_user = query.from_user.username
 	id_reto = job.context[2]
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -5934,7 +5935,7 @@ def show_inicio_retos_eliminar(update, context):
 	)
 	time.sleep(.8)
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT id_reto FROM Realiza_reto where id_usuario='"+username_user+"' AND estado='A';")
@@ -5997,7 +5998,7 @@ def eliminar_reto_confirmar(update, context):
 	id_reto = id_reto_callback.split('_',4)
 	id_reto = id_reto[3]
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -6043,7 +6044,7 @@ def eliminar_reto_confirmar_si(update, context):
 	id_reto = id_reto_callback.split('_',5)
 	id_reto = id_reto[4]
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -6110,7 +6111,7 @@ def eliminar_reto_confirmar_no(update, context):
 	return INICIO_RETOS_ELIMINAR
 
 def show_inicio_retos_anotar(update, context):
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	global current_state
 
@@ -6170,7 +6171,7 @@ def show_inicio_retos_anotar(update, context):
 	return INICIO_RETOS_ANOTAR_CONFIRMAR
 
 def inicio_retos_anotar_si(update, context):
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	global current_state
 
@@ -6286,7 +6287,7 @@ def inicio_retos_anotar_no(update, context):
 def show_inicio_retos_calendario(update, context):
 	global current_state
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -6322,7 +6323,7 @@ def show_inicio_retos_calendario(update, context):
 	text="Reto de "+ejercicio.lower()+", nivel "+str(nivel)+", "+fecha_inicio.strftime("%B")
 
 	nombre_imagen = str(id_reto)+"_"+username_user+"_"+str(dia_reto)
-	path_imagen = "/home/castinievas/ImagymBot/retos/"+nombre_imagen+".png"
+	path_imagen = "/home/jumacasni/Documentos/ImagymBot/retos/"+nombre_imagen+".png"
 
 	cur.close()
 	db.close()
@@ -6361,7 +6362,7 @@ def show_inicio_retos_calendario(update, context):
 def show_inicio_retos_descalificar(update, context):
 	global current_state
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -6407,7 +6408,7 @@ def show_inicio_retos_descalificar(update, context):
 	return INICIO_RETOS_DESCALIFICAR_CONFIRMAR
 
 def inicio_retos_descalificar_si(update, context):
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	global current_state
 
@@ -6479,7 +6480,7 @@ def show_inicio_retos_historial(update, context):
 	)
 	time.sleep(.8)
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT id_reto FROM Realiza_reto WHERE id_usuario='"+username_user+"' AND (estado='D' or estado='C');")
@@ -6490,7 +6491,7 @@ def show_inicio_retos_historial(update, context):
 	list_keyboards = []
 
 	for id_reto in resultado:
-		db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 		db.begin()
 		cur = db.cursor()
 		cur.execute("SELECT id_ejercicio,nivel,fecha_inicio FROM Retos where id_reto="+str(id_reto[0])+";")
@@ -6561,7 +6562,7 @@ def historial_reto(update, context):
 	)
 	time.sleep(.8)
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT dia,estado FROM Realiza_reto where id_usuario='"+username_user+"' AND id_reto="+str(id_reto)+";")
@@ -6583,7 +6584,7 @@ def historial_reto(update, context):
 	text="Reto de "+ejercicio.lower()+", nivel "+str(nivel)+", "+fecha_inicio.strftime("%B-%Y").upper()
 
 	nombre_imagen = str(id_reto)+"_"+username_user+"_historial"
-	path_imagen = "/home/castinievas/ImagymBot/retos/"+nombre_imagen+".png"
+	path_imagen = "/home/jumacasni/Documentos/ImagymBot/retos/"+nombre_imagen+".png"
 
 	if not path.exists(path_imagen):
 		createTableColors(id_reto,text,dia,username_user,nombre_imagen)
@@ -6661,7 +6662,7 @@ def historial_reto(update, context):
 	return INICIO_RETOS_HISTORIAL_CLASIFICACION
 
 def createTable(id_reto, name):
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT dia,repeticiones FROM Calendario where id_reto="+str(id_reto)+";")
@@ -6766,11 +6767,11 @@ def createTable(id_reto, name):
 	plt.subplots_adjust(bottom=0.05)
 	the_table.scale(2, 2)
 
-	table_path = "/home/castinievas/ImagymBot/retos/"+str(id_reto)+".png"
+	table_path = "/home/jumacasni/Documentos/ImagymBot/retos/"+str(id_reto)+".png"
 	plt.savefig(table_path)
 
 def createTableColors(id_reto, name, day_limit, id_usuario, name_graph):
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT dia,repeticiones FROM Calendario where id_reto="+str(id_reto)+";")
@@ -6927,7 +6928,7 @@ def createTableColors(id_reto, name, day_limit, id_usuario, name_graph):
 	if name_graph == "":
 		name_graph = str(id_reto)+"_"+id_usuario+"_"+str(day_limit)
 
-	table_path = "/home/castinievas/ImagymBot/retos/"+name_graph+".png"
+	table_path = "/home/jumacasni/Documentos/ImagymBot/retos/"+name_graph+".png"
 	plt.savefig(table_path)
 
 	cur.close()
@@ -6935,7 +6936,7 @@ def createTableColors(id_reto, name, day_limit, id_usuario, name_graph):
 
 ############# EJERCICIO DEL MES #############
 def show_inicio_ejercicio(update, context):
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	global current_state
 
@@ -7101,7 +7102,7 @@ def show_inicio_ejercicio_apuntarse(update, context):
 	bot = context.bot
 	username_user = query.from_user.username
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -7146,7 +7147,7 @@ def primer_dia_ejercicio(context):
 	username_user = query.from_user.username
 	id_objetivo_mensual = job.context[2]
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -7223,7 +7224,7 @@ def termina_ejercicio(context):
 	username_user = query.from_user.username
 	id_objetivo_mensual = job.context[2]
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -7281,7 +7282,7 @@ def show_inicio_ejercicio_ranking(update, context):
 	)
 	time.sleep(.8)
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -7342,7 +7343,7 @@ def show_inicio_ejercicio_ranking(update, context):
 def show_inicio_ejercicio_descalificar(update, context):
 	global current_state
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -7392,7 +7393,7 @@ def show_inicio_ejercicio_descalificar(update, context):
 	return INICIO_EJERCICIO_DESCALIFICAR_CONFIRMAR
 
 def inicio_ejercicio_descalificar_si(update, context):
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	global current_state
 
@@ -7445,7 +7446,7 @@ def inicio_ejercicio_descalificar_no(update, context):
 def show_inicio_ejercicio_eliminar(update, context):
 	global current_state
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -7496,7 +7497,7 @@ def show_inicio_ejercicio_eliminar(update, context):
 	return INICIO_EJERCICIO_ELIMINAR_CONFIRMAR
 
 def inicio_ejercicio_eliminar_si(update, context):
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	global current_state
 
@@ -7568,7 +7569,7 @@ def show_inicio_ejercicio_historial(update, context):
 	)
 	time.sleep(.8)
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT id_objetivo_mensual FROM Se_apunta where id_usuario='"+username_user+"' AND estado='C';")
@@ -7579,7 +7580,7 @@ def show_inicio_ejercicio_historial(update, context):
 	list_keyboards = []
 
 	for id_objetivo_mensual in resultado:
-		db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 		db.begin()
 		cur = db.cursor()
 		cur.execute("SELECT id_actividad_cardio,fecha_inicio FROM Ejercicio_del_mes where id_objetivo_mensual="+str(id_objetivo_mensual[0])+";")
@@ -7642,7 +7643,7 @@ def historial_ejercicio(update, context):
 	)
 	time.sleep(.8)
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT id_actividad_cardio,objetivo,fecha_inicio,fecha_fin FROM Ejercicio_del_mes WHERE id_objetivo_mensual="+str(id_objetivo_mensual)+";")
@@ -7753,7 +7754,7 @@ def show_inicio_rutinas(update, context):
 	)
 	time.sleep(1)
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT DISTINCT id_rutina FROM Hace_rutina WHERE fecha=CURDATE() AND id_usuario='"+username_user+"' ORDER BY id_rutina;")
@@ -7771,7 +7772,7 @@ def show_inicio_rutinas(update, context):
 	else:
 		text="<b>HOY DÍA "+date.today().strftime('%d-%B-%Y').upper()+" HAS HECHO:</b>"
 	for id_rutina in rutinas:
-		db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 		db.begin()
 		cur = db.cursor()
 		cur.execute("SELECT id_trainer FROM Ofrecen where id_rutina="+str(id_rutina[0])+";")
@@ -7810,7 +7811,7 @@ def show_inicio_rutinas(update, context):
 		for i in range(len(ejercicios)):
 			id_ejercicio = ejercicios[i][0]
 			
-			db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+			db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 			db.begin()
 			cur = db.cursor()
 			cur.execute("SELECT nombre FROM Ejercicios where id_ejercicio="+str(id_ejercicio)+";")
@@ -7857,7 +7858,7 @@ def show_inicio_rutinas_ver(update, context):
 	bot = context.bot
 	username_user = query.from_user.username
 	
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	bot.send_message(
@@ -7879,7 +7880,7 @@ def show_inicio_rutinas_ver(update, context):
 	callback_query_list = []
 
 	for id_rutina in resultado:
-		db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 		db.begin()
 		cur = db.cursor()
 
@@ -7932,7 +7933,7 @@ def show_inicio_rutinas_ver(update, context):
 
 def ver_rutina(update, context):
 	global current_state
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -7978,7 +7979,7 @@ def ver_rutina(update, context):
 			else:
 				text=text+"<b>DOMINGO</b>"
 
-			db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+			db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 			db.begin()
 			cur = db.cursor()
 			cur.execute("SELECT id_ejercicio,repeticiones FROM Rutinas_ejercicios where id_rutina="+str(id_rutina)+" AND dia='"+resultado[i][0]+"';")
@@ -7988,7 +7989,7 @@ def ver_rutina(update, context):
 			for i in range(len(ejercicios_dia)):
 				id_ejercicio = ejercicios_dia[i][0]
 				repeticiones = ejercicios_dia[i][1]
-				db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+				db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 				db.begin()
 				cur = db.cursor()
 				cur.execute("SELECT nombre FROM Ejercicios where id_ejercicio="+str(id_ejercicio)+";")
@@ -8000,7 +8001,7 @@ def ver_rutina(update, context):
 				text=text+"\n"+nombre_ejercicio+" - "+repeticiones+" 👉 tutorial: /"+str(id_ejercicio)
 
 	keyboard = []
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	cur = db.cursor()
@@ -8033,7 +8034,7 @@ def ver_rutina(update, context):
 
 def ver_rutina_seguir(update, context):	
 	global current_state
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	query = update.callback_query
@@ -8090,7 +8091,7 @@ def ver_rutina_seguir(update, context):
 			else:
 				text=text+"<b>DOMINGO</b>"
 
-			db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+			db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 			db.begin()
 			cur = db.cursor()
 			cur.execute("SELECT id_ejercicio,repeticiones FROM Rutinas_ejercicios where id_rutina="+str(id_rutina)+" AND dia='"+resultado[i][0]+"';")
@@ -8100,7 +8101,7 @@ def ver_rutina_seguir(update, context):
 			for i in range(len(ejercicios_dia)):
 				id_ejercicio = ejercicios_dia[i][0]
 				repeticiones = ejercicios_dia[i][1]
-				db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+				db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 				db.begin()
 				cur = db.cursor()
 				cur.execute("SELECT nombre FROM Ejercicios where id_ejercicio="+str(id_ejercicio)+";")
@@ -8112,7 +8113,7 @@ def ver_rutina_seguir(update, context):
 				text=text+"\n"+nombre_ejercicio+" - "+repeticiones+" 👉 tutorial: /"+str(id_ejercicio)
 
 	keyboard = []
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	cur = db.cursor()
@@ -8157,7 +8158,7 @@ def show_inicio_rutinas_anotar(update, context):
 	)
 	time.sleep(1)
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 
@@ -8192,7 +8193,7 @@ def show_inicio_rutinas_anotar(update, context):
 	db.close()
 
 	for id_rutina in resultado:
-		db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 		db.begin()
 		cur = db.cursor()
 
@@ -8220,7 +8221,7 @@ def show_inicio_rutinas_anotar(update, context):
 		if not callback_query_rutinas_anotar in conv_handler.states[INICIO_RUTINAS_ANOTAR]:
 			conv_handler.states[INICIO_RUTINAS_ANOTAR].append(callback_query_rutinas_anotar)
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	# Ahora las rutinas que no tiene en favoritos
@@ -8229,7 +8230,7 @@ def show_inicio_rutinas_anotar(update, context):
 	cur.close()
 	db.close()
 	for id_rutina in resultado:
-		db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 		db.begin()
 		cur = db.cursor()
 
@@ -8299,7 +8300,7 @@ def show_inicio_rutinas_anotar_rutina(update, context):
 	elif dia_hoy == 7:
 		dia_semana = "Domingo"
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT id_trainer FROM Ofrecen where id_rutina="+str(id_rutina)+";")
@@ -8323,7 +8324,7 @@ def show_inicio_rutinas_anotar_rutina(update, context):
 	for i in range(len(ejercicios_dia)):
 		id_ejercicio = ejercicios_dia[i][0]
 		repeticiones = ejercicios_dia[i][1]
-		db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 		db.begin()
 		cur = db.cursor()
 		cur.execute("SELECT nombre FROM Ejercicios where id_ejercicio="+str(id_ejercicio)+";")
@@ -8395,7 +8396,7 @@ def anotar_ejercicio_rutina(update, context):
 	elif dia == '7':
 			dia_semana = "Domingo"
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT * FROM Hace_rutina WHERE fecha=CURDATE() AND id_rutina="+id_rutina+" AND id_ejercicio="+str(id_ejercicio)+" AND dia='"+dia+"' AND id_usuario='"+username_user+"';")
@@ -8428,7 +8429,7 @@ def anotar_ejercicio_rutina(update, context):
 	for i in range(len(ejercicios_dia)):
 		id_ejercicio = ejercicios_dia[i][0]
 		repeticiones = ejercicios_dia[i][1]
-		db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 		db.begin()
 		cur = db.cursor()
 		cur.execute("SELECT nombre FROM Ejercicios where id_ejercicio="+str(id_ejercicio)+";")
@@ -8484,7 +8485,7 @@ def show_inicio_rutinas_consultar(update, context):
 	)
 	time.sleep(1)
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	# Entrenamiento más reciente
@@ -8502,7 +8503,7 @@ def show_inicio_rutinas_consultar(update, context):
 		text=text+"<b>EL DÍA "+fecha.strftime('%d-%B-%Y').upper()+":</b>"
 
 	for id_rutina in rutinas:
-		db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 		db.begin()
 		cur = db.cursor()
 		cur.execute("SELECT id_trainer FROM Ofrecen where id_rutina="+str(id_rutina[0])+";")
@@ -8541,7 +8542,7 @@ def show_inicio_rutinas_consultar(update, context):
 		for i in range(len(ejercicios)):
 			id_ejercicio = ejercicios[i][0]
 			
-			db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+			db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 			db.begin()
 			cur = db.cursor()
 			cur.execute("SELECT nombre FROM Ejercicios where id_ejercicio="+str(id_ejercicio)+";")
@@ -8621,7 +8622,7 @@ def rutinas_consultar_fecha(update, context):
 
 					return
 
-				db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+				db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 				db.begin()
 				cur = db.cursor()
 
@@ -8636,7 +8637,7 @@ def rutinas_consultar_fecha(update, context):
 					fecha = rutinas[0][1]
 					text="<b>EL DÍA "+fecha.strftime('%d-%B-%Y').upper()+" HICISTE LO SIGUIENTE:</b>"
 					for id_rutina in rutinas:
-						db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+						db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 						db.begin()
 						cur = db.cursor()
 						cur.execute("SELECT id_trainer FROM Ofrecen where id_rutina="+str(id_rutina[0])+";")
@@ -8675,7 +8676,7 @@ def rutinas_consultar_fecha(update, context):
 						for i in range(len(ejercicios)):
 							id_ejercicio = ejercicios[i][0]
 							
-							db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+							db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 							db.begin()
 							cur = db.cursor()
 							cur.execute("SELECT nombre FROM Ejercicios where id_ejercicio="+str(id_ejercicio)+";")
@@ -8784,10 +8785,22 @@ def show_inicio_soporte_acerca(update, context):
 
 def ver_ejercicio(update, context):
 	id_ejercicio = update.message.text[1:]
-	image_path = "/home/castinievas/ImagymBot/ejercicios/"+id_ejercicio+".jpeg"
+	image_path = "/home/jumacasni/Documentos/ImagymBot/ejercicios/"+id_ejercicio+".jpeg"
 	if path.exists(image_path):
 		update.message.reply_text(
 			text="<b>⏳ Cargando imagen...</b>",
+			parse_mode='HTML'
+		)
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
+		db.begin()
+		cur = db.cursor()
+		cur.execute("SELECT nombre FROM Ejercicios WHERE id_ejercicio="+id_ejercicio+";")
+		resultado = cur.fetchall()
+		nombre = resultado[0][0]
+		cur.close()
+		db.close()
+		update.message.reply_text(
+			text="<b>👇 "+nombre+"</b>",
 			parse_mode='HTML'
 		)
 		pic = open(image_path, 'rb')
@@ -8801,7 +8814,7 @@ def ver_ejercicio(update, context):
 
 
 def inicio_ficha(update, context):
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	update.message.reply_text(
@@ -8812,7 +8825,22 @@ def inicio_ficha(update, context):
 	# Obtener datos
 	username_user = update.message.from_user.username
 
+	# IMC más reciente
 	cur = db.cursor()
+	cur.execute("SELECT imc FROM Peso WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username_user+"' AND imc IS NOT NULL)")
+	imc = cur.fetchall()
+	text="Pulsa un botón para cambiar la información"
+
+	if imc:
+		imc = imc[0][0]
+		text=text+"\n\n<b>👉Tu IMC actual:</b> "+str(imc)
+
+	update.message.reply_text(
+		chat_id = query.message.chat_id,
+		text=text,
+		parse_mode='HTML'
+	)
+
 	cur.execute("SELECT altura, fecha_nacimiento, genero, email FROM Usuarios where id_usuario='"+username_user+"';")
 	resultado = cur.fetchall()
 
@@ -8845,29 +8873,39 @@ def inicio_ficha(update, context):
 		email = "✏"
 
 	# Peso más reciente
-	cur.execute("SELECT peso FROM Peso WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username_user+"' AND peso IS NOT NULL)")
+	cur.execute("SELECT peso,fecha FROM Peso WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username_user+"' AND peso IS NOT NULL)")
 	resultado = cur.fetchall()
 
 	if not resultado:
 		peso = " ✏"
+		fecha = ""
 	else:
 		if resultado[0][0] is None or not resultado[0][0]:
 			peso = " ✏"
+			fecha = ""
 		else:
-			peso = resultado[0][0]
+			peso = str(resultado[0][0])+"kg 👉 "
+			fecha = resultado[0][1]
+			if fecha == date.today():
+				fecha = "Registrado hoy"
+			else:
+				fecha = "Registrado el día "+fecha.strftime("%d-%B-%Y")
 
 	cur.close()
 	db.close()
 
-	time.sleep(.8)
 	keyboard = [
-		[InlineKeyboardButton("Peso: "+str(peso)+"kg", callback_data='inicio_ficha_peso')],
+		[InlineKeyboardButton("Peso: "+peso+fecha, callback_data='inicio_ficha_peso')],
 		[InlineKeyboardButton("Altura: "+altura, callback_data='inicio_ficha_altura')],
 		[InlineKeyboardButton("Fecha nacimiento: "+fecha_nacimiento, callback_data='inicio_ficha_nacimiento')],
 		[InlineKeyboardButton("Género: "+genero, callback_data='inicio_ficha_genero')],
 		[InlineKeyboardButton("Correo electrónico: "+email, callback_data='inicio_ficha_email')],
-		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
 	]
+
+	if imc:
+		keyboard.append([InlineKeyboardButton("Valoración del IMC 🗨", callback_data='inicio_ficha_valoracion')])
+
+	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 
 	update.message.reply_text(
 		text="Pulsa un botón para cambiar la información"
@@ -8883,7 +8921,7 @@ def inicio_ficha(update, context):
 def inicio_peso(update, context):
 	global current_state
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	update.message.reply_text(
@@ -8894,7 +8932,7 @@ def inicio_peso(update, context):
 	# Peso más reciente
 	username_user = update.message.from_user.username
 	cur = db.cursor()
-	cur.execute("SELECT peso,grasa,musculo,fecha,hora,imc FROM Peso WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username_user+"')")
+	cur.execute("SELECT peso,grasa,musculo,fecha,hora FROM Peso WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username_user+"')")
 	resultado = cur.fetchall()
 
 	time.sleep(.8)
@@ -8911,7 +8949,6 @@ def inicio_peso(update, context):
 			peso = resultado[0][0]
 			grasa = resultado[0][1]
 			musculo = resultado[0][2]
-			imc = resultado[0][5]
 			fecha = resultado[0][3]
 
 			if fecha == date.today():
@@ -8934,9 +8971,6 @@ def inicio_peso(update, context):
 				text=text+"\nMúsculo: "+str(musculo)+"%"
 			else:
 				text=text+"\nMúsculo: sin datos"
-
-			if imc is not None:
-				text=text+"\nIMC: "+str(imc)
 
 			time.sleep(.8)
 			update.message.reply_text(
@@ -8993,14 +9027,7 @@ def inicio_peso(update, context):
 					parse_mode='HTML'
 				)
 
-	cur.execute("SELECT imc FROM Peso WHERE id_usuario='"+username_user+"' AND imc IS NOT NULL")
-	resultado = cur.fetchall()
-
-	if resultado:
-		keyboard.append([InlineKeyboardButton("Valoración del IMC 🗨", callback_data='inicio_peso_valoracion')])
-		keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
-	else:
-		keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
+	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 
 	cur.close()
 	db.close()
@@ -9019,7 +9046,7 @@ def inicio_peso(update, context):
 def inicio_peso_anotar(update, context):
 	global current_state
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 
 	update.message.reply_text(
@@ -9116,7 +9143,7 @@ def inicio_peso_anotar(update, context):
 def actualizar_ejercicios():
 	global conv_handler
 
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
 	cur = db.cursor()
 	cur.execute("SELECT id_ejercicio FROM Ejercicios;")
@@ -9143,6 +9170,12 @@ def actualizar_ejercicios():
 
 		if not handler_ejercicio in conv_handler.states[INICIO_RUTINAS_ANOTAR_RUTINA]:
 			conv_handler.states[INICIO_RUTINAS_ANOTAR_RUTINA].append(handler_ejercicio)
+
+		if not handler_ejercicio in conv_handler.states[INICIO_RETOS_VER_RETO]:
+			conv_handler.states[INICIO_RETOS_VER_RETO].append(handler_ejercicio)
+
+		if not handler_ejercicio in conv_handler.states[INICIO_RETOS]:
+			conv_handler.states[INICIO_RETOS].append(handler_ejercicio)
 
 def error(update, context):
 	"""Log Errors caused by Updates."""
@@ -9201,8 +9234,15 @@ def main():
 						CallbackQueryHandler(modify_nacimiento, pattern='inicio_ficha_nacimiento'),
 						CallbackQueryHandler(modify_genero, pattern='inicio_ficha_genero'),
 						CallbackQueryHandler(modify_email, pattern='inicio_ficha_email'),
+						CallbackQueryHandler(show_inicio_ficha_valoracion, pattern='inicio_ficha_valoracion'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
+
+			INICIO_FICHA_VALORACION: [
+					CallbackQueryHandler(show_inicio_ficha, pattern='back_inicio_ficha'),
+					CallbackQueryHandler(show_inicio, pattern='back_inicio'),
+					MessageHandler(Filters.text & (~Filters.command), any_message)
+					],
 
 			INICIO_FICHA_PESO: [
 								MessageHandler(Filters.text & (~Filters.command), check_anotar_peso),
@@ -9239,7 +9279,6 @@ def main():
 						CallbackQueryHandler(show_inicio_peso_establecer, pattern='inicio_peso_establecer'),
 						CallbackQueryHandler(show_inicio_peso_eliminar, pattern='inicio_peso_eliminar'),
 						CallbackQueryHandler(show_inicio_peso_evolucion, pattern='inicio_peso_evolucion'),
-						CallbackQueryHandler(show_inicio_peso_valoracion, pattern='inicio_peso_valoracion'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
@@ -9376,12 +9415,6 @@ def main():
 										CommandHandler("rango", evolucion_imc_rango),
 										MessageHandler(Filters.text & (~Filters.command), any_message)
 										],
-
-			INICIO_PESO_VALORACION: [
-								CallbackQueryHandler(show_inicio_peso, pattern='back_inicio_peso'),
-								CallbackQueryHandler(show_inicio, pattern='back_inicio'),
-								MessageHandler(Filters.text & (~Filters.command), any_message)
-								],
 
 			INICIO_CARDIO: [
 						MessageHandler(Filters.text & (~Filters.command), any_message),
