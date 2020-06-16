@@ -36,4 +36,4 @@ Se presenta una matriz de tareas de usuario en las filas y los tres tipos de usu
 ![alt text](https://github.com/Jumacasni/ImagymBot/blob/master/readme/sitemap-2.png)
   
 ### 2.b.c Bocetos wireframe
-![alt text](https://github.com/Jumacasni/ImagymBot/blob/master/readme/bocetos-sitemap.pdf)
+![Bocetos wireframe](https://github.com/Jumacasni/ImagymBot/blob/master/readme/bocetos-sitemap.pdf)
