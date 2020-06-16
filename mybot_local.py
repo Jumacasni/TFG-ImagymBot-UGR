@@ -4569,6 +4569,11 @@ def registrar_cardio_si(update, context):
 		chat_id = query.message.chat_id,
 		text="Has registrado la actividad cardio con éxito ✔",
 	)
+	if current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO" or current_state == "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO":
+		bot.send_message(
+			chat_id = query.message.chat_id,
+			text="Se añadirá tu puntuación al marcador del ejercicio del mes cuando un moderador la apruebe 👍",
+		)
 
 	db = pymysql.connect("localhost", "root", "password", "ImagymServer")
 	db.begin()
@@ -8593,7 +8598,7 @@ def show_inicio_rutinas_consultar(update, context):
 		esta_apuntado = cur.fetchall()
 		if esta_apuntado:
 			text=text+" ⭐"
-		cur.execute("SELECT id_ejercicio FROM Hace_rutina WHERE fecha=CURDATE() AND id_usuario='"+username_user+"' AND id_rutina="+str(id_rutina[0])+";")
+		cur.execute("SELECT id_ejercicio FROM Hace_rutina WHERE fecha='"+str(fecha)+"' AND id_usuario='"+username_user+"' AND id_rutina="+str(id_rutina[0])+";")
 		ejercicios = cur.fetchall()
 		cur.close()
 		db.close()
@@ -8727,7 +8732,7 @@ def rutinas_consultar_fecha(update, context):
 						esta_apuntado = cur.fetchall()
 						if esta_apuntado:
 							text=text+" ⭐"
-						cur.execute("SELECT id_ejercicio FROM Hace_rutina WHERE fecha=CURDATE() AND id_usuario='"+username_user+"' AND id_rutina="+str(id_rutina[0])+";")
+						cur.execute("SELECT id_ejercicio FROM Hace_rutina WHERE fecha='"+str(fecha)+"' AND id_usuario='"+username_user+"' AND id_rutina="+str(id_rutina[0])+";")
 						ejercicios = cur.fetchall()
 						cur.close()
 						db.close()
@@ -8796,7 +8801,15 @@ def show_inicio_soporte(update, context):
 	time.sleep(1)
 
 	keyboard = [
-		[InlineKeyboardButton("Acerca de ❓", callback_data='inicio_soporte_acerca')],
+		[InlineKeyboardButton("Acerca de 📖", callback_data='inicio_soporte_acerca')],
+		[InlineKeyboardButton("Qué es ImagymBot ❓", callback_data='inicio_soporte_que')],
+		[InlineKeyboardButton("Política de protección de datos 📚", callback_data='inicio_soporte_politica')],
+		[InlineKeyboardButton("Ayuda en Mi objetivo de peso 🆘", callback_data='inicio_soporte_peso')],
+		[InlineKeyboardButton("Ayuda en Mi objetivo de actividades cardio 🆘", callback_data='inicio_soporte_cardio')],
+		[InlineKeyboardButton("Ayuda en Retos 🆘", callback_data='inicio_soporte_retos')],
+		[InlineKeyboardButton("Ayuda en Ejercicio del mes 🆘", callback_data='inicio_soporte_ejercicio')],
+		[InlineKeyboardButton("Ayuda en Rutinas y entrenamiento 🆘", callback_data='inicio_soporte_rutinas')],
+		[InlineKeyboardButton("Ayuda en Mi ficha personal 🆘", callback_data='inicio_soporte_ficha')],
 		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
 	]
 
@@ -8811,6 +8824,33 @@ def show_inicio_soporte(update, context):
 	current_state = "INICIO_SOPORTE"
 	return INICIO_SOPORTE
 
+def show_inicio_soporte_que(update, context):
+	global current_state
+
+	query = update.callback_query
+	bot = context.bot
+	username_user = query.from_user.username
+
+	text="<b>ImagymBot</b> es un divulgador de gimnasios. Cada gimnasio ofrece sus propios retos, ejercicios del mes y actividades cardio que quiera ofrecer a sus clientes. Los clientes podrán ver todo ese contenido desde <b>ImagymBot</b> y ser partícipe de una nueva experiencia como usuario de un gimnasio."
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text=text,
+		parse_mode='HTML'
+	)
+
+	keyboard = [
+		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
+	]
+	reply_markup = InlineKeyboardMarkup(keyboard)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="<b>👣 Inicio > Soporte > Qué es ImagymBot</b>",
+		parse_mode='HTML',
+		reply_markup=reply_markup
+	)
+	time.sleep(1)
+
 def show_inicio_soporte_acerca(update, context):
 	global current_state
 
@@ -8818,11 +8858,35 @@ def show_inicio_soporte_acerca(update, context):
 	bot = context.bot
 	username_user = query.from_user.username
 
-	text="<b>ImagymBot</b> es un divulgador de gimnasios. Todos los retos, ejercicios del mes, actividades cardio y rutinas y entrenamiento los ofrece el propio gimnasio."
-	text=text+"\n\n👉<b>Retos:</b> un reto es un ejercicio que se hace cada día durante un tiempo limitado y cada día aumentando las repeticiones de ese ejercicio."
-	text=text+"\n\n👉<b>Ejercicio del mes:</b> el ejercicio del mes es hacer una actividad cardio durante todo un mes. El objetivo puede ser hacer un mínimo de minutos, kilómetros o calorías."
-	text=text+"\n\n👉<b>Rutinas y entrenamiento:</b> los monitores del gimnasio ofrecen sus rutinas a los usuarios. Cada día se podrá anotar cualquier ejercicio de cualquier rutina, siempre que exista para el día actual de la semana. Se podrán añadir rutinas a favoritos, apareciendo siempre en primer lugar cuando se quiere anotar."
-	
+	text="<b>ImagymBot</b> forma parte del <b>Trabajo de Fin de Grado</b> de Juan Manuel Castillo Nievas en el <b>Grado en Ingeniería Informática</b> en la <b>Universidad de Granada</b>"
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text=text,
+		parse_mode='HTML'
+	)
+
+	keyboard = [
+		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
+	]
+	reply_markup = InlineKeyboardMarkup(keyboard)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="<b>👣 Inicio > Soporte > Acerca de</b>",
+		parse_mode='HTML',
+		reply_markup=reply_markup
+	)
+	time.sleep(1)
+
+def show_inicio_soporte_politica(update, context):
+	global current_state
+
+	query = update.callback_query
+	bot = context.bot
+	username_user = query.from_user.username
+
+	text="<b>¿Para qué se utilizan tus datos personales?</b>\n\nTodos los datos personales son opcionales y puedes proporcionarlos o no. Proporcionando tus datos personales te ofrecemos una mejor experiencia en <b>ImagymBot</b>, así como más información precisa como el cálculo del IMC.\n\nProporcionando tu correo electrónico podrás estar al día de todas las ofertas y suscripciones de tu gimnasio, así como del nuevo contenido que ofrecen a <b>ImagymBot</b>"
+
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		text=text,
@@ -8836,6 +8900,168 @@ def show_inicio_soporte_acerca(update, context):
 	bot.send_message(
 		chat_id = query.message.chat_id,
 		text="<b>👣 Inicio > Soporte</b>",
+		parse_mode='HTML',
+		reply_markup=reply_markup
+	)
+	time.sleep(1)
+
+def show_inicio_soporte_peso(update, context):
+	global current_state
+
+	query = update.callback_query
+	bot = context.bot
+	username_user = query.from_user.username
+
+	text="<b>¿Qué puedes hacer en MI OBJETIVO DE PESO?</b>\n\n👉 En esta sección podrás anotar diariamente tu peso, porcentaje de grasa y porcentaje de músculo.\n👉 También podrás establecer un objetivo de cada uno de ellos en el plazo que tú decidas.\n👉 Puedes ver tu evolución de cada medida en una gráfica que puedes filtrar por fechas."
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text=text,
+		parse_mode='HTML'
+	)
+
+	keyboard = [
+		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
+	]
+	reply_markup = InlineKeyboardMarkup(keyboard)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="<b>👣 Inicio > Soporte > Ayuda en Mi objetivo de peso</b>",
+		parse_mode='HTML',
+		reply_markup=reply_markup
+	)
+	time.sleep(1)
+
+def show_inicio_soporte_cardio(update, context):
+	global current_state
+
+	query = update.callback_query
+	bot = context.bot
+	username_user = query.from_user.username
+
+	text="<b>¿Qué puedes hacer en MI OBJETIVO DE ACTIVIDADES CARDIO?</b>\n\n👉 En esta sección podrás anotar las actividades cardio que has hecho en el gimnasio. Podrás registrar una actividad cardio que esté disponible en tu gimnasio.\n👉 También puedes establecer un objetivo de una actividad cardio, que consiste en hacer un mínimo de minutos, kilómetros o calorías a lo largo de un mes. Este objetivo es personal y sólo tú podrás verlo.\n👉 Puedes comprobar todas las actividades cardio que hiciste en un día concreto."
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text=text,
+		parse_mode='HTML'
+	)
+
+	keyboard = [
+		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
+	]
+	reply_markup = InlineKeyboardMarkup(keyboard)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="<b>👣 Inicio > Soporte > Ayuda en Mi objetivo de actividades cardio</b>",
+		parse_mode='HTML',
+		reply_markup=reply_markup
+	)
+	time.sleep(1)
+
+def show_inicio_soporte_retos(update, context):
+	global current_state
+
+	query = update.callback_query
+	bot = context.bot
+	username_user = query.from_user.username
+
+	text="<b>¿Qué puedes hacer en RETOS?</b>\n\nLos retos consisten en un ejercicio propuesto por tu gimnasio durante un mes. Cada día deberás hacer un número de repeticiones de ese ejercicio. Se pueden apuntar todos los usuarios del gimnasio que quieran. El objetivo es completar todos los días del reto.👉 Cada día deberás anotar que has hecho las repeticiones del reto\n👉 No anotar las repeticiones un día supone la descalificación del reto\n👉 Completar todo el reto supone la obtención de una insignia que todos podrán ver en el perfil de la web"
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text=text,
+		parse_mode='HTML'
+	)
+
+	keyboard = [
+		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
+	]
+	reply_markup = InlineKeyboardMarkup(keyboard)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="<b>👣 Inicio > Soporte > Ayuda en Retos</b>",
+		parse_mode='HTML',
+		reply_markup=reply_markup
+	)
+	time.sleep(1)
+
+def show_inicio_soporte_ejercicio(update, context):
+	global current_state
+
+	query = update.callback_query
+	bot = context.bot
+	username_user = query.from_user.username
+
+	text="<b>¿Qué puedes hacer en EJERCICIO DEL MES?</b>\n\nEl ejercicio del mes lo propone el gimnasio. Consiste en completar un objetivo de una actividad cardio específica a lo largo de un mes.\n👉 Un ejercicio del mes puede ser hacer mínimo de 500 minutos en elíptica, por ejemplo\n👉 Cada vez que registres cardio de esa actividad, se sumarán puntos a tu marcador. Para comprobar la veracidad de ello, deberás aportar una foto de la pantalla de la máquina en la que se muestre lo que has hecho.\n👉 Cuando se acabe el mes, se hará un ranking del TOP 10 con los usuarios con más puntos"
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text=text,
+		parse_mode='HTML'
+	)
+
+	keyboard = [
+		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
+	]
+	reply_markup = InlineKeyboardMarkup(keyboard)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="<b>👣 Inicio > Soporte > Ayuda en Ejercicio del mes</b>",
+		parse_mode='HTML',
+		reply_markup=reply_markup
+	)
+	time.sleep(1)
+
+def show_inicio_soporte_rutinas(update, context):
+	global current_state
+
+	query = update.callback_query
+	bot = context.bot
+	username_user = query.from_user.username
+
+	text="<b>¿Qué puedes hacer en RUTINAS Y ENTRENAMIENTO?</b>\n\n👉 Cada monitor o monitora del gimnasio ofrecerá su rutina a los usuarios.\n👉 Tendrás acceso a todas las rutinas, pudiendo añadir a favoritos las que más te gusten.\n👉 Puedes anotar la rutina de hoy. Al anotar la rutina de hoy se mostrarán todas las rutinas que tienen algún ejercicio para el día actual de la semana. Por ejemplo, si es martes, aparecerán todas las rutinas que tengan ejercicios los martes.\n👉 Puedes anotar diferentes ejercicios de diferentes rutinas\n👉 Podrás consultar los ejercicios y rutinas que hiciste en un día concreto"
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text=text,
+		parse_mode='HTML'
+	)
+
+	keyboard = [
+		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
+	]
+	reply_markup = InlineKeyboardMarkup(keyboard)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="<b>👣 Inicio > Soporte > Ayuda en Rutinas y entrenamiento</b>",
+		parse_mode='HTML',
+		reply_markup=reply_markup
+	)
+	time.sleep(1)
+
+def show_inicio_soporte_ficha(update, context):
+	global current_state
+
+	query = update.callback_query
+	bot = context.bot
+	username_user = query.from_user.username
+
+	text="<b>¿Qué puedes hacer en MI FICHA PERSONAL?</b>\n\n👉 Aquí podrás añadir/modificar tus datos personales.\n👉 También podrás ver una valoración de tu IMC actual, siempre que hayas anotado un peso y tu altura"
+
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text=text,
+		parse_mode='HTML'
+	)
+
+	keyboard = [
+		[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
+	]
+	reply_markup = InlineKeyboardMarkup(keyboard)
+	bot.send_message(
+		chat_id = query.message.chat_id,
+		text="<b>👣 Inicio > Soporte > Ayuda en Mi ficha personal</b>",
 		parse_mode='HTML',
 		reply_markup=reply_markup
 	)
@@ -9735,7 +9961,14 @@ def main():
 
 			INICIO_SOPORTE: [
 						MessageHandler(Filters.text & (~Filters.command), any_message),
+						CallbackQueryHandler(show_inicio_soporte_que, pattern='inicio_soporte_que'),
 						CallbackQueryHandler(show_inicio_soporte_acerca, pattern='inicio_soporte_acerca'),
+						CallbackQueryHandler(show_inicio_soporte_peso, pattern='inicio_soporte_peso'),
+						CallbackQueryHandler(show_inicio_soporte_cardio, pattern='inicio_soporte_cardio'),
+						CallbackQueryHandler(show_inicio_soporte_retos, pattern='inicio_soporte_retos'),
+						CallbackQueryHandler(show_inicio_soporte_ejercicio, pattern='inicio_soporte_ejercicio'),
+						CallbackQueryHandler(show_inicio_soporte_rutinas, pattern='inicio_soporte_rutinas'),
+						CallbackQueryHandler(show_inicio_soporte_ficha, pattern='inicio_soporte_ficha'),
 						CallbackQueryHandler(show_inicio, pattern='back_inicio')
 						],
 
@@ -9743,6 +9976,7 @@ def main():
 		fallbacks=[CommandHandler('start',start),
 				CommandHandler('mensaje', mandar_mensaje),
 				CommandHandler('ejercicios', actualizar_ejercicios),
+				MessageHandler(Filters.photo, usuario_usa_comando_anterior),
 				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='start_menu'),
 				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_peso'),
 				CallbackQueryHandler(usuario_pulsa_boton_anterior, pattern='inicio_cardio'),
