@@ -27,9 +27,13 @@ Se han creado tres perfiles de personas: un perfil de un usuario que va al gimna
 
 ## 2.b Tasks & Sitemap
 ### 2.b.1 Tasks
+  
+Se presenta una matriz de tareas de usuario en las filas y los tres tipos de usuario en las columnas. En la intersección se pone un número del 1 al 4, siendo 1 que el usuario rara vez hará esa tarea y 4 que hará esa tarea muchísimo.
   ![alt text](https://github.com/Jumacasni/ImagymBot/blob/master/readme/matriz-tareas.png)
   
 ### 2.b.2 Sitemap
 ![alt text](https://github.com/Jumacasni/ImagymBot/blob/master/readme/sitemap-1.png)
 ![alt text](https://github.com/Jumacasni/ImagymBot/blob/master/readme/sitemap-2.png)
   
+### 2.b.c Bocetos wireframe
+![Bocetos wireframe](https://github.com/Jumacasni/ImagymBot/blob/master/readme/bocetos-sitemap.pdf)
