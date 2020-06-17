@@ -3939,7 +3939,6 @@ def show_inicio_cardio(update, context):
 
 	# Comprobar si hoy ha hecho cardio
 	username_user = query.from_user.username
-
 	keyboard = [[InlineKeyboardButton("Registrar actividad cardio 🏃", callback_data='inicio_cardio_registrar')]]
 
 	cur = db.cursor()
@@ -4574,68 +4573,8 @@ def registrar_cardio_si(update, context):
 			chat_id = query.message.chat_id,
 			text="Se añadirá tu puntuación al marcador del ejercicio del mes cuando un moderador la apruebe 👍",
 		)
-		
-	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
-	db.begin()
-	cur = db.cursor()
-	# Seleccionar la actividad de cardio más reciente
-	cur.execute("SELECT id_actividad_cardio FROM Registra_cardio WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(fecha) FROM Registra_cardio WHERE id_usuario='"+username_user+"');")
-	resultado = cur.fetchall()
-	id_actividad_cardio_reciente = resultado[0][0]
-	# Comprobar si está apuntado a un objetivo de cardio mensual
-	cur.execute("SELECT id_objetivo_mensual FROM Se_apunta WHERE id_usuario='"+username_user+"' AND estado='R';")
-	resultado = cur.fetchall()
-	if resultado:
-		id_objetivo_mensual=resultado[0][0]
-		cur.execute("SELECT id_actividad_cardio,fecha_inicio,fecha_fin,objetivo FROM Ejercicio_del_mes WHERE id_actividad_cardio="+str(id_actividad_cardio_reciente)+";")
-		resultado = cur.fetchall()
-		id_actividad_cardio = resultado[0][0]
-		fecha_inicio = resultado[0][1]
-		fecha_fin = resultado[0][2]
-		objetivo = resultado[0][3]
-		if id_actividad_cardio == id_actividad_cardio_reciente:
-			tipo_objetivo = objetivo.split(' ', 1)[1]
-			if tipo_objetivo == "distancia":
-				medida="distancia"
-			elif tipo_objetivo == "calorias":
-				medida="calorias"
-			else:
-				medida="tiempo"
 
-			cur.execute("SELECT SUM("+medida+") FROM Registra_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+" AND id_usuario='"+username_user+"' AND DATE(fecha)>='"+str(fecha_inicio)+"' AND DATE(fecha)<='"+str(fecha_fin)+"' AND aprobada='S';")
-			resultado = cur.fetchall()
-			contador = resultado[0][0]
-			if contador is None:
-				contador = 0
-
-			objetivo_numero = round(float(objetivo.split(' ', 1)[0]), 2)
-			contador = round(float(contador),2)
-			puntuacion = contador
-
-			if contador > objetivo_numero:
-				contador_restantes = contador-objetivo_numero
-				cur.execute("SELECT imc FROM Peso WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username_user+"' AND imc IS NOT NULL)")
-				resultado = cur.fetchall()
-				# Si el usuario tiene IMC, se le suman puntos
-				if resultado:
-					imc = round(float(resultado[0][0]),1)
-					if imc < 18.5:
-						puntuacion = contador+contador_restantes*1.1
-					elif imc >= 18.5 and imc < 20.0:
-						puntuacion = contador+contador_restantes*1.25
-					elif imc >= 20.0 and imc < 22.5:
-						puntuacion = contador+contador_restantes*1.35
-					elif imc >= 22.5 and imc < 25.0:
-						puntuacion = contador+contador_restantes*1.25
-					else:
-						puntuacion = contador+contador_restantes*1.1
-
-			cur.execute("UPDATE Se_apunta SET puntuacion="+str(puntuacion)+" WHERE id_usuario='"+username_user+"' AND id_objetivo_mensual="+str(id_objetivo_mensual)+";")
-			db.commit()
-			cur.close()
-			db.close()
-
-	time.sleep(.8)
+	time.sleep(1)
 
 	if current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR" or current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO":
 		current_state = "INICIO_CARDIO_REGISTRAR"
@@ -7011,6 +6950,8 @@ def show_inicio_ejercicio(update, context):
 	)
 	time.sleep(.8)
 
+	actualizar_marcador()
+
 	keyboard = []
 
 	cur = db.cursor()
@@ -7157,6 +7098,77 @@ def show_inicio_ejercicio(update, context):
 
 	current_state = "INICIO_EJERCICIO"
 	return INICIO_EJERCICIO
+
+def actualizar_marcador():
+	db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+	db.begin()
+	cur = db.cursor()
+	# Comprobar si está apuntado a un objetivo de cardio mensual
+	cur.execute("SELECT id_objetivo_mensual,id_usuario FROM Se_apunta WHERE estado='R';")
+	usuarios = cur.fetchall()
+	cur.close()
+	db.close()
+	for i in range(len(usuarios)):
+		id_objetivo_mensual=usuarios[i][0]
+		username_user=usuarios[i][1]
+		db = pymysql.connect("castinievas.mysql.eu.pythonanywhere-services.com", "castinievas", "password2020", "castinievas$Imagym")
+		db.begin()
+		cur = db.cursor()
+		# Seleccionar la actividad de cardio más reciente
+		cur.execute("SELECT id_actividad_cardio FROM Registra_cardio WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(fecha) FROM Registra_cardio WHERE id_usuario='"+username_user+"');")
+		hay_actividad_cardio_reciente = cur.fetchall()
+		if hay_actividad_cardio_reciente:
+			id_actividad_cardio_reciente = hay_actividad_cardio_reciente[0][0]
+			# Comprobar si el usuario tiene registrado cardio de esa actividad cardio
+			cur.execute("SELECT id_actividad_cardio,fecha_inicio,fecha_fin,objetivo FROM Ejercicio_del_mes WHERE id_actividad_cardio="+str(id_actividad_cardio_reciente)+";")
+			tiene_cardio = cur.fetchall()
+			if tiene_cardio:
+				id_actividad_cardio = tiene_cardio[0][0]
+				fecha_inicio = tiene_cardio[0][1]
+				fecha_fin = tiene_cardio[0][2]
+				objetivo = tiene_cardio[0][3]
+				if id_actividad_cardio == id_actividad_cardio_reciente:
+					tipo_objetivo = objetivo.split(' ', 1)[1]
+					if tipo_objetivo == "distancia":
+						medida="distancia"
+					elif tipo_objetivo == "calorias":
+						medida="calorias"
+					else:
+						medida="tiempo"
+
+					cur.execute("SELECT SUM("+medida+") FROM Registra_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+" AND id_usuario='"+username_user+"' AND DATE(fecha)>='"+str(fecha_inicio)+"' AND DATE(fecha)<='"+str(fecha_fin)+"' AND aprobada='S';")
+					resultado = cur.fetchall()
+					contador = resultado[0][0]
+					if contador is None:
+						contador = 0
+
+					objetivo_numero = round(float(objetivo.split(' ', 1)[0]), 2)
+					contador = round(float(contador),2)
+					puntuacion = contador
+
+					if contador > objetivo_numero:
+						contador_restantes = contador-objetivo_numero
+						cur.execute("SELECT imc FROM Peso WHERE id_usuario='"+username_user+"' AND fecha=(SELECT MAX(p2.fecha) FROM Peso p2 WHERE id_usuario='"+username_user+"' AND imc IS NOT NULL)")
+						resultado = cur.fetchall()
+						# Si el usuario tiene IMC, se le suman puntos
+						if resultado:
+							imc = round(float(resultado[0][0]),1)
+							if imc < 18.5:
+								puntuacion = contador+contador_restantes*1.1
+							elif imc >= 18.5 and imc < 20.0:
+								puntuacion = contador+contador_restantes*1.25
+							elif imc >= 20.0 and imc < 22.5:
+								puntuacion = contador+contador_restantes*1.35
+							elif imc >= 22.5 and imc < 25.0:
+								puntuacion = contador+contador_restantes*1.25
+							else:
+								puntuacion = contador+contador_restantes*1.1
+
+					cur.execute("UPDATE Se_apunta SET puntuacion="+str(puntuacion)+" WHERE id_usuario='"+username_user+"' AND id_objetivo_mensual="+str(id_objetivo_mensual)+";")
+					db.commit()
+		
+		cur.close()
+		db.close()
 
 def show_inicio_ejercicio_apuntarse(update, context):
 	global current_state
