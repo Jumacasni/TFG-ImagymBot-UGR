@@ -4398,7 +4398,7 @@ def registrar_cardio(update, context):
 									parse_mode='HTML'
 								)
 
-				# Si tiene un objetivo mensual
+				# Si tiene un ejercicio del mes
 				cur.execute("SELECT id_objetivo_mensual FROM Se_apunta WHERE id_usuario='"+username+"' AND estado='R';")
 				resultado = cur.fetchall()
 				if resultado:
@@ -4439,16 +4439,13 @@ def registrar_cardio(update, context):
 									text=text,
 									parse_mode='HTML'
 								)
-					keyboard = [
-						[InlineKeyboardButton("No quiero registrar el cardio ❌", callback_data='registrar_cardio_no')]
-					]
 
 					reply_markup = InlineKeyboardMarkup(keyboard)
 					update.message.reply_text(
-						text="Envíame una foto de <b>"+nombre+"</b> en la que se pueda ver que es correcto lo que vas a añadir a tu ejercicio del mes",
-						reply_markup = reply_markup,
-						parse_mode='HTML'
+						text="¿Confirmas este registro?",
+						reply_markup = reply_markup
 					)
+
 					if current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD":
 						current_state = "INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO"
 						return INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO
@@ -4569,20 +4566,35 @@ def registrar_cardio_si(update, context):
 		text="Has registrado la actividad cardio con éxito ✔",
 	)
 	if current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO" or current_state == "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO":
-		bot.send_message(
-			chat_id = query.message.chat_id,
-			text="Se añadirá tu puntuación al marcador del ejercicio del mes cuando un moderador la apruebe 👍",
-		)
+		db = pymysql.connect("localhost", "root", "password", "ImagymServer")
+		db.begin()
+		cur = db.cursor()
+		# Seleccionar actividad del ejercicio del mes
+		cur.execute("SELECT Ejercicio_del_mes.id_actividad_cardio FROM Ejercicio_del_mes INNER JOIN Se_apunta WHERE Ejercicio_del_mes.id_objetivo_mensual=Se_apunta.id_objetivo_mensual AND Se_apunta.id_usuario='"+username_user+"' AND Se_apunta.estado='R';")
+		resultado = cur.fetchall()
+		if resultado:
+			id_actividad_cardio = resultado[0][0]
+			cur.execute("SELECT nombre FROM Actividad_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+";")
+			resultado = cur.fetchall()
+			nombre = resultado[0][0]
+
+			bot.send_message(
+				chat_id = query.message.chat_id,
+				text="Envíame una foto de <b>"+nombre+"</b> en la que se pueda ver y confirmar tu registro de cardio. Tu marcador del ejercicio del mes se actualizará cuando se apruebe.",
+				parse_mode='HTML'
+			)
+
+			return
 
 	time.sleep(1)
 
-	if current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR" or current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO":
+	if current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR":
 		current_state = "INICIO_CARDIO_REGISTRAR"
 		show_inicio_cardio_registrar(update, context)
 
 		return INICIO_CARDIO_REGISTRAR
 
-	elif current_state == "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR" or current_state == "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO":
+	elif current_state == "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR":
 		current_state = "INICIO_EJERCICIO"
 		show_inicio_ejercicio(update, context)
 
@@ -5255,15 +5267,23 @@ def check_photo(update, context):
 	cur.close()
 	db.close()
 
-	keyboard = [
-		[InlineKeyboardButton("Si ✔", callback_data='registrar_cardio_si')],
-		[InlineKeyboardButton("No ❌", callback_data='registrar_cardio_no')]
-	]
+	if current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO":
+		keyboard = [
+			[InlineKeyboardButton("Volver a Mi objetivo de actividades cardio 🔙", callback_data='inicio_cardio')],
+			[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
+		]
+	elif current_state == "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO":
+		keyboard = [
+			[InlineKeyboardButton("Volver a Ejercicio del mes 🔙", callback_data='inicio_ejercicio')],
+			[InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')]
+		]
 	reply_markup = InlineKeyboardMarkup(keyboard)
 	update.message.reply_text(
-		text="¿Confirmas este registro?",
+		text="He enviado tu foto con éxito ✔\n\nSe actualizará tu marcador cuando un moderador externo la apruebe.",
 		reply_markup = reply_markup
 	)
+
+	time.sleep(1)
 
 ############# RETOS #############
 def show_inicio_retos(update, context):
@@ -9743,6 +9763,8 @@ def main():
 														MessageHandler(Filters.photo, check_photo),
 														CallbackQueryHandler(registrar_cardio_si, pattern='registrar_cardio_si'),
 														CallbackQueryHandler(registrar_cardio_no, pattern='registrar_cardio_no'),
+														CallbackQueryHandler(show_inicio_cardio, pattern='inicio_cardio'),
+														CallbackQueryHandler(show_inicio, pattern='back_inicio'),
 														MessageHandler(Filters.text & (~Filters.command), any_message),
 														],
 
@@ -9892,6 +9914,8 @@ def main():
 														MessageHandler(Filters.photo, check_photo),
 														CallbackQueryHandler(registrar_cardio_si, pattern='registrar_cardio_si'),
 														CallbackQueryHandler(registrar_cardio_no, pattern='registrar_cardio_no'),
+														CallbackQueryHandler(show_inicio_ejercicio, pattern='inicio_ejercicio'),
+														CallbackQueryHandler(show_inicio, pattern='back_inicio'),
 														MessageHandler(Filters.text & (~Filters.command), any_message),
 														],
 
