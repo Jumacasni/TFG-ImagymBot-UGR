@@ -2871,6 +2871,7 @@ def show_inicio_peso_evolucion(update, context):
 		keyboard.append([InlineKeyboardButton("Evolución del IMC", callback_data='inicio_peso_evolucion_imc')])
 
 	keyboard.append([InlineKeyboardButton("Volver a Peso 🔙", callback_data='back_inicio_peso')])
+	keyboard.append([InlineKeyboardButton("Volver a Inicio 👣", callback_data='back_inicio')])
 
 	reply_markup = InlineKeyboardMarkup(keyboard)
 	bot.send_message(
@@ -4007,14 +4008,14 @@ def show_inicio_cardio(update, context):
 
 		if objetivo_tipo == "distancia":
 			tipo = "kilómetros"
-			text=text+"\nObjetivo: "+objetivo_numero+" "+tipo
+			text=text+"\n<b>Objetivo:</b> "+objetivo_numero+" "+tipo
 		elif objetivo_tipo == "calorias":
 			tipo = "calorías"
-			text=text+"\nObjetivo: "+objetivo_numero+" "+tipo
+			text=text+"\n<b>Objetivo:</b> "+objetivo_numero+" "+tipo
 		else:
 			objetivo_tipo = "tiempo"
 			tipo = "minutos"
-			text=text+"\nObjetivo: "+objetivo_numero+" "+tipo
+			text=text+"\n<b>Objetivo:</b> "+objetivo_numero+" "+tipo
 
 
 		if fecha_inicio == date.today():
@@ -4022,8 +4023,8 @@ def show_inicio_cardio(update, context):
 		else:
 			fecha_inicio = fecha_inicio.strftime("%d-%b-%Y")
 
-		text=text+"\nFecha inicio: "+str(fecha_inicio)
-		text=text+"\nFecha fin: "+fecha_fin.strftime("%d-%b-%Y")
+		text=text+"\n<b>Fecha inicio:</b> "+str(fecha_inicio)
+		text=text+"\n<b>Fecha fin:</b> "+fecha_fin.strftime("%d-%b-%Y")
 		text=text+"\n\n"
 
 		cur.execute("SELECT SUM("+objetivo_tipo+") FROM Registra_cardio WHERE id_actividad_cardio="+str(id_actividad_cardio)+" AND id_usuario='"+username_user+"' AND fecha>='"+str(resultado[0][2])+"' AND fecha<='"+str(resultado[0][3])+"';")
@@ -4032,7 +4033,7 @@ def show_inicio_cardio(update, context):
 		if resultado[0][0] is None:
 			text=text+"Aún no has acumulado "+tipo+". ¡Registra cardio en <b>"+nombre.lower()+"</b> para comenzar tu marcador!"
 		else:
-			diferencia = round(float(objetivo_numero) - float(resultado[0][0]), 2)
+			diferencia = round(float(objetivo_numero) - float(resultado[0][0]), 0)
 			if diferencia > 0:
 				text=text+"Llevas ya <b>"+str(resultado[0][0])+" "+tipo+"</b>."
 				text=text+"\nTe quedan: "+str(diferencia)+" "+tipo
@@ -4440,19 +4441,19 @@ def registrar_cardio(update, context):
 									parse_mode='HTML'
 								)
 
-					reply_markup = InlineKeyboardMarkup(keyboard)
-					update.message.reply_text(
-						text="¿Confirmas este registro?",
-						reply_markup = reply_markup
-					)
+						reply_markup = InlineKeyboardMarkup(keyboard)
+						update.message.reply_text(
+							text="¿Confirmas este registro?",
+							reply_markup = reply_markup
+						)
 
-					if current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD":
-						current_state = "INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO"
-						return INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO
+						if current_state == "INICIO_CARDIO_REGISTRAR_ACTIVIDAD":
+							current_state = "INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO"
+							return INICIO_CARDIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO
 
-					elif current_state == "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD":
-						current_state = "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO"
-						return INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO
+						elif current_state == "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD":
+							current_state = "INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO"
+							return INICIO_EJERCICIO_REGISTRAR_ACTIVIDAD_CONFIRMAR_FOTO
 
 
 				reply_markup = InlineKeyboardMarkup(keyboard)
@@ -4505,7 +4506,7 @@ def show_inicio_cardio_ver(update,context):
 	cur = db.cursor()
 
 	# Todas las actividades cardio del último día que hizo cardio
-	cur.execute("SELECT id_actividad_cardio,TIME(fecha),DATE(fecha),tiempo,distancia,nivel,calorias FROM Registra_cardio WHERE id_usuario='"+username_user+"' AND DATE(fecha)=(SELECT MAX(DATE(fecha)) FROM Registra_cardio WHERE id_usuario='"+username_user+"' AND aprobada!='N';")
+	cur.execute("SELECT id_actividad_cardio,TIME(fecha),DATE(fecha),tiempo,distancia,nivel,calorias FROM Registra_cardio WHERE id_usuario='"+username_user+"' AND DATE(fecha)=(SELECT MAX(DATE(fecha)) FROM Registra_cardio WHERE id_usuario='"+username_user+"' AND (aprobada!='N' OR aprobada IS NULL));")
 	resultado = cur.fetchall()
 
 	fecha = resultado[0][2]
@@ -9152,7 +9153,6 @@ def inicio_ficha(update, context):
 		text=text+"\n\n<b>👉Tu IMC actual:</b> "+str(imc)
 
 	update.message.reply_text(
-		chat_id = query.message.chat_id,
 		text=text,
 		parse_mode='HTML'
 	)
@@ -9705,7 +9705,8 @@ def main():
 								CallbackQueryHandler(evolucion_grasa, pattern='inicio_peso_evolucion_grasa'),
 								CallbackQueryHandler(evolucion_musculo, pattern='inicio_peso_evolucion_musculo'),
 								CallbackQueryHandler(evolucion_imc, pattern='inicio_peso_evolucion_imc'),
-								CallbackQueryHandler(show_inicio_peso, pattern='back_inicio_peso')
+								CallbackQueryHandler(show_inicio_peso, pattern='back_inicio_peso'),
+								CallbackQueryHandler(show_inicio, pattern='back_inicio')
 								],
 
 			INICIO_PESO_EVOLUCION_PESO: [
