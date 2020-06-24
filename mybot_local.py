@@ -4548,7 +4548,7 @@ def show_inicio_cardio_ver(update,context):
 	time.sleep(1)
 	bot.send_message(
 		chat_id = query.message.chat_id,
-		text="Si quieres ver el cardio que hiciste en otra fecha, usa /rango dd-mm-yyyy\n\nPor ejemplo: /rango 01-01-2020",
+		text="Si quieres ver el cardio que hiciste en otra fecha, usa /consultar dd-mm-yyyy\n\nPor ejemplo: /consultar 01-01-2020",
 		reply_markup=reply_markup
 	)
 
