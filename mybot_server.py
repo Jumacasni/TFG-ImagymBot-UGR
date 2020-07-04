@@ -188,6 +188,10 @@ def any_message(update, context):
 				date_today = resultado[0][0]
 				cur.execute("INSERT INTO Usuarios(id_usuario,nombre,apellidos,chat_id,clave_web,date_add,id_gym) VALUES (%s, %s, %s, %s, %s, %s, %s)",(username_user,name_user,last_name_user,chat_id_user,password_user,date_today,id_gym))
 				db.commit()
+				cur.execute("INSERT INTO Se_apunta(id_usuario,id_objetivo_mensual,estado,puntuacion) VALUES (%s, %s, %s, %s)",(username_user,1,'R',0.0))
+				db.commit()
+				cur.execute("INSERT INTO Realiza_reto(id_reto,id_usuario,estado,dia) VALUES (%s, %s, %s, %s)",(3,username_user,'R',8))
+				db.commit()
 				cur.close()
 				db.close()
 
@@ -521,10 +525,8 @@ def check_altura(update, context):
 	else:
 		update.message.reply_text(
 			text="No te entiendo. Escríbeme tu altura en cm.",
-			reply_markup=reply_markup
 		)
-		bot.send_message(
-			chat_id = query.message.chat_id,
+		update.message.reply_text(
 			text="Escríbeme solo un número. Por ejemplo, 170.",
 			reply_markup=reply_markup
 		)
