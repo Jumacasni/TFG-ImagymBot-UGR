@@ -1,5 +1,5 @@
 # ImagymBot
-Trabajo de Fin de Grado - Grado en Ingeniería Informática - Universidad de Granada
+Trabajo de Fin de Grado - Grado en Ingeniería Informática 2019-2020 - Universidad de Granada
 
 Alumno: Juan Manuel Castillo Nievas
 
@@ -16,24 +16,24 @@ Estas aplicaciones han sido elegidas porque son las más populares del mercado a
 
 Se han creado tres perfiles de personas: un perfil de un usuario que va al gimnasio y hace deporte, un usuario que no va al gimnasio pero hace deporte, y un usuario que ni va al gimnasio ni hace deporte
 
-![alt text](https://github.com/Jumacasni/ImagymBot/blob/master/readme/persona1.png)
-![alt text](https://github.com/Jumacasni/ImagymBot/blob/master/readme/persona2.png)
-![alt text](https://github.com/Jumacasni/ImagymBot/blob/master/readme/persona3.png)
+![alt text](https://github.com/Jumacasni/ImagymBot/blob/master/imagenes_readme/persona1.png)
+![alt text](https://github.com/Jumacasni/ImagymBot/blob/master/imagenes_readme/persona2.png)
+![alt text](https://github.com/Jumacasni/ImagymBot/blob/master/imagenes_readme/persona3.png)
 
 
 # Paso 2. UX Design
 ## 2.a Feedback Capture Grid
-![alt text](https://github.com/Jumacasni/ImagymBot/blob/master/readme/capture-grid.png)
+![alt text](https://github.com/Jumacasni/ImagymBot/blob/master/imagenes_readme/capture-grid.png)
 
 ## 2.b Tasks & Sitemap
 ### 2.b.1 Tasks
   
 Se presenta una matriz de tareas de usuario en las filas y los tres tipos de usuario en las columnas. En la intersección se pone un número del 1 al 4, siendo 1 que el usuario rara vez hará esa tarea y 4 que hará esa tarea muchísimo.
-  ![alt text](https://github.com/Jumacasni/ImagymBot/blob/master/readme/matriz-tareas.png)
+  ![alt text](https://github.com/Jumacasni/ImagymBot/blob/master/imagenes_readme/matriz-tareas.png)
   
 ### 2.b.2 Sitemap
-![alt text](https://github.com/Jumacasni/ImagymBot/blob/master/readme/sitemap-1.png)
-![alt text](https://github.com/Jumacasni/ImagymBot/blob/master/readme/sitemap-2.png)
+![alt text](https://github.com/Jumacasni/ImagymBot/blob/master/imagenes_readme/sitemap-1.png)
+![alt text](https://github.com/Jumacasni/ImagymBot/blob/master/imagenes_readme/sitemap-2.png)
   
 ### 2.b.c Bocetos wireframe
-![Bocetos wireframe](https://github.com/Jumacasni/ImagymBot/blob/master/readme/bocetos-sitemap.pdf)
+![Bocetos wireframe](https://github.com/Jumacasni/ImagymBot/blob/master/imagenes_readme/bocetos-sitemap.pdf)
