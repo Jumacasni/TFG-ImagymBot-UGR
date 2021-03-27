@@ -21,6 +21,7 @@ import random
 import string
 import pytz
 import matplotlib.pyplot as plt
+import config as config
 # import plotly.graph_objects as go
 import os.path
 from os import path
@@ -9519,7 +9520,7 @@ def error(update, context):
 def main():
 	global conv_handler
 
-	updater = Updater('984370362:AAHLDLk5DzZT7cx-z03NsecK_muV_h1NGMU', use_context=True)
+	updater = Updater(config.api_key, use_context=True)
 
 	conv_handler = ConversationHandler(
 		entry_points=[CommandHandler('start',start),
